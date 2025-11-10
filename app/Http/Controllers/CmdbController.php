@@ -6,36 +6,66 @@ use App\Models\ConfigurationItem;
 
 class CmdbController extends Controller
 {
+    /**
+     * GET /api/v1/config-items/{config_item}/graph
+     * Menampilkan CI + relasi dependency-nya.
+     */
     public function show(ConfigurationItem $config_item)
     {
-        $ci = $config_item->load([
-            'outgoingRelations.target:id,ci_code,name,type',
-            'incomingRelations.source:id,ci_code,name,type',
+        $config_item->load([
+            'ownerOpd',
+            'sourceRelations.target',
+            'targetRelations.source',
         ]);
 
+        $nodes = [
+            [
+                'id'   => $config_item->id,
+                'name' => $config_item->name,
+                'type' => $config_item->type,
+                'role' => 'primary',
+            ],
+        ];
+
+        $edges = [];
+
+        foreach ($config_item->sourceRelations as $rel) {
+            $nodes[] = [
+                'id'   => $rel->target->id,
+                'name' => $rel->target->name,
+                'type' => $rel->target->type,
+                'role' => 'target',
+            ];
+
+            $edges[] = [
+                'from' => $config_item->id,
+                'to'   => $rel->target->id,
+                'type' => $rel->relation_type,
+            ];
+        }
+
+        foreach ($config_item->targetRelations as $rel) {
+            $nodes[] = [
+                'id'   => $rel->source->id,
+                'name' => $rel->source->name,
+                'type' => $rel->source->type,
+                'role' => 'source',
+            ];
+
+            $edges[] = [
+                'from' => $rel->source->id,
+                'to'   => $config_item->id,
+                'type' => $rel->relation_type,
+            ];
+        }
+
+        // Hilangkan duplikat node
+        $nodes = collect($nodes)->unique('id')->values()->all();
+
         return response()->json([
-            'ci' => [
-                'id'      => $ci->id,
-                'ci_code' => $ci->ci_code,
-                'name'    => $ci->name,
-                'type'    => $ci->type,
-                'owner'   => $ci->owner,
-                'status'  => $ci->status,
-            ],
-            'dependencies' => [
-                'depends_on' => $ci->outgoingRelations->map(fn($r)=>[
-                    'relation_type'=>$r->relation_type,
-                    'target'=>[
-                        'id'=>$r->target->id,'ci_code'=>$r->target->ci_code,'name'=>$r->target->name,'type'=>$r->target->type
-                    ],
-                ]),
-                'required_by' => $ci->incomingRelations->map(fn($r)=>[
-                    'relation_type'=>$r->relation_type,
-                    'source'=>[
-                        'id'=>$r->source->id,'ci_code'=>$r->source->ci_code,'name'=>$r->source->name,'type'=>$r->source->type
-                    ],
-                ]),
-            ],
+            'root'  => $config_item,
+            'nodes' => $nodes,
+            'edges' => $edges,
         ]);
     }
 }

@@ -2,58 +2,194 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Rfc;
+use App\Models\RfcApproval;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
+/**
+ * @OA\Tag(
+ *     name="Change Approval",
+ *     description="Proses persetujuan (approval) untuk Request for Change (RFC) / Change Request"
+ * )
+ */
 class ChangeApprovalController extends Controller
 {
-    public function decide(string $id, Request $req) {
-        $data = $req->validate([
-            'decision' => 'required|in:approve,reject,need_info',
+    /**
+     * POST /api/v1/changes/{change}/decisions
+     *
+     * @OA\Post(
+     *   path="/api/v1/changes/{change}/decisions",
+     *   tags={"Change Approval"},
+     *   summary="Memberikan keputusan approval untuk Change Request",
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Parameter(
+     *     name="change",
+     *     in="path",
+     *     required=true,
+     *     description="ID RFC / Change Request yang ingin di-approve",
+     *     @OA\Schema(type="integer", example=101)
+     *   ),
+     *   @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *       required={"stage","decision"},
+     *       @OA\Property(
+     *         property="stage",
+     *         type="string",
+     *         description="Level approval yang sedang memutuskan",
+     *         example="kabid",
+     *         enum={"kasi","kabid","kadis","diskominfo"}
+     *       ),
+     *       @OA\Property(
+     *         property="decision",
+     *         type="string",
+     *         description="Keputusan approval",
+     *         example="approve",
+     *         enum={"approve","reject","need_info"}
+     *       ),
+     *       @OA\Property(
+     *         property="note",
+     *         type="string",
+     *         description="Catatan tambahan (opsional)",
+     *         example="Setuju, pastikan backup full sebelum patch."
+     *       )
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Keputusan approval berhasil direkam",
+     *     @OA\JsonContent(
+     *       @OA\Property(property="message", type="string", example="Decision recorded"),
+     *       @OA\Property(
+     *         property="approval",
+     *         type="object",
+     *         @OA\Property(property="id", type="integer", example=5),
+     *         @OA\Property(property="rfc_id", type="integer", example=101),
+     *         @OA\Property(property="level", type="string", example="kabid"),
+     *         @OA\Property(property="decision", type="string", example="approve"),
+     *         @OA\Property(property="reason", type="string", example="Setuju, risiko sudah diterima."),
+     *         @OA\Property(property="decided_at", type="string", example="2025-11-15 10:30:00")
+     *       )
+     *     )
+     *   ),
+     *   @OA\Response(response=422, description="Validasi gagal"),
+     *   @OA\Response(response=404, description="RFC / Change Request tidak ditemukan")
+     * )
+     */
+    public function decide(Request $request, Rfc $change)
+    {
+        $data = $request->validate([
+            'stage'    => 'required|string|in:kasi,kabid,kadis,diskominfo',
+            'decision' => 'required|string|in:approve,reject,need_info',
             'note'     => 'nullable|string',
         ]);
 
-        // pastikan change ada
-        $exists = DB::table('change_requests')->where('id',$id)->exists();
-        if (!$exists) return response()->json(['message'=>'Change not found'],404);
+        // map "diskominfo" ke "kadis" (sesuai enum di migration)
+        $level = $data['stage'] === 'diskominfo' ? 'kadis' : $data['stage'];
 
-        $u = $req->user();
-        $new = match($data['decision']) {
-            'approve'   => 'Approved',
-            'reject'    => 'Rejected',
-            'need_info' => 'In-Review',
-        };
+        $approval = RfcApproval::firstOrNew([
+            'rfc_id' => $change->id,
+            'level'  => $level,
+        ]);
 
-        DB::beginTransaction();
-        try {
-            DB::table('change_approvals')->insert([
-                'id'          => (string) Str::uuid(),
-                'change_id'   => $id,
-                'approver_id' => $u->id,
-                'stage'       => $u->stage ?? ($u->role ?? 'operator'),
-                'decision'    => $data['decision'],
-                'note'        => $data['note'] ?? null,
-                'decided_at'  => now(),
-                'created_at'  => now(),
-                'updated_at'  => now(),
-            ]);
+        $approval->approver_id = $request->user()->id;
+        $approval->decision    = $data['decision'] === 'need_info' ? 'revise' : $data['decision'];
+        $approval->reason      = $data['note'] ?? null;
+        $approval->decided_at  = Carbon::now();
+        $approval->save();
 
-            DB::table('change_requests')->where('id',$id)->update([
-                'status'     => $new,
-                'updated_at' => now(),
-            ]);
-
-            DB::commit();
-            return response()->json(['ok'=>true,'new_status'=>$new], 200);
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            return response()->json(['ok'=>false,'message'=>$e->getMessage()], 500);
-        }
+        return response()->json([
+            'message'  => 'Decision recorded',
+            'approval' => $approval,
+        ]);
     }
 
-    // alias opsional biar enak dipanggil
-    public function approve(string $id, Request $r) { $r->merge(['decision'=>'approve']); return $this->decide($id,$r); }
-    public function reject (string $id, Request $r) { $r->merge(['decision'=>'reject']);  return $this->decide($id,$r); }
+    /**
+     * POST /api/v1/changes/{change}/approve
+     *
+     * @OA\Post(
+     *   path="/api/v1/changes/{change}/approve",
+     *   tags={"Change Approval"},
+     *   summary="Shortcut untuk menyetujui Change Request (decision=approve)",
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Parameter(
+     *     name="change",
+     *     in="path",
+     *     required=true,
+     *     description="ID RFC / Change Request yang ingin di-approve",
+     *     @OA\Schema(type="integer", example=101)
+     *   ),
+     *   @OA\RequestBody(
+     *     required=false,
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="stage",
+     *         type="string",
+     *         example="kadis",
+     *         enum={"kasi","kabid","kadis","diskominfo"}
+     *       ),
+     *       @OA\Property(
+     *         property="note",
+     *         type="string",
+     *         example="Disetujui, window maintenance sesuai."
+     *       )
+     *     )
+     *   ),
+     *   @OA\Response(response=200, description="Keputusan approve tersimpan"),
+     *   @OA\Response(response=404, description="RFC / Change Request tidak ditemukan")
+     * )
+     */
+    public function approve(Request $request, Rfc $change)
+    {
+        $request->merge([
+            'decision' => 'approve',
+        ]);
+
+        return $this->decide($request, $change);
+    }
+
+    /**
+     * POST /api/v1/changes/{change}/reject
+     *
+     * @OA\Post(
+     *   path="/api/v1/changes/{change}/reject",
+     *   tags={"Change Approval"},
+     *   summary="Shortcut untuk menolak Change Request (decision=reject)",
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Parameter(
+     *     name="change",
+     *     in="path",
+     *     required=true,
+     *     description="ID RFC / Change Request yang ingin di-reject",
+     *     @OA\Schema(type="integer", example=101)
+     *   ),
+     *   @OA\RequestBody(
+     *     required=false,
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="stage",
+     *         type="string",
+     *         example="kabid",
+     *         enum={"kasi","kabid","kadis","diskominfo"}
+     *       ),
+     *       @OA\Property(
+     *         property="note",
+     *         type="string",
+     *         example="Ditolak, rencana rollback belum jelas."
+     *       )
+     *     )
+     *   ),
+     *   @OA\Response(response=200, description="Keputusan reject tersimpan"),
+     *   @OA\Response(response=404, description="RFC / Change Request tidak ditemukan")
+     * )
+     */
+    public function reject(Request $request, Rfc $change)
+    {
+        $request->merge([
+            'decision' => 'reject',
+        ]);
+
+        return $this->decide($request, $change);
+    }
 }

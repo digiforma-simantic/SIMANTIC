@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CiRelation extends Model
 {
-    use HasFactory;
+    // tabel: ci_relations (default dari Eloquent, jadi tidak perlu $table)
 
-    // default auto-increment BIGINT
-    protected $fillable = ['source_ci_id','target_ci_id','relation_type'];
+    protected $fillable = [
+        'source_ci_id',
+        'target_ci_id',
+        'relation_type',
+    ];
 
     public function source()
     {

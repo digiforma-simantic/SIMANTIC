@@ -1,0 +1,2332 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SIMANTIC - Change & Configuration API",
+        "description": "API untuk CMDB, Change Management, Maintenance & Patch Management",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost",
+            "description": "Local development server"
+        }
+    ],
+    "paths": {
+        "/api/v1/config-items": {
+            "get": {
+                "tags": [
+                    "CMDB"
+                ],
+                "summary": "Daftar Configuration Item (CI) milik OPD user login",
+                "description": "GET /api/v1/config-items",
+                "operationId": "8cf364f139e86611a2ad870c5f256a00",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filter berdasarkan tipe CI (misal: server, database, network)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "server"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter berdasarkan status CI",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "active"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar Configuration Item berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 101
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Server SPBE 01"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "server"
+                                            },
+                                            "environment": {
+                                                "type": "string",
+                                                "example": "production"
+                                            },
+                                            "criticality": {
+                                                "type": "string",
+                                                "example": "high"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "active"
+                                            },
+                                            "version": {
+                                                "type": "string",
+                                                "example": "v2.1.0"
+                                            },
+                                            "patch_level": {
+                                                "type": "string",
+                                                "example": "KB5030219"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "CMDB"
+                ],
+                "summary": "Menambahkan Configuration Item (CI) baru",
+                "description": "POST /api/v1/config-items",
+                "operationId": "d48b750b808698ec54838ecd32824c87",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "type",
+                                    "environment",
+                                    "criticality",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Server SPBE 01"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "server"
+                                    },
+                                    "environment": {
+                                        "type": "string",
+                                        "enum": [
+                                            "production",
+                                            "staging",
+                                            "development"
+                                        ],
+                                        "example": "production"
+                                    },
+                                    "criticality": {
+                                        "type": "string",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high",
+                                            "critical"
+                                        ],
+                                        "example": "high"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "under_change",
+                                            "retired",
+                                            "maintenance"
+                                        ],
+                                        "example": "active"
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "example": "v2.1.0"
+                                    },
+                                    "patch_level": {
+                                        "type": "string",
+                                        "example": "KB5030219"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Configuration Item berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 101
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Server SPBE 01"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "active"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau user belum memiliki OPD"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/config-items/{id}": {
+            "get": {
+                "tags": [
+                    "CMDB"
+                ],
+                "summary": "Menampilkan detail Configuration Item (CI)",
+                "description": "GET /api/v1/config-items/{config_item}",
+                "operationId": "4689c03f20e171abd053700d4700fa5c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID Configuration Item",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail CI berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 101
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Server SPBE 01"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "example": "server"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "active"
+                                        },
+                                        "criticality": {
+                                            "type": "string",
+                                            "example": "high"
+                                        },
+                                        "risk_level": {
+                                            "type": "integer",
+                                            "example": 12
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "CI tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "CMDB"
+                ],
+                "summary": "Memperbarui data Configuration Item (CI)",
+                "description": "PUT/PATCH /api/v1/config-items/{config_item}",
+                "operationId": "77825a6641cf6a1e8bee49155484f481",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID Configuration Item",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Server SPBE 01 (Updated)"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "under_change"
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "example": "v2.2.0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "CI berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 101
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Server SPBE 01 (Updated)"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "CI tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "CMDB"
+                ],
+                "summary": "Menghapus Configuration Item (soft delete)",
+                "description": "DELETE /api/v1/config-items/{config_item}",
+                "operationId": "1c2e3578b6511a896d460eca80286de7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID Configuration Item",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration item deleted"
+                    },
+                    "404": {
+                        "description": "CI tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/maintenance-jobs": {
+            "get": {
+                "tags": [
+                    "Maintenance Management"
+                ],
+                "summary": "Daftar maintenance job",
+                "description": "GET /api/v1/maintenance-jobs",
+                "operationId": "8931d9af64c2efdc2a43558e3f02c914",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filter tipe maintenance (routine_opd, routine_diskominfo, ad_hoc, emergency)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "routine_opd"
+                        }
+                    },
+                    {
+                        "name": "result",
+                        "in": "query",
+                        "description": "Filter hasil maintenance (success, partial, failed)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "success"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List maintenance job",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 10
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Maintenance Rutin Server SPBE"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "routine_opd"
+                                            },
+                                            "window_start": {
+                                                "type": "string",
+                                                "example": "2025-11-15T21:00:00+07:00"
+                                            },
+                                            "window_end": {
+                                                "type": "string",
+                                                "example": "2025-11-15T23:00:00+07:00"
+                                            },
+                                            "result": {
+                                                "type": "string",
+                                                "example": "success"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Maintenance Management"
+                ],
+                "summary": "Membuat maintenance job baru",
+                "description": "POST /api/v1/maintenance-jobs",
+                "operationId": "0e8f8a9008e2cf90b18186fe52e5c086",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "type",
+                                    "window_start",
+                                    "window_end"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Maintenance Rutin Server SPBE"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "routine_opd",
+                                            "routine_diskominfo",
+                                            "ad_hoc",
+                                            "emergency"
+                                        ],
+                                        "example": "routine_opd"
+                                    },
+                                    "window_start": {
+                                        "type": "string",
+                                        "example": "2025-11-15T21:00:00+07:00"
+                                    },
+                                    "window_end": {
+                                        "type": "string",
+                                        "example": "2025-11-15T23:00:00+07:00"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Pengecekan suhu server dan pembersihan debu"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Maintenance job berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Maintenance Rutin Server SPBE"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/maintenance-jobs/{id}": {
+            "get": {
+                "tags": [
+                    "Maintenance Management"
+                ],
+                "summary": "Detail satu maintenance job",
+                "description": "GET /api/v1/maintenance-jobs/{maintenance_job}",
+                "operationId": "6eeddf552c3b67079762abce36fbb90a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID maintenance job",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail maintenance job",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Maintenance Rutin Server SPBE"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Maintenance job tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/maintenance-jobs/{id}/result": {
+            "post": {
+                "tags": [
+                    "Maintenance Management"
+                ],
+                "summary": "Mencatat hasil maintenance job",
+                "description": "POST /api/v1/maintenance-jobs/{job}/result",
+                "operationId": "a38ecc67a8b7d6fe10f05421b636d6b0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID maintenance job",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "result"
+                                ],
+                                "properties": {
+                                    "result": {
+                                        "type": "string",
+                                        "enum": [
+                                            "success",
+                                            "partial",
+                                            "failed"
+                                        ],
+                                        "example": "success"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Semua server normal, kecuali CI-302 perlu restart."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Hasil maintenance tersimpan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    },
+                    "404": {
+                        "description": "Maintenance job tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/patch-catalogs": {
+            "get": {
+                "tags": [
+                    "Patch Catalog"
+                ],
+                "summary": "Daftar patch catalog",
+                "description": "GET /api/v1/patch-catalogs",
+                "operationId": "67a7fb8b523779edee104d4ee916c484",
+                "responses": {
+                    "200": {
+                        "description": "List patch catalog",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "vendor": {
+                                                "type": "string",
+                                                "example": "Microsoft"
+                                            },
+                                            "patch_code": {
+                                                "type": "string",
+                                                "example": "KB5030219"
+                                            },
+                                            "severity": {
+                                                "type": "string",
+                                                "example": "critical"
+                                            },
+                                            "notes": {
+                                                "type": "string",
+                                                "example": "Security cumulative update November 2025"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Patch Catalog"
+                ],
+                "summary": "Menambahkan patch catalog baru",
+                "description": "POST /api/v1/patch-catalogs",
+                "operationId": "30bd436f893d22e1a775621f39d631e3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "vendor",
+                                    "patch_code",
+                                    "severity"
+                                ],
+                                "properties": {
+                                    "vendor": {
+                                        "type": "string",
+                                        "example": "Microsoft"
+                                    },
+                                    "patch_code": {
+                                        "type": "string",
+                                        "example": "KB5030219"
+                                    },
+                                    "severity": {
+                                        "type": "string",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high",
+                                            "critical"
+                                        ],
+                                        "example": "critical"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Security cumulative update November 2025"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Patch catalog berhasil ditambahkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "vendor": {
+                                            "type": "string",
+                                            "example": "Microsoft"
+                                        },
+                                        "patch_code": {
+                                            "type": "string",
+                                            "example": "KB5030219"
+                                        },
+                                        "severity": {
+                                            "type": "string",
+                                            "example": "critical"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/patch-catalogs/{id}": {
+            "get": {
+                "tags": [
+                    "Patch Catalog"
+                ],
+                "summary": "Detail satu patch catalog",
+                "description": "GET /api/v1/patch-catalogs/{patch_catalog}",
+                "operationId": "8ee43e357efb2b0edbf433d407f8d712",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID patch catalog",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail patch catalog",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "vendor": {
+                                            "type": "string",
+                                            "example": "Microsoft"
+                                        },
+                                        "patch_code": {
+                                            "type": "string",
+                                            "example": "KB5030219"
+                                        },
+                                        "severity": {
+                                            "type": "string",
+                                            "example": "critical"
+                                        },
+                                        "notes": {
+                                            "type": "string",
+                                            "example": "Security cumulative update November 2025"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Patch catalog tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/patch-jobs": {
+            "get": {
+                "tags": [
+                    "Patch Deployment"
+                ],
+                "summary": "Daftar patch job",
+                "description": "GET /api/v1/patch-jobs",
+                "operationId": "7b4a4b65a9d205ace41908b717088f4c",
+                "responses": {
+                    "200": {
+                        "description": "List patch job",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 5
+                                            },
+                                            "patch_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "scheduled"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "planned"
+                                            },
+                                            "window_start": {
+                                                "type": "string",
+                                                "example": "2025-11-18T21:00:00+07:00"
+                                            },
+                                            "window_end": {
+                                                "type": "string",
+                                                "example": "2025-11-18T23:00:00+07:00"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Patch Deployment"
+                ],
+                "summary": "Menjadwalkan patch job baru",
+                "description": "POST /api/v1/patch-jobs",
+                "operationId": "5ccc7e8ac4fcb63caa08d854653fe2e5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "patch_id",
+                                    "ci_ids"
+                                ],
+                                "properties": {
+                                    "patch_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "ci_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 301
+                                        }
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "scheduled",
+                                            "ad_hoc",
+                                            "emergency"
+                                        ],
+                                        "example": "scheduled"
+                                    },
+                                    "window_start": {
+                                        "type": "string",
+                                        "example": "2025-11-18T21:00:00+07:00"
+                                    },
+                                    "window_end": {
+                                        "type": "string",
+                                        "example": "2025-11-18T23:00:00+07:00"
+                                    },
+                                    "rollback_plan": {
+                                        "type": "string",
+                                        "example": "Rollback ke snapshot sebelum patch"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Prioritaskan CI kritis terlebih dahulu"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Patch job berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "patch_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "planned"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/patch-jobs/{id}": {
+            "get": {
+                "tags": [
+                    "Patch Deployment"
+                ],
+                "summary": "Detail satu patch job",
+                "description": "GET /api/v1/patch-jobs/{patch_job}",
+                "operationId": "898b712b70a960d6be8018df623051f2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID patch job",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail patch job",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "patch_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "planned"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Patch job tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/patch-jobs/{id}/deploy": {
+            "post": {
+                "tags": [
+                    "Patch Deployment"
+                ],
+                "summary": "Mencatat hasil deployment patch job",
+                "description": "POST /api/v1/patch-jobs/{job}/deploy",
+                "operationId": "3d5ea4f051872beb73711522deeba32a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID patch job",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "planned",
+                                            "deployed",
+                                            "failed",
+                                            "rolled_back"
+                                        ],
+                                        "example": "deployed"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Berhasil deploy ke semua CI, tidak perlu rollback."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Deployment status tersimpan"
+                    },
+                    "404": {
+                        "description": "Patch job tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/patch-jobs/{id}/rollback": {
+            "post": {
+                "tags": [
+                    "Patch Deployment"
+                ],
+                "summary": "Mencatat rollback patch job",
+                "description": "POST /api/v1/patch-jobs/{job}/rollback",
+                "operationId": "91d3f51f7fc445600fe615d1e54a7e34",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID patch job",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Rollback karena aplikasi tidak bisa login setelah patch."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Rollback tercatat"
+                    },
+                    "404": {
+                        "description": "Patch job tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/reports/change-summary": {
+            "get": {
+                "tags": [
+                    "Reports & Audit"
+                ],
+                "summary": "Laporan ringkasan Change Management (RFC Summary)",
+                "description": "Menghasilkan ringkasan statistik dari seluruh RFC (Request for Change), mencakup status, kategori, dan jumlah total RFC per OPD.",
+                "operationId": "883067fc0bc8d7b23966fa71952e9689",
+                "responses": {
+                    "200": {
+                        "description": "Ringkasan statistik Change Management",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "overview": {
+                                            "properties": {
+                                                "total_rfc": {
+                                                    "type": "integer",
+                                                    "example": 124
+                                                },
+                                                "approved": {
+                                                    "type": "integer",
+                                                    "example": 87
+                                                },
+                                                "rejected": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "in_progress": {
+                                                    "type": "integer",
+                                                    "example": 25
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "by_category": {
+                                            "properties": {
+                                                "normal": {
+                                                    "type": "integer",
+                                                    "example": 72
+                                                },
+                                                "standard": {
+                                                    "type": "integer",
+                                                    "example": 40
+                                                },
+                                                "emergency": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "chart": {
+                                            "properties": {
+                                                "labels": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "approved"
+                                                    }
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer",
+                                                        "example": 30
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/reports/patch-compliance": {
+            "get": {
+                "tags": [
+                    "Reports & Audit"
+                ],
+                "summary": "Laporan kepatuhan Patch Deployment (Patch Compliance)",
+                "description": "Menghasilkan laporan kepatuhan patching berdasarkan status Patch Deployment di seluruh Configuration Item (CI).",
+                "operationId": "b82ca56b1533ed53129d4ce2635cb6d2",
+                "responses": {
+                    "200": {
+                        "description": "Ringkasan kepatuhan patch deployment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "summary": {
+                                            "properties": {
+                                                "total_patch_jobs": {
+                                                    "type": "integer",
+                                                    "example": 56
+                                                },
+                                                "success": {
+                                                    "type": "integer",
+                                                    "example": 42
+                                                },
+                                                "failed": {
+                                                    "type": "integer",
+                                                    "example": 6
+                                                },
+                                                "rolled_back": {
+                                                    "type": "integer",
+                                                    "example": 8
+                                                },
+                                                "compliance_rate": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 87.5
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "by_status": {
+                                            "properties": {
+                                                "planned": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "deployed": {
+                                                    "type": "integer",
+                                                    "example": 40
+                                                },
+                                                "failed": {
+                                                    "type": "integer",
+                                                    "example": 6
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "chart": {
+                                            "properties": {
+                                                "labels": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Deployed"
+                                                    }
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer",
+                                                        "example": 40
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/rfc": {
+            "get": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Daftar RFC milik OPD user login",
+                "description": "GET /api/v1/rfc\nMenampilkan daftar RFC milik OPD user login (dengan pagination).",
+                "operationId": "7478032a40e807e32f132a4f6077fe0e",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter status RFC (optional)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "submitted"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Jumlah data per halaman, default 15",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil daftar RFC",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "example": "Upgrade Database SIM Pegawai"
+                                                    },
+                                                    "category": {
+                                                        "type": "string",
+                                                        "example": "normal"
+                                                    },
+                                                    "urgency": {
+                                                        "type": "string",
+                                                        "example": "high"
+                                                    },
+                                                    "priority": {
+                                                        "type": "string",
+                                                        "example": "P2"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "submitted"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 73
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Buat RFC baru",
+                "description": "POST /api/v1/rfc\nMembuat RFC baru dan menghubungkan dengan CI terkait + auto assessment.",
+                "operationId": "a499ce14e083680fe755781dce428af1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "category",
+                                    "urgency",
+                                    "priority",
+                                    "ci_ids"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Upgrade Database SIM Pegawai"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Perlu upgrade versi 13 untuk compliance."
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "enum": [
+                                            "normal",
+                                            "standard",
+                                            "emergency"
+                                        ],
+                                        "example": "normal"
+                                    },
+                                    "urgency": {
+                                        "type": "string",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high",
+                                            "critical"
+                                        ],
+                                        "example": "high"
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "enum": [
+                                            "P4",
+                                            "P3",
+                                            "P2",
+                                            "P1"
+                                        ],
+                                        "example": "P2"
+                                    },
+                                    "ci_ids": {
+                                        "description": "Daftar ID Configuration Item yang terdampak",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 101
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "RFC berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string",
+                                            "example": "normal"
+                                        },
+                                        "urgency": {
+                                            "type": "string",
+                                            "example": "high"
+                                        },
+                                        "priority": {
+                                            "type": "string",
+                                            "example": "P2"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "submitted"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau user belum memiliki OPD",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User has no OPD assigned"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/rfc/{id}": {
+            "get": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Detail satu RFC (lengkap)",
+                "description": "GET /api/v1/rfc/{rfc}\nMenampilkan detail RFC lengkap (dengan guard OPD).",
+                "operationId": "7b1bd1f0342b681d5103cb13eec1c932",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID RFC",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail RFC",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Upgrade Database SIM Pegawai"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string",
+                                            "example": "normal"
+                                        },
+                                        "urgency": {
+                                            "type": "string",
+                                            "example": "high"
+                                        },
+                                        "priority": {
+                                            "type": "string",
+                                            "example": "P2"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "approved"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Tidak boleh melihat RFC OPD lain"
+                    },
+                    "404": {
+                        "description": "RFC tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/dev/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login developer (dev only)",
+                "description": "Login menggunakan email dan password untuk mendapatkan Bearer token (Sanctum). \n *         Token ini digunakan untuk mengakses endpoint API lain yang membutuhkan autentikasi.",
+                "operationId": "11a994ec5303111de0ef786212fb9ce7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "Email akun pengguna",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin.change@example.com"
+                                    },
+                                    "password": {
+                                        "description": "Kata sandi akun pengguna",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login sukses. Token Bearer dan data user dikembalikan.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "description": "Token autentikasi Bearer untuk digunakan pada header Authorization",
+                                            "type": "string",
+                                            "example": "1|Vu0OZSgnHGwGGVaNxsHd7ojSYsipuxrIMlXqAiSOdd4034d1"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Admin Change"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "admin.change@example.com"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "admin_change"
+                                                },
+                                                "opd_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Kredensial salah (email atau password tidak valid)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi input gagal (email atau password kosong)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The email field is required."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/changes/{change}/decisions": {
+            "post": {
+                "tags": [
+                    "Change Approval"
+                ],
+                "summary": "Memberikan keputusan approval untuk Change Request",
+                "description": "POST /api/v1/changes/{change}/decisions",
+                "operationId": "c3043bb6766f8abf348f4465bff3a537",
+                "parameters": [
+                    {
+                        "name": "change",
+                        "in": "path",
+                        "description": "ID RFC / Change Request yang ingin di-approve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "stage",
+                                    "decision"
+                                ],
+                                "properties": {
+                                    "stage": {
+                                        "description": "Level approval yang sedang memutuskan",
+                                        "type": "string",
+                                        "enum": [
+                                            "kasi",
+                                            "kabid",
+                                            "kadis",
+                                            "diskominfo"
+                                        ],
+                                        "example": "kabid"
+                                    },
+                                    "decision": {
+                                        "description": "Keputusan approval",
+                                        "type": "string",
+                                        "enum": [
+                                            "approve",
+                                            "reject",
+                                            "need_info"
+                                        ],
+                                        "example": "approve"
+                                    },
+                                    "note": {
+                                        "description": "Catatan tambahan (opsional)",
+                                        "type": "string",
+                                        "example": "Setuju, pastikan backup full sebelum patch."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Keputusan approval berhasil direkam",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Decision recorded"
+                                        },
+                                        "approval": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "rfc_id": {
+                                                    "type": "integer",
+                                                    "example": 101
+                                                },
+                                                "level": {
+                                                    "type": "string",
+                                                    "example": "kabid"
+                                                },
+                                                "decision": {
+                                                    "type": "string",
+                                                    "example": "approve"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "example": "Setuju, risiko sudah diterima."
+                                                },
+                                                "decided_at": {
+                                                    "type": "string",
+                                                    "example": "2025-11-15 10:30:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    },
+                    "404": {
+                        "description": "RFC / Change Request tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/changes/{change}/approve": {
+            "post": {
+                "tags": [
+                    "Change Approval"
+                ],
+                "summary": "Shortcut untuk menyetujui Change Request (decision=approve)",
+                "description": "POST /api/v1/changes/{change}/approve",
+                "operationId": "f720e1a4082b8cb1113a125df0355c0c",
+                "parameters": [
+                    {
+                        "name": "change",
+                        "in": "path",
+                        "description": "ID RFC / Change Request yang ingin di-approve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "stage": {
+                                        "type": "string",
+                                        "enum": [
+                                            "kasi",
+                                            "kabid",
+                                            "kadis",
+                                            "diskominfo"
+                                        ],
+                                        "example": "kadis"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Disetujui, window maintenance sesuai."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Keputusan approve tersimpan"
+                    },
+                    "404": {
+                        "description": "RFC / Change Request tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/changes/{change}/reject": {
+            "post": {
+                "tags": [
+                    "Change Approval"
+                ],
+                "summary": "Shortcut untuk menolak Change Request (decision=reject)",
+                "description": "POST /api/v1/changes/{change}/reject",
+                "operationId": "d58271673f5c5649427d537af7520d22",
+                "parameters": [
+                    {
+                        "name": "change",
+                        "in": "path",
+                        "description": "ID RFC / Change Request yang ingin di-reject",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "stage": {
+                                        "type": "string",
+                                        "enum": [
+                                            "kasi",
+                                            "kabid",
+                                            "kadis",
+                                            "diskominfo"
+                                        ],
+                                        "example": "kabid"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Ditolak, rencana rollback belum jelas."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Keputusan reject tersimpan"
+                    },
+                    "404": {
+                        "description": "RFC / Change Request tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/changes": {
+            "get": {
+                "tags": [
+                    "Change Management"
+                ],
+                "summary": "Daftar Change Request milik OPD user login",
+                "operationId": "35d87db82c2f376f4600bd4cb684222d",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter status change (misal: submitted, planning, approved)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "submitted"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar Change Request berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 101
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Upgrade Database SIM Pegawai"
+                                            },
+                                            "category": {
+                                                "type": "string",
+                                                "example": "normal"
+                                            },
+                                            "urgency": {
+                                                "type": "string",
+                                                "example": "high"
+                                            },
+                                            "priority": {
+                                                "type": "string",
+                                                "example": "P2"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "planning"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Change Management"
+                ],
+                "summary": "Membuat Change Request baru berdasarkan RFC dan CI terpilih",
+                "operationId": "32f52b16ee62bc010e3dc2c2a216ade7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "category",
+                                    "urgency",
+                                    "priority",
+                                    "ci_ids"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Upgrade Database SIM Pegawai"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Perlu upgrade PostgreSQL 14 ke 15"
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "enum": [
+                                            "normal",
+                                            "standard",
+                                            "emergency"
+                                        ],
+                                        "example": "normal"
+                                    },
+                                    "urgency": {
+                                        "type": "string",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high",
+                                            "critical"
+                                        ],
+                                        "example": "high"
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "enum": [
+                                            "P4",
+                                            "P3",
+                                            "P2",
+                                            "P1"
+                                        ],
+                                        "example": "P2"
+                                    },
+                                    "ci_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 301
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Change Request berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 101
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Upgrade Database SIM Pegawai"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "submitted"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau user belum memiliki OPD"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/changes/{id}": {
+            "get": {
+                "tags": [
+                    "Change Management"
+                ],
+                "summary": "Menampilkan detail lengkap Change Request (RFC + Change Plan + Review)",
+                "operationId": "ae33abe9f8a6526b239fda63dc3df93f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID Change Request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail Change berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 101
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Upgrade Database SIM Pegawai"
+                                        },
+                                        "category": {
+                                            "type": "string",
+                                            "example": "normal"
+                                        },
+                                        "urgency": {
+                                            "type": "string",
+                                            "example": "high"
+                                        },
+                                        "priority": {
+                                            "type": "string",
+                                            "example": "P2"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "approved"
+                                        },
+                                        "requester_opd": {
+                                            "type": "string",
+                                            "example": "Dinas Kominfo"
+                                        },
+                                        "configuration_items": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Server SPBE 01"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "active"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Tidak boleh melihat Change milik OPD lain"
+                    },
+                    "404": {
+                        "description": "Change Request tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "CMDB",
+            "description": "Manajemen Configuration Item (CI) dan relasinya dalam CMDB"
+        },
+        {
+            "name": "Maintenance Management",
+            "description": "Penjadwalan dan hasil pekerjaan maintenance (routine, ad-hoc, emergency)"
+        },
+        {
+            "name": "Patch Catalog",
+            "description": "Manajemen katalog patch dari vendor (kode patch, severity, catatan)"
+        },
+        {
+            "name": "Patch Deployment",
+            "description": "Penjadwalan dan pelaksanaan patch deployment ke Configuration Item (CI)"
+        },
+        {
+            "name": "Reports & Audit",
+            "description": "Laporan ringkasan Change Management dan Patch Compliance"
+        },
+        {
+            "name": "RFC",
+            "description": "Manajemen Request for Change (normal, standard, emergency)"
+        },
+        {
+            "name": "Change Approval",
+            "description": "Proses persetujuan (approval) untuk Request for Change (RFC) / Change Request"
+        },
+        {
+            "name": "Change Management",
+            "description": "Pengelolaan Request for Change (RFC) menjadi Change Request penuh, termasuk detail dan penilaian risiko"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        }
+    ]
+}

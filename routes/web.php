@@ -3,5 +3,5 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return 'Halo Sandrak! Route sudah kepakai 🎉';
+    return redirect('/api/documentation'); // atau teks biasa
 });
