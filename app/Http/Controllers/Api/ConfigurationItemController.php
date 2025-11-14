@@ -26,32 +26,32 @@ class ConfigurationItemController extends Controller
      *     name="type",
      *     in="query",
      *     required=false,
-     *     description="Filter berdasarkan tipe CI (misal: server, database, network)",
-     *     @OA\Schema(type="string", example="server")
+     *     description="Filter tipe CI (server, laptop, aplikasi, dll)",
+     *     @OA\Schema(type="string", example="hardware")
      *   ),
      *   @OA\Parameter(
      *     name="status",
      *     in="query",
      *     required=false,
-     *     description="Filter berdasarkan status CI",
+     *     description="Filter status CI (active, under_change, retired, maintenance)",
      *     @OA\Schema(type="string", example="active")
      *   ),
      *   @OA\Response(
      *     response=200,
-     *     description="Daftar Configuration Item berhasil diambil",
-     *     @OA\JsonContent(
-     *       type="array",
-     *       @OA\Items(
-     *         @OA\Property(property="id", type="integer", example=101),
-     *         @OA\Property(property="name", type="string", example="Server SPBE 01"),
-     *         @OA\Property(property="type", type="string", example="server"),
-     *         @OA\Property(property="environment", type="string", example="production"),
-     *         @OA\Property(property="criticality", type="string", example="high"),
-     *         @OA\Property(property="status", type="string", example="active"),
-     *         @OA\Property(property="version", type="string", example="v2.1.0"),
-     *         @OA\Property(property="patch_level", type="string", example="KB5030219")
-     *       )
-     *     )
+     *     description="List Configuration Item",
+     *     @OA\JsonContent(type="array", @OA\Items(
+     *       @OA\Property(property="id", type="integer", example=245),
+     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
+     *       @OA\Property(property="name", type="string", example="Laptop M-25-007"),
+     *       @OA\Property(property="type", type="string", example="hardware"),
+     *       @OA\Property(property="environment", type="string", example="production"),
+     *       @OA\Property(property="criticality", type="string", example="low"),
+     *       @OA\Property(property="status", type="string", example="active"),
+     *       @OA\Property(property="version", type="string", example="Firmware BIOS v1.14.2"),
+     *       @OA\Property(property="os_name", type="string", example="Windows 11 Pro 64-bit"),
+     *       @OA\Property(property="ip_address", type="string", example="10.10.5.123"),
+     *       @OA\Property(property="relation_note", type="string", example="Laptop M-25-007 terhubung ke Server AD dan Printer Lantai 5")
+     *     ))
      *   )
      * )
      */
@@ -82,6 +82,9 @@ class ConfigurationItemController extends Controller
     /**
      * POST /api/v1/config-items
      *
+     * Ini yang akan dipanggil oleh aplikasi SIMANTIC untuk menyimpan
+     * konfigurasi aset (bagian bawah form: CI Code, Versi, OS, IP, Relasi).
+     *
      * @OA\Post(
      *   path="/api/v1/config-items",
      *   tags={"CMDB"},
@@ -90,38 +93,62 @@ class ConfigurationItemController extends Controller
      *   @OA\RequestBody(
      *     required=true,
      *     @OA\JsonContent(
-     *       required={"name","type","environment","criticality","status"},
-     *       @OA\Property(property="name", type="string", example="Server SPBE 01"),
-     *       @OA\Property(property="type", type="string", example="server"),
-     *       @OA\Property(property="environment", type="string", example="production", enum={"production","staging","development"}),
-     *       @OA\Property(property="criticality", type="string", example="high", enum={"low","medium","high","critical"}),
-     *       @OA\Property(property="status", type="string", example="active", enum={"active","under_change","retired","maintenance"}),
-     *       @OA\Property(property="version", type="string", example="v2.1.0"),
-     *       @OA\Property(property="patch_level", type="string", example="KB5030219")
+     *       required={"name","ci_code","type","environment","criticality","status"},
+     *       @OA\Property(property="name", type="string", example="Laptop M-25-007"),
+     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
+     *       @OA\Property(property="type", type="string", example="hardware"),
+     *       @OA\Property(
+     *         property="environment",
+     *         type="string",
+     *         example="production",
+     *         enum={"production","staging","development"}
+     *       ),
+     *       @OA\Property(
+     *         property="criticality",
+     *         type="string",
+     *         example="low",
+     *         enum={"low","medium","high","critical"}
+     *       ),
+     *       @OA\Property(
+     *         property="status",
+     *         type="string",
+     *         example="active",
+     *         enum={"active","under_change","retired","maintenance"}
+     *       ),
+     *       @OA\Property(property="version", type="string", example="Firmware BIOS v1.14.2"),
+     *       @OA\Property(property="os_name", type="string", example="Windows 11 Pro 64-bit"),
+     *       @OA\Property(property="ip_address", type="string", example="10.10.5.123"),
+     *       @OA\Property(
+     *         property="relation_note",
+     *         type="string",
+     *         example="Laptop M-25-007 terhubung ke Server Active Directory dan Printer Jaringan Lantai 5"
+     *       )
      *     )
      *   ),
      *   @OA\Response(
      *     response=201,
-     *     description="Configuration Item berhasil dibuat",
+     *     description="CI berhasil dibuat",
      *     @OA\JsonContent(
-     *       @OA\Property(property="id", type="integer", example=101),
-     *       @OA\Property(property="name", type="string", example="Server SPBE 01"),
-     *       @OA\Property(property="status", type="string", example="active")
+     *       @OA\Property(property="id", type="integer", example=245),
+     *       @OA\Property(property="ci_code", type="string", example="CI-000245")
      *     )
      *   ),
-     *   @OA\Response(response=422, description="Validasi gagal atau user belum memiliki OPD")
+     *   @OA\Response(response=422, description="Validasi gagal")
      * )
      */
     public function store(Request $request)
     {
         $data = $request->validate([
             'name'        => 'required|string|max:255',
+            'ci_code'     => 'required|string|max:50|unique:configuration_items,ci_code',
             'type'        => 'required|string|max:100',
             'environment' => 'required|in:production,staging,development',
             'criticality' => 'required|in:low,medium,high,critical',
             'status'      => 'required|in:active,under_change,retired,maintenance',
-            'version'     => 'nullable|string|max:50',
-            'patch_level' => 'nullable|string|max:50',
+            'version'     => 'nullable|string|max:100',
+            'os_name'     => 'nullable|string|max:100',
+            'ip_address'  => 'nullable|ip',
+            'relation_note' => 'nullable|string',
         ]);
 
         if (!$request->user()->opd_id) {
@@ -129,7 +156,8 @@ class ConfigurationItemController extends Controller
         }
 
         $data['owner_opd_id'] = $request->user()->opd_id;
-        $data['risk_level']   = 0;
+        // default awal, nanti bisa di-update dari risk register
+        $data['risk_level']   = $data['criticality'] ?? 'low';
 
         $ci = ConfigurationItem::create($data);
 
@@ -149,18 +177,15 @@ class ConfigurationItemController extends Controller
      *     in="path",
      *     required=true,
      *     description="ID Configuration Item",
-     *     @OA\Schema(type="integer", example=101)
+     *     @OA\Schema(type="integer", example=245)
      *   ),
      *   @OA\Response(
      *     response=200,
-     *     description="Detail CI berhasil diambil",
+     *     description="Detail CI",
      *     @OA\JsonContent(
-     *       @OA\Property(property="id", type="integer", example=101),
-     *       @OA\Property(property="name", type="string", example="Server SPBE 01"),
-     *       @OA\Property(property="type", type="string", example="server"),
-     *       @OA\Property(property="status", type="string", example="active"),
-     *       @OA\Property(property="criticality", type="string", example="high"),
-     *       @OA\Property(property="risk_level", type="integer", example=12)
+     *       @OA\Property(property="id", type="integer", example=245),
+     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
+     *       @OA\Property(property="name", type="string", example="Laptop M-25-007")
      *     )
      *   ),
      *   @OA\Response(response=404, description="CI tidak ditemukan")
@@ -180,7 +205,7 @@ class ConfigurationItemController extends Controller
     }
 
     /**
-     * PUT/PATCH /api/v1/config-items/{config_item}
+     * PUT /api/v1/config-items/{config_item}
      *
      * @OA\Put(
      *   path="/api/v1/config-items/{id}",
@@ -192,37 +217,40 @@ class ConfigurationItemController extends Controller
      *     in="path",
      *     required=true,
      *     description="ID Configuration Item",
-     *     @OA\Schema(type="integer", example=101)
+     *     @OA\Schema(type="integer", example=245)
      *   ),
      *   @OA\RequestBody(
      *     required=true,
      *     @OA\JsonContent(
-     *       @OA\Property(property="name", type="string", example="Server SPBE 01 (Updated)"),
-     *       @OA\Property(property="status", type="string", example="under_change"),
-     *       @OA\Property(property="version", type="string", example="v2.2.0")
+     *       @OA\Property(property="name", type="string", example="Laptop M-25-007"),
+     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
+     *       @OA\Property(property="type", type="string", example="hardware"),
+     *       @OA\Property(property="environment", type="string", example="production"),
+     *       @OA\Property(property="criticality", type="string", example="low"),
+     *       @OA\Property(property="status", type="string", example="active"),
+     *       @OA\Property(property="version", type="string", example="Firmware BIOS v1.14.2"),
+     *       @OA\Property(property="os_name", type="string", example="Windows 11 Pro 64-bit"),
+     *       @OA\Property(property="ip_address", type="string", example="10.10.5.123"),
+     *       @OA\Property(property="relation_note", type="string", example="Relasi antar aset diperbarui...")
      *     )
      *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="CI berhasil diperbarui",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="id", type="integer", example=101),
-     *       @OA\Property(property="name", type="string", example="Server SPBE 01 (Updated)")
-     *     )
-     *   ),
-     *   @OA\Response(response=404, description="CI tidak ditemukan")
+     *   @OA\Response(response=200, description="CI berhasil diperbarui"),
+     *   @OA\Response(response=422, description="Validasi gagal")
      * )
      */
     public function update(Request $request, ConfigurationItem $config_item)
     {
         $data = $request->validate([
             'name'        => 'sometimes|required|string|max:255',
+            'ci_code'     => 'sometimes|required|string|max:50|unique:configuration_items,ci_code,' . $config_item->id,
             'type'        => 'sometimes|required|string|max:100',
             'environment' => 'sometimes|required|in:production,staging,development',
             'criticality' => 'sometimes|required|in:low,medium,high,critical',
             'status'      => 'sometimes|required|in:active,under_change,retired,maintenance',
-            'version'     => 'nullable|string|max:50',
-            'patch_level' => 'nullable|string|max:50',
+            'version'     => 'nullable|string|max:100',
+            'os_name'     => 'nullable|string|max:100',
+            'ip_address'  => 'nullable|ip',
+            'relation_note' => 'nullable|string',
         ]);
 
         $config_item->update($data);
@@ -243,9 +271,9 @@ class ConfigurationItemController extends Controller
      *     in="path",
      *     required=true,
      *     description="ID Configuration Item",
-     *     @OA\Schema(type="integer", example=101)
+     *     @OA\Schema(type="integer", example=245)
      *   ),
-     *   @OA\Response(response=200, description="Configuration item deleted"),
+     *   @OA\Response(response=200, description="CI berhasil dihapus"),
      *   @OA\Response(response=404, description="CI tidak ditemukan")
      * )
      */

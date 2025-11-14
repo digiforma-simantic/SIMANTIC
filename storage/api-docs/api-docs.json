@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost",
+            "url": "http://localhost:8000",
             "description": "Local development server"
         }
     ],
@@ -24,17 +24,17 @@
                     {
                         "name": "type",
                         "in": "query",
-                        "description": "Filter berdasarkan tipe CI (misal: server, database, network)",
+                        "description": "Filter tipe CI (server, laptop, aplikasi, dll)",
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "example": "server"
+                            "example": "hardware"
                         }
                     },
                     {
                         "name": "status",
                         "in": "query",
-                        "description": "Filter berdasarkan status CI",
+                        "description": "Filter status CI (active, under_change, retired, maintenance)",
                         "required": false,
                         "schema": {
                             "type": "string",
@@ -44,7 +44,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Daftar Configuration Item berhasil diambil",
+                        "description": "List Configuration Item",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -53,15 +53,19 @@
                                         "properties": {
                                             "id": {
                                                 "type": "integer",
-                                                "example": 101
+                                                "example": 245
+                                            },
+                                            "ci_code": {
+                                                "type": "string",
+                                                "example": "CI-000245"
                                             },
                                             "name": {
                                                 "type": "string",
-                                                "example": "Server SPBE 01"
+                                                "example": "Laptop M-25-007"
                                             },
                                             "type": {
                                                 "type": "string",
-                                                "example": "server"
+                                                "example": "hardware"
                                             },
                                             "environment": {
                                                 "type": "string",
@@ -69,7 +73,7 @@
                                             },
                                             "criticality": {
                                                 "type": "string",
-                                                "example": "high"
+                                                "example": "low"
                                             },
                                             "status": {
                                                 "type": "string",
@@ -77,11 +81,19 @@
                                             },
                                             "version": {
                                                 "type": "string",
-                                                "example": "v2.1.0"
+                                                "example": "Firmware BIOS v1.14.2"
                                             },
-                                            "patch_level": {
+                                            "os_name": {
                                                 "type": "string",
-                                                "example": "KB5030219"
+                                                "example": "Windows 11 Pro 64-bit"
+                                            },
+                                            "ip_address": {
+                                                "type": "string",
+                                                "example": "10.10.5.123"
+                                            },
+                                            "relation_note": {
+                                                "type": "string",
+                                                "example": "Laptop M-25-007 terhubung ke Server AD dan Printer Lantai 5"
                                             }
                                         },
                                         "type": "object"
@@ -102,7 +114,7 @@
                     "CMDB"
                 ],
                 "summary": "Menambahkan Configuration Item (CI) baru",
-                "description": "POST /api/v1/config-items",
+                "description": "POST /api/v1/config-items\n\nIni yang akan dipanggil oleh aplikasi SIMANTIC untuk menyimpan\nkonfigurasi aset (bagian bawah form: CI Code, Versi, OS, IP, Relasi).",
                 "operationId": "d48b750b808698ec54838ecd32824c87",
                 "requestBody": {
                     "required": true,
@@ -111,6 +123,7 @@
                             "schema": {
                                 "required": [
                                     "name",
+                                    "ci_code",
                                     "type",
                                     "environment",
                                     "criticality",
@@ -119,11 +132,15 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "Server SPBE 01"
+                                        "example": "Laptop M-25-007"
+                                    },
+                                    "ci_code": {
+                                        "type": "string",
+                                        "example": "CI-000245"
                                     },
                                     "type": {
                                         "type": "string",
-                                        "example": "server"
+                                        "example": "hardware"
                                     },
                                     "environment": {
                                         "type": "string",
@@ -142,7 +159,7 @@
                                             "high",
                                             "critical"
                                         ],
-                                        "example": "high"
+                                        "example": "low"
                                     },
                                     "status": {
                                         "type": "string",
@@ -156,11 +173,19 @@
                                     },
                                     "version": {
                                         "type": "string",
-                                        "example": "v2.1.0"
+                                        "example": "Firmware BIOS v1.14.2"
                                     },
-                                    "patch_level": {
+                                    "os_name": {
                                         "type": "string",
-                                        "example": "KB5030219"
+                                        "example": "Windows 11 Pro 64-bit"
+                                    },
+                                    "ip_address": {
+                                        "type": "string",
+                                        "example": "10.10.5.123"
+                                    },
+                                    "relation_note": {
+                                        "type": "string",
+                                        "example": "Laptop M-25-007 terhubung ke Server Active Directory dan Printer Jaringan Lantai 5"
                                     }
                                 },
                                 "type": "object"
@@ -170,22 +195,18 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Configuration Item berhasil dibuat",
+                        "description": "CI berhasil dibuat",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "id": {
                                             "type": "integer",
-                                            "example": 101
+                                            "example": 245
                                         },
-                                        "name": {
+                                        "ci_code": {
                                             "type": "string",
-                                            "example": "Server SPBE 01"
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "example": "active"
+                                            "example": "CI-000245"
                                         }
                                     },
                                     "type": "object"
@@ -194,7 +215,7 @@
                         }
                     },
                     "422": {
-                        "description": "Validasi gagal atau user belum memiliki OPD"
+                        "description": "Validasi gagal"
                     }
                 },
                 "security": [
@@ -220,40 +241,28 @@
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "example": 101
+                            "example": 245
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detail CI berhasil diambil",
+                        "description": "Detail CI",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "id": {
                                             "type": "integer",
-                                            "example": 101
+                                            "example": 245
+                                        },
+                                        "ci_code": {
+                                            "type": "string",
+                                            "example": "CI-000245"
                                         },
                                         "name": {
                                             "type": "string",
-                                            "example": "Server SPBE 01"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "example": "server"
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "example": "active"
-                                        },
-                                        "criticality": {
-                                            "type": "string",
-                                            "example": "high"
-                                        },
-                                        "risk_level": {
-                                            "type": "integer",
-                                            "example": 12
+                                            "example": "Laptop M-25-007"
                                         }
                                     },
                                     "type": "object"
@@ -276,7 +285,7 @@
                     "CMDB"
                 ],
                 "summary": "Memperbarui data Configuration Item (CI)",
-                "description": "PUT/PATCH /api/v1/config-items/{config_item}",
+                "description": "PUT /api/v1/config-items/{config_item}",
                 "operationId": "77825a6641cf6a1e8bee49155484f481",
                 "parameters": [
                     {
@@ -286,7 +295,7 @@
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "example": 101
+                            "example": 245
                         }
                     }
                 ],
@@ -298,15 +307,43 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "Server SPBE 01 (Updated)"
+                                        "example": "Laptop M-25-007"
+                                    },
+                                    "ci_code": {
+                                        "type": "string",
+                                        "example": "CI-000245"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "hardware"
+                                    },
+                                    "environment": {
+                                        "type": "string",
+                                        "example": "production"
+                                    },
+                                    "criticality": {
+                                        "type": "string",
+                                        "example": "low"
                                     },
                                     "status": {
                                         "type": "string",
-                                        "example": "under_change"
+                                        "example": "active"
                                     },
                                     "version": {
                                         "type": "string",
-                                        "example": "v2.2.0"
+                                        "example": "Firmware BIOS v1.14.2"
+                                    },
+                                    "os_name": {
+                                        "type": "string",
+                                        "example": "Windows 11 Pro 64-bit"
+                                    },
+                                    "ip_address": {
+                                        "type": "string",
+                                        "example": "10.10.5.123"
+                                    },
+                                    "relation_note": {
+                                        "type": "string",
+                                        "example": "Relasi antar aset diperbarui..."
                                     }
                                 },
                                 "type": "object"
@@ -316,27 +353,10 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "CI berhasil diperbarui",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": 101
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "Server SPBE 01 (Updated)"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "CI berhasil diperbarui"
                     },
-                    "404": {
-                        "description": "CI tidak ditemukan"
+                    "422": {
+                        "description": "Validasi gagal"
                     }
                 },
                 "security": [
@@ -360,13 +380,13 @@
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "example": 101
+                            "example": 245
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Configuration item deleted"
+                        "description": "CI berhasil dihapus"
                     },
                     "404": {
                         "description": "CI tidak ditemukan"
