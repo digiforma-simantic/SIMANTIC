@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable(); // kalau nanti pakai SSO, boleh nullable
+            $table->enum('role', ['staff', 'admin', 'kepala_seksi', 'kepala_bidang', 'kepala_dinas', 'diskominfo', 'auditor']);
             $table->rememberToken();
             $table->timestamps();
         });
