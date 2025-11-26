@@ -2,28 +2,57 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RfcApproval extends Model
 {
+    use HasFactory;
+
     protected $table = 'rfc_approvals';
 
     protected $fillable = [
         'rfc_id',
-        'level',
+        'level',        // admin_opd, kasi, kabid, kadis, dll
         'approver_id',
-        'decision',
+        'decision',     // null (pending) | approve | reject | need_info | forward
         'reason',
         'decided_at',
     ];
 
+    protected $casts = [
+        'decided_at' => 'datetime',
+    ];
+
+    /*
+     * Relasi ke RFC
+     */
     public function rfc()
     {
         return $this->belongsTo(Rfc::class, 'rfc_id');
     }
 
+    /*
+     * Relasi ke user approver (kasi/kabid/kadis, dll)
+     */
     public function approver()
     {
         return $this->belongsTo(User::class, 'approver_id');
+    }
+
+    /*
+     * Helper: apakah approval ini masih pending?
+     */
+    public function isPending(): bool
+    {
+        return is_null($this->decision);
+    }
+
+    /*
+     * Helper: apakah approval ini sudah diputuskan?
+     */
+    public function isDecided(): bool
+    {
+        return ! is_null($this->decision);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,8 @@ Route::post('/auth/dev/login', [DevLoginController::class, 'login'])
 Route::get('/ping', fn () => response()->json(['message' => 'pong 🏓']))
     ->name('ping');
 
+Route::get('sso/callback', fn () => response()->json(['message' => 'pong 🏓']))
+    ->name('ping');
 /**
  * Protected v1 (butuh Bearer token Sanctum)
  * Final path: /api/v1/...
@@ -37,7 +40,7 @@ Route::prefix('v1')
         // Debug: cek siapa user yang login (hapus saat production)
         Route::get('me', fn (Request $r) => response()->json($r->user()))
             ->name('me');
-
+Route::get('/sso/callback',[AuthController::class,'SSOCallback']);
         /**
          * CMDB (CRUD Configuration Item)
          */

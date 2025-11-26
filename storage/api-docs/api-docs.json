@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8000",
+            "url": "http://127.0.0.1:8000",
             "description": "Local development server"
         }
     ],
@@ -1432,7 +1432,7 @@
                                                     },
                                                     "priority": {
                                                         "type": "string",
-                                                        "example": "P2"
+                                                        "example": "high"
                                                     },
                                                     "status": {
                                                         "type": "string",
@@ -1480,125 +1480,19 @@
                 "tags": [
                     "RFC"
                 ],
-                "summary": "Buat RFC baru",
-                "description": "POST /api/v1/rfc\nMembuat RFC baru dan menghubungkan dengan CI terkait + auto assessment.",
+                "summary": "Buat RFC baru (Service Desk / OPD)",
+                "description": "POST /api/v1/rfc\n\nNOTE:\n- Kalau body mengandung \"ticket_code\" → dianggap request dari aplikasi SERVICE DESK.\n- Kalau body mengandung \"ci_ids\" → dianggap request dari user OPD (flow lama + auto assessment).",
                 "operationId": "a499ce14e083680fe755781dce428af1",
                 "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "title",
-                                    "category",
-                                    "urgency",
-                                    "priority",
-                                    "ci_ids"
-                                ],
-                                "properties": {
-                                    "title": {
-                                        "type": "string",
-                                        "maxLength": 255,
-                                        "example": "Upgrade Database SIM Pegawai"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Perlu upgrade versi 13 untuk compliance."
-                                    },
-                                    "category": {
-                                        "type": "string",
-                                        "enum": [
-                                            "normal",
-                                            "standard",
-                                            "emergency"
-                                        ],
-                                        "example": "normal"
-                                    },
-                                    "urgency": {
-                                        "type": "string",
-                                        "enum": [
-                                            "low",
-                                            "medium",
-                                            "high",
-                                            "critical"
-                                        ],
-                                        "example": "high"
-                                    },
-                                    "priority": {
-                                        "type": "string",
-                                        "enum": [
-                                            "P4",
-                                            "P3",
-                                            "P2",
-                                            "P1"
-                                        ],
-                                        "example": "P2"
-                                    },
-                                    "ci_ids": {
-                                        "description": "Daftar ID Configuration Item yang terdampak",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer",
-                                            "example": 101
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
+                    "description": "Untuk integrasi Service Desk gunakan: ticket_code, title, description, priority, attachments, technician_note",
+                    "required": true
                 },
                 "responses": {
                     "201": {
-                        "description": "RFC berhasil dibuat",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": 1
-                                        },
-                                        "title": {
-                                            "type": "string"
-                                        },
-                                        "category": {
-                                            "type": "string",
-                                            "example": "normal"
-                                        },
-                                        "urgency": {
-                                            "type": "string",
-                                            "example": "high"
-                                        },
-                                        "priority": {
-                                            "type": "string",
-                                            "example": "P2"
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "example": "submitted"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "RFC berhasil dibuat"
                     },
                     "422": {
-                        "description": "Validasi gagal atau user belum memiliki OPD",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "User has no OPD assigned"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Validasi gagal"
                     }
                 },
                 "security": [
@@ -1614,7 +1508,7 @@
                     "RFC"
                 ],
                 "summary": "Detail satu RFC (lengkap)",
-                "description": "GET /api/v1/rfc/{rfc}\nMenampilkan detail RFC lengkap (dengan guard OPD).",
+                "description": "GET /api/v1/rfc/{rfc}\nDetail RFC untuk layar approval (Kasi/Kabid/Kadis).",
                 "operationId": "7b1bd1f0342b681d5103cb13eec1c932",
                 "parameters": [
                     {
@@ -1630,43 +1524,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detail RFC",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": 1
-                                        },
-                                        "title": {
-                                            "type": "string",
-                                            "example": "Upgrade Database SIM Pegawai"
-                                        },
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "category": {
-                                            "type": "string",
-                                            "example": "normal"
-                                        },
-                                        "urgency": {
-                                            "type": "string",
-                                            "example": "high"
-                                        },
-                                        "priority": {
-                                            "type": "string",
-                                            "example": "P2"
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "example": "approved"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Detail RFC"
                     },
                     "403": {
                         "description": "Tidak boleh melihat RFC OPD lain"

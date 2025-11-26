@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Rfc;
 use App\Models\RiskRegister;
+use App\Models\RfcAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -52,7 +53,7 @@ class RfcController extends Controller
      *           @OA\Property(property="title", type="string", example="Upgrade Database SIM Pegawai"),
      *           @OA\Property(property="category", type="string", example="normal"),
      *           @OA\Property(property="urgency", type="string", example="high"),
-     *           @OA\Property(property="priority", type="string", example="P2"),
+     *           @OA\Property(property="priority", type="string", example="high"),
      *           @OA\Property(property="status", type="string", example="submitted")
      *         )
      *       ),
@@ -85,13 +86,12 @@ class RfcController extends Controller
 
         $perPage = (int) $request->query('per_page', 15);
 
-        // Laravel paginator otomatis memberi struktur: data + links + meta
         return $query->paginate($perPage);
     }
 
-        /**
+    /**
      * GET /api/v1/rfc/{rfc}
-     * Menampilkan detail RFC lengkap (dengan guard OPD).
+     * Detail RFC untuk layar approval (Kasi/Kabid/Kadis).
      *
      * @OA\Get(
      *   path="/api/v1/rfc/{id}",
@@ -105,27 +105,14 @@ class RfcController extends Controller
      *     description="ID RFC",
      *     @OA\Schema(type="integer", example=1)
      *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Detail RFC",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="id", type="integer", example=1),
-     *       @OA\Property(property="title", type="string", example="Upgrade Database SIM Pegawai"),
-     *       @OA\Property(property="description", type="string"),
-     *       @OA\Property(property="category", type="string", example="normal"),
-     *       @OA\Property(property="urgency", type="string", example="high"),
-     *       @OA\Property(property="priority", type="string", example="P2"),
-     *       @OA\Property(property="status", type="string", example="approved")
-     *     )
-     *   ),
+     *   @OA\Response(response=200, description="Detail RFC"),
      *   @OA\Response(response=403, description="Tidak boleh melihat RFC OPD lain"),
      *   @OA\Response(response=404, description="RFC tidak ditemukan")
      * )
      */
-  
     public function show(Request $request, Rfc $rfc)
     {
-        // Batasi per OPD (kecuali nanti kamu buat role admin pusat)
+        // Batasi akses per OPD (kecuali nanti kamu buat role admin pusat)
         if ($request->user()->opd_id && $rfc->requester_opd_id !== $request->user()->opd_id) {
             return response()->json([
                 'message' => 'You are not allowed to view this RFC',
@@ -133,77 +120,148 @@ class RfcController extends Controller
         }
 
         $rfc->load([
-            'requester.opd',
-            'configurationItems.ownerOpd',
-            'assessment',
+            'requester',
+            'requesterOpd',
+            'attachments',
             'approvals.approver',
-            'impactReport',
-            'changePlan',
-            'execution',
-            'pir',
-            'complianceReview',
-            'maintenanceLogs',
-            'patchDeployments',
+            'currentApproval',
         ]);
 
-        return response()->json($rfc);
+        $user            = $request->user();
+        $currentApproval = $rfc->currentApproval;
+
+        // Hitung allowed actions berdasarkan approver yang sedang pending
+        $allowedActions = [];
+        if ($currentApproval && $user && $currentApproval->approver_id === $user->id) {
+            $allowedActions = ['need_info', 'approve', 'reject', 'forward'];
+        }
+
+        return response()->json([
+            'data' => [
+                'id'          => $rfc->id,
+                'ticket_code' => $rfc->ticket_code,
+                'status'      => $rfc->status,
+                'category'    => $rfc->category,
+
+                // Header: Info pemohon
+                'requester' => [
+                    'name'     => $rfc->requester?->name,
+                    'position' => $rfc->requester?->role,
+                    'opd_name' => $rfc->requesterOpd?->name,
+                ],
+
+                // Detail RFC: untuk isi card di UI mobile
+                'rfc_detail' => [
+                    'title'           => $rfc->title,
+                    'affected_asset'  => null, // nanti bisa diisi dari relasi CI
+                    'description'     => $rfc->description,
+                    'technician_note' => $rfc->tech_note,
+                    'priority_label'  => $rfc->priority_label, // Low / Medium / High
+                    'priority_code'   => $rfc->priority,       // low / medium / high
+                ],
+
+                // File bukti
+                'attachments' => $rfc->attachments->map(function ($a) {
+                    return [
+                        'id'        => $a->id,
+                        'file_name' => $a->file_name,
+                        'url'       => $a->url,
+                        'mime_type' => $a->mime_type,
+                    ];
+                })->values(),
+
+                // Informasi approval berjenjang
+                'approval' => [
+                    'current_level'    => $currentApproval?->level,
+                    'current_decision' => $currentApproval?->decision,
+                    'your_role'        => $user?->role,
+                    'allowed_actions'  => $allowedActions,
+                    'history'          => $rfc->approvals->map(function ($appr) {
+                        return [
+                            'level'      => $appr->level,
+                            'decision'   => $appr->decision,
+                            'status'     => $appr->isPending() ? 'pending' : 'done',
+                            'by'         => $appr->approver?->name,
+                            'note'       => $appr->reason,
+                            'decided_at' => optional($appr->decided_at)->toDateTimeString(),
+                        ];
+                    })->values(),
+                ],
+            ],
+        ]);
     }
 
     /**
      * POST /api/v1/rfc
-     * Membuat RFC baru dan menghubungkan dengan CI terkait + auto assessment.
+     *
+     * NOTE:
+     * - Kalau body mengandung "ticket_code" → dianggap request dari aplikasi SERVICE DESK.
+     * - Kalau body mengandung "ci_ids" → dianggap request dari user OPD (flow lama + auto assessment).
      *
      * @OA\Post(
      *   path="/api/v1/rfc",
      *   tags={"RFC"},
-     *   summary="Buat RFC baru",
+     *   summary="Buat RFC baru (Service Desk / OPD)",
      *   security={{"bearerAuth":{}}},
      *   @OA\RequestBody(
      *     required=true,
-     *     @OA\JsonContent(
-     *       required={"title","category","urgency","priority","ci_ids"},
-     *       @OA\Property(property="title", type="string", maxLength=255, example="Upgrade Database SIM Pegawai"),
-     *       @OA\Property(property="description", type="string", example="Perlu upgrade versi 13 untuk compliance."),
-     *       @OA\Property(property="category", type="string", example="normal", enum={"normal","standard","emergency"}),
-     *       @OA\Property(property="urgency", type="string", example="high", enum={"low","medium","high","critical"}),
-     *       @OA\Property(property="priority", type="string", example="P2", enum={"P4","P3","P2","P1"}),
-     *       @OA\Property(
-     *         property="ci_ids",
-     *         type="array",
-     *         @OA\Items(type="integer", example=101),
-     *         description="Daftar ID Configuration Item yang terdampak"
-     *       )
-     *     )
+     *     description="Untuk integrasi Service Desk gunakan: ticket_code, title, description, priority, attachments, technician_note",
      *   ),
-     *   @OA\Response(
-     *     response=201,
-     *     description="RFC berhasil dibuat",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="id", type="integer", example=1),
-     *       @OA\Property(property="title", type="string"),
-     *       @OA\Property(property="category", type="string", example="normal"),
-     *       @OA\Property(property="urgency", type="string", example="high"),
-     *       @OA\Property(property="priority", type="string", example="P2"),
-     *       @OA\Property(property="status", type="string", example="submitted")
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=422,
-     *     description="Validasi gagal atau user belum memiliki OPD",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="message", type="string", example="User has no OPD assigned")
-     *     )
-     *   )
+     *   @OA\Response(response=201, description="RFC berhasil dibuat"),
+     *   @OA\Response(response=422, description="Validasi gagal")
      * )
      */
     public function store(Request $request)
     {
+        // 1️⃣ Mode integrasi dari Service Desk (punya ticket_code)
+        if ($request->has('ticket_code')) {
+            $validated = $request->validate([
+                'ticket_code'     => 'required|string',
+                'title'           => 'required|string',
+                'description'     => 'required|string',
+                'priority'        => 'required|in:low,medium,high',
+                'attachments'     => 'array',
+                'attachments.*'   => 'string',
+                'technician_note' => 'nullable|string',
+            ]);
+
+            $user = $request->user(); // bisa service-account / null
+
+            $rfc = Rfc::create([
+                'ticket_code'      => $validated['ticket_code'],
+                'title'            => $validated['title'],
+                'description'      => $validated['description'],
+                'category'         => 'normal',
+                'urgency'          => $validated['priority'],
+                'priority'         => $validated['priority'],  // low/medium/high langsung
+                'status'           => 'submitted',
+                'requester_id'     => $user->id ?? null,
+                'requester_opd_id' => $user->opd_id ?? null,
+                'tech_note'        => $validated['technician_note'] ?? null,
+            ]);
+
+            if (!empty($validated['attachments'])) {
+                foreach ($validated['attachments'] as $url) {
+                    RfcAttachment::create([
+                        'rfc_id' => $rfc->id,
+                        'url'    => $url,
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'RFC successfully created from Service Desk',
+                'data'    => $rfc->load('attachments'),
+            ], 201);
+        }
+
+        // 2️⃣ Mode lama: user OPD buat RFC langsung dari modul Change
         $data = $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
             'category'    => 'required|in:normal,standard,emergency',
             'urgency'     => 'required|in:low,medium,high,critical',
-            'priority'    => 'required|in:P4,P3,P2,P1',
+            'priority'    => 'required|in:low,medium,high',
             'ci_ids'      => 'required|array|min:1',
             'ci_ids.*'    => 'integer|exists:configuration_items,id',
         ]);
@@ -219,7 +277,7 @@ class RfcController extends Controller
                 'description'      => $data['description'] ?? null,
                 'category'         => $data['category'],
                 'urgency'          => $data['urgency'],
-                'priority'         => $data['priority'],
+                'priority'         => $data['priority'], // low/medium/high
                 'status'           => 'submitted',
                 'requester_id'     => $request->user()->id,
                 'requester_opd_id' => $request->user()->opd_id,
@@ -239,7 +297,7 @@ class RfcController extends Controller
             $rfc->assessment()->create([
                 'completeness_ok'       => false,
                 'suggested_change_type' => null,
-                'risk_auto_score'       => $maxRisk, // bisa null
+                'risk_auto_score'       => $maxRisk,
                 'notes'                 => $notes,
             ]);
 

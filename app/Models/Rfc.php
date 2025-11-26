@@ -9,14 +9,16 @@ class Rfc extends Model
     protected $table = 'rfc';
 
     protected $fillable = [
+        'ticket_code',
         'title',
         'description',
         'category',
         'urgency',
-        'priority',
+        'priority',          // low | medium | high
         'status',
         'requester_id',
         'requester_opd_id',
+        'tech_note',
     ];
 
     public function requester()
@@ -42,6 +44,14 @@ class Rfc extends Model
     public function approvals()
     {
         return $this->hasMany(RfcApproval::class);
+    }
+
+    // approval yang lagi menunggu (status pending)
+    public function currentApproval()
+    {
+        return $this->hasOne(RfcApproval::class)
+                    ->where('status', 'pending')
+                    ->latest(); // ambil pending terakhir kalau lebih dari 1
     }
 
     public function impactReport()
@@ -77,5 +87,17 @@ class Rfc extends Model
     public function patchDeployments()
     {
         return $this->hasMany(PatchDeployment::class, 'ref_rfc_id');
+    }
+
+    // relasi ke tabel rfc_attachments
+    public function attachments()
+    {
+        return $this->hasMany(RfcAttachment::class);
+    }
+
+    // "low" -> "Low", "medium" -> "Medium", dll
+    public function getPriorityLabelAttribute(): string
+    {
+        return ucfirst($this->priority ?? '');
     }
 }
