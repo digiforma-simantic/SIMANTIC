@@ -192,10 +192,11 @@ class RfcController extends Controller
     }
 
         /**
+       
      * POST /api/v1/rfc
      *
      * NOTE:
-     * - Kalau body mengandung "ticket_code" → dianggap request dari aplikasi SERVICE DESK.
+     * - Kalau body mengandung "rfc_id" → dianggap request dari aplikasi SERVICE DESK.
      * - Kalau body mengandung "ci_ids" → dianggap request dari user OPD (flow lama + auto assessment).
      *
      * @OA\Post(
@@ -209,12 +210,12 @@ class RfcController extends Controller
      *       oneOf={
      *         @OA\Schema(
      *           title="Request dari Service Desk",
-     *           required={"ticket_code","title","description","priority"},
+     *           required={"rfc_id","title","description","priority","request_at","asset_id"},
      *           @OA\Property(
-     *             property="ticket_code",
+     *             property="rfc_id",
      *             type="string",
-     *             example="TKT-2025-0001",
-     *             description="Kode tiket dari aplikasi Service Desk"
+     *             example="RFC-2025-0001",
+     *             description="ID RFC dari aplikasi Service Desk"
      *           ),
      *           @OA\Property(
      *             property="title",
@@ -224,7 +225,7 @@ class RfcController extends Controller
      *           @OA\Property(
      *             property="description",
      *             type="string",
-     *             example="Diperlukan pembaruan modul pelaporan kinerja agar sesuai format terbaru BKN."
+     *             example="Diperlukan pembaruan modul pelaporan kinerja agar sesuai pedoman terbaru BKN."
      *           ),
      *           @OA\Property(
      *             property="priority",
@@ -236,13 +237,24 @@ class RfcController extends Controller
      *           @OA\Property(
      *             property="attachments",
      *             type="array",
-     *             @OA\Items(type="string", example="https://api-sindra.co.id/storage/rfc/1.pdf"),
+     *             @OA\Items(
+     *               type="string",
+     *               example="https://api-sindra.co.id/storage/rfc/1.pdf"
+     *             ),
      *             description="Daftar URL lampiran dari Service Desk"
      *           ),
      *           @OA\Property(
-     *             property="technician_note",
+     *             property="request_at",
      *             type="string",
-     *             example="Format laporan lama tidak sesuai pedoman nasional."
+     *             format="date-time",
+     *             example="2025-11-20T10:45:00+07:00",
+     *             description="Waktu request dibuat di aplikasi Service Desk"
+     *           ),
+     *           @OA\Property(
+     *             property="asset_id",
+     *             type="integer",
+     *             example=123,
+     *             description="ID aset terdampak dari aplikasi Service Desk"
      *           )
      *         ),
      *         @OA\Schema(
@@ -298,7 +310,7 @@ class RfcController extends Controller
      *             property="data",
      *             type="object",
      *             @OA\Property(property="id", type="integer", example=1),
-     *             @OA\Property(property="ticket_code", type="string", example="TKT-2025-0001"),
+     *             @OA\Property(property="ticket_code", type="string", example="RFC-2025-0001"),
      *             @OA\Property(property="title", type="string", example="Pembaruan Aplikasi E-Kinerja Versi 2.1"),
      *             @OA\Property(property="description", type="string"),
      *             @OA\Property(property="category", type="string", example="normal"),
@@ -330,6 +342,7 @@ class RfcController extends Controller
      *   )
      * )
      */
+
   public function store(Request $request)
 {
     // 1️⃣ Mode integrasi dari Service Desk (punya rfc_id)
