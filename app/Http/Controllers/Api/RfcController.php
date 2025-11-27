@@ -191,7 +191,7 @@ class RfcController extends Controller
         ]);
     }
 
-    /**
+        /**
      * POST /api/v1/rfc
      *
      * NOTE:
@@ -205,13 +205,133 @@ class RfcController extends Controller
      *   security={{"bearerAuth":{}}},
      *   @OA\RequestBody(
      *     required=true,
-     *     description="Untuk integrasi Service Desk gunakan: ticket_code, title, description, priority, attachments, technician_note",
+     *     @OA\JsonContent(
+     *       oneOf={
+     *         @OA\Schema(
+     *           title="Request dari Service Desk",
+     *           required={"ticket_code","title","description","priority"},
+     *           @OA\Property(
+     *             property="ticket_code",
+     *             type="string",
+     *             example="TKT-2025-0001",
+     *             description="Kode tiket dari aplikasi Service Desk"
+     *           ),
+     *           @OA\Property(
+     *             property="title",
+     *             type="string",
+     *             example="Pembaruan Aplikasi E-Kinerja Versi 2.1"
+     *           ),
+     *           @OA\Property(
+     *             property="description",
+     *             type="string",
+     *             example="Diperlukan pembaruan modul pelaporan kinerja agar sesuai format terbaru BKN."
+     *           ),
+     *           @OA\Property(
+     *             property="priority",
+     *             type="string",
+     *             enum={"low","medium","high"},
+     *             example="low",
+     *             description="Prioritas dari Service Desk"
+     *           ),
+     *           @OA\Property(
+     *             property="attachments",
+     *             type="array",
+     *             @OA\Items(type="string", example="https://api-sindra.co.id/storage/rfc/1.pdf"),
+     *             description="Daftar URL lampiran dari Service Desk"
+     *           ),
+     *           @OA\Property(
+     *             property="technician_note",
+     *             type="string",
+     *             example="Format laporan lama tidak sesuai pedoman nasional."
+     *           )
+     *         ),
+     *         @OA\Schema(
+     *           title="Request dari user OPD (modul Change)",
+     *           required={"title","category","urgency","priority","ci_ids"},
+     *           @OA\Property(
+     *             property="title",
+     *             type="string",
+     *             example="Upgrade Database SIM Pegawai"
+     *           ),
+     *           @OA\Property(
+     *             property="description",
+     *             type="string",
+     *             example="Perlu upgrade ke versi 13 untuk compliance."
+     *           ),
+     *           @OA\Property(
+     *             property="category",
+     *             type="string",
+     *             enum={"normal","standard","emergency"},
+     *             example="normal"
+     *           ),
+     *           @OA\Property(
+     *             property="urgency",
+     *             type="string",
+     *             enum={"low","medium","high","critical"},
+     *             example="high"
+     *           ),
+     *           @OA\Property(
+     *             property="priority",
+     *             type="string",
+     *             enum={"low","medium","high"},
+     *             example="medium"
+     *           ),
+     *           @OA\Property(
+     *             property="ci_ids",
+     *             type="array",
+     *             description="Daftar ID Configuration Item yang terdampak",
+     *             @OA\Items(type="integer", example=101)
+     *           )
+     *         )
+     *       }
+     *     )
      *   ),
-     *   @OA\Response(response=201, description="RFC berhasil dibuat"),
-     *   @OA\Response(response=422, description="Validasi gagal")
+     *   @OA\Response(
+     *     response=201,
+     *     description="RFC berhasil dibuat",
+     *     @OA\JsonContent(
+     *       oneOf={
+     *         @OA\Schema(
+     *           title="Response dari Service Desk",
+     *           @OA\Property(property="message", type="string", example="RFC successfully created from Service Desk"),
+     *           @OA\Property(
+     *             property="data",
+     *             type="object",
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="ticket_code", type="string", example="TKT-2025-0001"),
+     *             @OA\Property(property="title", type="string", example="Pembaruan Aplikasi E-Kinerja Versi 2.1"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="category", type="string", example="normal"),
+     *             @OA\Property(property="urgency", type="string", example="low"),
+     *             @OA\Property(property="priority", type="string", example="low"),
+     *             @OA\Property(property="status", type="string", example="submitted")
+     *           )
+     *         ),
+     *         @OA\Schema(
+     *           title="Response dari user OPD",
+     *           @OA\Property(property="id", type="integer", example=2),
+     *           @OA\Property(property="title", type="string", example="Upgrade Database SIM Pegawai"),
+     *           @OA\Property(property="description", type="string"),
+     *           @OA\Property(property="category", type="string", example="normal"),
+     *           @OA\Property(property="urgency", type="string", example="high"),
+     *           @OA\Property(property="priority", type="string", example="medium"),
+     *           @OA\Property(property="status", type="string", example="submitted")
+     *         )
+     *       }
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=422,
+     *     description="Validasi gagal",
+     *     @OA\JsonContent(
+     *       @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *       @OA\Property(property="errors", type="object")
+     *     )
+     *   )
      * )
      */
     public function store(Request $request)
+
     {
         // 1️⃣ Mode integrasi dari Service Desk (punya ticket_code)
         if ($request->has('ticket_code')) {

@@ -32,14 +32,14 @@ const Header = () => {
         <div className="flex items-center gap-4">
 
           <Link
-            to="/Notifikasiadmin"
+            to="/Notifikasi"
             className="w-11 h-11 bg-white border border-[#DCE6EE] rounded-lg flex items-center justify-center shadow-sm"
           >
             <img src={bellIcon} alt="Notification" className="w-5 h-5" />
           </Link>
 
           <Link
-            to="/Useradmin"
+            to="/DataUser"
             className="w-11 h-11 bg-white border border-[#DCE6EE] rounded-lg flex items-center justify-center shadow-sm"
           >
             <img src={userIcon} alt="User" className="w-5 h-5" />

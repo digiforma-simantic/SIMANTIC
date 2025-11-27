@@ -10,7 +10,7 @@ export default function Login() {
     e.preventDefault();
     // contoh tindakan setelah submit
     localStorage.setItem("isLoggedIn", "true");
-    navigate("/staff/dashboardstaff");
+    navigate("/Admin/DashboardAdmin");
   }
 
   return (

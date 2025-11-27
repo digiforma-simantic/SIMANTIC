@@ -1484,15 +1484,229 @@
                 "description": "POST /api/v1/rfc\n\nNOTE:\n- Kalau body mengandung \"ticket_code\" → dianggap request dari aplikasi SERVICE DESK.\n- Kalau body mengandung \"ci_ids\" → dianggap request dari user OPD (flow lama + auto assessment).",
                 "operationId": "a499ce14e083680fe755781dce428af1",
                 "requestBody": {
-                    "description": "Untuk integrasi Service Desk gunakan: ticket_code, title, description, priority, attachments, technician_note",
-                    "required": true
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "title": "Request dari Service Desk",
+                                        "required": [
+                                            "ticket_code",
+                                            "title",
+                                            "description",
+                                            "priority"
+                                        ],
+                                        "properties": {
+                                            "ticket_code": {
+                                                "description": "Kode tiket dari aplikasi Service Desk",
+                                                "type": "string",
+                                                "example": "TKT-2025-0001"
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Pembaruan Aplikasi E-Kinerja Versi 2.1"
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "example": "Diperlukan pembaruan modul pelaporan kinerja agar sesuai format terbaru BKN."
+                                            },
+                                            "priority": {
+                                                "description": "Prioritas dari Service Desk",
+                                                "type": "string",
+                                                "enum": [
+                                                    "low",
+                                                    "medium",
+                                                    "high"
+                                                ],
+                                                "example": "low"
+                                            },
+                                            "attachments": {
+                                                "description": "Daftar URL lampiran dari Service Desk",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "example": "https://api-sindra.co.id/storage/rfc/1.pdf"
+                                                }
+                                            },
+                                            "technician_note": {
+                                                "type": "string",
+                                                "example": "Format laporan lama tidak sesuai pedoman nasional."
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    {
+                                        "title": "Request dari user OPD (modul Change)",
+                                        "required": [
+                                            "title",
+                                            "category",
+                                            "urgency",
+                                            "priority",
+                                            "ci_ids"
+                                        ],
+                                        "properties": {
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Upgrade Database SIM Pegawai"
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "example": "Perlu upgrade ke versi 13 untuk compliance."
+                                            },
+                                            "category": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "normal",
+                                                    "standard",
+                                                    "emergency"
+                                                ],
+                                                "example": "normal"
+                                            },
+                                            "urgency": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "low",
+                                                    "medium",
+                                                    "high",
+                                                    "critical"
+                                                ],
+                                                "example": "high"
+                                            },
+                                            "priority": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "low",
+                                                    "medium",
+                                                    "high"
+                                                ],
+                                                "example": "medium"
+                                            },
+                                            "ci_ids": {
+                                                "description": "Daftar ID Configuration Item yang terdampak",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "integer",
+                                                    "example": 101
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    }
                 },
                 "responses": {
                     "201": {
-                        "description": "RFC berhasil dibuat"
+                        "description": "RFC berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "title": "Response dari Service Desk",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "RFC successfully created from Service Desk"
+                                                },
+                                                "data": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "ticket_code": {
+                                                            "type": "string",
+                                                            "example": "TKT-2025-0001"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "example": "Pembaruan Aplikasi E-Kinerja Versi 2.1"
+                                                        },
+                                                        "description": {
+                                                            "type": "string"
+                                                        },
+                                                        "category": {
+                                                            "type": "string",
+                                                            "example": "normal"
+                                                        },
+                                                        "urgency": {
+                                                            "type": "string",
+                                                            "example": "low"
+                                                        },
+                                                        "priority": {
+                                                            "type": "string",
+                                                            "example": "low"
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "example": "submitted"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "title": "Response dari user OPD",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "title": {
+                                                    "type": "string",
+                                                    "example": "Upgrade Database SIM Pegawai"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "category": {
+                                                    "type": "string",
+                                                    "example": "normal"
+                                                },
+                                                "urgency": {
+                                                    "type": "string",
+                                                    "example": "high"
+                                                },
+                                                "priority": {
+                                                    "type": "string",
+                                                    "example": "medium"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "submitted"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Validasi gagal"
+                        "description": "Validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [

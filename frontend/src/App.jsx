@@ -14,8 +14,28 @@ import BantuanStaff5 from "./pages/Staff/BantuanStaff5";
 import UserStaff from "./pages/Staff/UserStaff";
 import GantiPasswordStaff from "./pages/Staff/GantiPasswordStaff";
 import DetailAsetStaff from "./pages/Staff/DetailAsetStaff";
+import UserStaffEdit from "./pages/Staff/UserStaffEdit";
 import DetailPengajuanStaff from "./pages/Staff/DetailPengajuanStaff";
+
 import DashboardAdmin from "./pages/Admin/DashboardAdmin";
+import DaftarAset from "./pages/Admin/DaftarAset";
+import AsetSaya from "./pages/Admin/AsetSaya";
+import DaftarApproval from "./pages/Admin/DaftarApproval";
+import DetailPermohonan from "./pages/Admin/DetailPermohonan";
+import RiwayatApproval from "./pages/Admin/RiwayatApproval";
+import DetailPengajuan from "./pages/Admin/DetailPengajuan";
+import DetailAsetSaya from "./pages/Admin/DetailAsetSaya";
+import DaftarDetailAset from "./pages/Admin/DaftarDetailAset";
+import FormDetailAset from "./pages/Admin/FormDetailAset";
+import Notifikasi from "./pages/Admin/Notifikasi";
+import DataUser from "./pages/Admin/DataUser";
+import GantiPassword from "./pages/Admin/GantiPassword";
+import Bantuan from "./pages/Admin/Bantuan";
+import Bantuan1 from "./pages/Admin/Bantuan1";
+import Bantuan2 from "./pages/Admin/Bantuan2";
+import Bantuan3 from "./pages/Admin/Bantuan3";
+import Bantuan4 from "./pages/Admin/Bantuan4";
+import Bantuan5 from "./pages/Admin/Bantuan5";
 
 export default function App() {
   return (
@@ -38,10 +58,31 @@ export default function App() {
       <Route path="/staff/userstaff" element={<UserStaff />} />
       <Route path="/staff/gantipasswordstaff" element={<GantiPasswordStaff />} />
       <Route path="/DetailAsetStaff/:id" element={<DetailAsetStaff />} />
+      <Route path="/UserStaffEdit/" element={<UserStaffEdit />} />
       <Route path="/DetailPengajuanStaff/:id" element={<DetailPengajuanStaff />} />
 
       {/* ADMIN */}
       <Route path="/Admin/dashboardadmin" element={<DashboardAdmin />} />
+      <Route path="/Admin/daftaraset" element={<DaftarAset />} />
+      <Route path="/Admin/asetsaya" element={<AsetSaya />} />
+      <Route path="/DaftarApproval" element={<DaftarApproval />} />
+      <Route path="/Admin/daftarapproval" element={<DaftarApproval />} />
+      <Route path="/Admin/DetailPermohonan/:id" element={<DetailPermohonan />} />
+      <Route path="/Admin/RiwayatApproval" element={<RiwayatApproval />} />
+      <Route path="/DetailPengajuan/:id" element={<DetailPengajuan />} />
+      <Route path="/Admin/DetailAsetSaya/:id" element={<DetailAsetSaya />} />
+      <Route path="/DaftarDetailAset/:id" element={<DaftarDetailAset />} />
+      <Route path="/FormDetailAset/:id" element={<FormDetailAset />} />
+      <Route path="/Notifikasi" element={<Notifikasi />} />
+      <Route path="/DataUser" element={<DataUser />} />
+      <Route path="/GantiPassword" element={<GantiPassword />} />
+      <Route path="/Admin/bantuan" element={<Bantuan />} />
+      <Route path="/bantuan1" element={<Bantuan1 />} />
+      <Route path="/bantuan2" element={<Bantuan2 />} />
+      <Route path="/bantuan3" element={<Bantuan3 />} />
+      <Route path="/bantuan4" element={<Bantuan4 />} />
+      <Route path="/bantuan5" element={<Bantuan5 />} />
+
 
       {/* REDIRECTS */}
       <Route path="/home" element={<Navigate to="/staff/dashboardstaff" replace />} />
@@ -56,9 +97,29 @@ export default function App() {
       <Route path="/UserStaff" element={<UserStaff />} />
       <Route path="/GantiPasswordStaff" element={<GantiPasswordStaff />} />
       <Route path="/DetailAsetStaff/:id" element={<DetailAsetStaff />} />
+      <Route path="/UserStaffEdit/" element={<UserStaffEdit />} />
       <Route path="/DetailPengajuanStaff/:id" element={<DetailPengajuanStaff />} />
 
-      <Route path="/admin/dashboardadmin" element={<DashboardAdmin />} />
+      <Route path="/Admin/dashboardadmin" element={<DashboardAdmin />} />
+      <Route path="/Admin/daftaraset" element={<DaftarAset />} />
+      <Route path="/Admin/asetsaya" element={<AsetSaya />} />
+      <Route path="/Admin/daftarapproval" element={<DaftarApproval />} />
+      <Route path="/Admin/DetailPermohonan/:id" element={<DetailPermohonan />} />
+      <Route path="/Admin/DetailApproval/:id" element={<DetailPermohonan />} />
+      <Route path="/Admin/RiwayatApproval" element={<RiwayatApproval />} />
+      <Route path="/DetailPengajuan/:id" element={<DetailPengajuan />} />
+      <Route path="/Admin/DetailAsetSaya/:id" element={<DetailAsetSaya />} />
+      <Route path="/DaftarDetailAset/:id" element={<DaftarDetailAset />} />
+      <Route path="/FormDetailAset/:id" element={<FormDetailAset />} />
+      <Route path="/Notifikasi" element={<Notifikasi />} />
+      <Route path="/DataUser" element={<DataUser />} />
+      <Route path="/GantiPassword" element={<GantiPassword />} />
+      <Route path="/Admin/bantuan" element={<Bantuan />} />
+      <Route path="/bantuan1" element={<Bantuan1 />} />
+      <Route path="/bantuan2" element={<Bantuan2 />} />
+      <Route path="/bantuan3" element={<Bantuan3 />} />
+      <Route path="/bantuan4" element={<Bantuan4 />} />
+      <Route path="/bantuan5" element={<Bantuan5 />} />
 
     </Routes>
   );

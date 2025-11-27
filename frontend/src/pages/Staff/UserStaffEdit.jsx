@@ -1,17 +1,35 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import Headeruser from "../../components/Headeruser";
 
-export default function ProfileNavigation() {
+export default function UserStaffEdit() {
+  const navigate = useNavigate();
+
+  // State hanya untuk field yang bisa di-edit
+  const [formData, setFormData] = useState({
+    nama: "Slamet Budianto",
+    gender: "Laki - Laki",
+  });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSave = () => {
+    console.log("Data tersimpan:", formData);
+    navigate("/UserStaff");
+  };
+
   return (
     <div className="min-h-screen bg-[#F7FCFF] font-geologica">
-
-      {/* Header dari components */}
       <Headeruser />
 
-      {/* Main content */}
       <main className="flex mt-8 max-w-[1400px] mx-auto space-x-6">
-        
-        {/* Sidebar */}
+
+        {/* Sidebar Navigasi */}
         <aside className="bg-[#F2FAFF] p-6 rounded-lg shadow-md w-64 h-42">
           <h2 className="font-bold text-[#001729] mb-4">Navigasi Profil</h2>
           <nav className="flex flex-col space-y-2 text-[#001729] text-sm">
@@ -25,42 +43,48 @@ export default function ProfileNavigation() {
           </nav>
         </aside>
 
-        {/* Profile Form */}
+        {/* Form Edit */}
         <section className="bg-[#F2FAFF] p-8 rounded-lg shadow-md flex-1">
           <h2 className="text-center font-bold text-[#001729] text-lg mb-6">
-            Selamat datang, Slamet Budianto!
+            Edit Data User
           </h2>
 
           <form className="space-y-6">
 
-            {/* Nama lengkap */}
+            {/* Nama lengkap (editable) */}
             <div>
               <label className="block mb-1 font-semibold text-[#001729]">
                 Nama lengkap
               </label>
               <input
                 type="text"
-                defaultValue="Slamet Budianto"
-                readOnly
-                className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                name="nama"
+                value={formData.nama}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729]"
               />
             </div>
 
             {/* Jenis Kelamin & NIP */}
             <div className="grid grid-cols-2 gap-6">
 
+              {/* Jenis kelamin editable */}
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Jenis kelamin
                 </label>
-                <input
-                  type="text"
-                  defaultValue="Laki - Laki"
-                  readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
-                />
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-[#001729]"
+                >
+                  <option value="Laki - Laki">Laki - Laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
               </div>
 
+              {/* Read-only */}
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   NIP
@@ -69,15 +93,14 @@ export default function ProfileNavigation() {
                   type="text"
                   defaultValue="110920471983"
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-100 rounded-md px-4 py-2 text-[#001729]"
                 />
               </div>
 
             </div>
 
-            {/* Jabatan & Unit Kerja */}
+            {/* Jabatan & Unit Kerja (Read-only) */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Jabatan
@@ -86,7 +109,7 @@ export default function ProfileNavigation() {
                   type="text"
                   defaultValue="Staff"
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-100 rounded-md px-4 py-2 text-[#001729]"
                 />
               </div>
 
@@ -98,15 +121,13 @@ export default function ProfileNavigation() {
                   type="text"
                   defaultValue="Bidang Pencegahan Penyakit"
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-100 rounded-md px-4 py-2 text-[#001729]"
                 />
               </div>
-
             </div>
 
-            {/* Asal Dinas & Email */}
+            {/* Asal Dinas & Email (Read-only) */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Asal Dinas
@@ -115,7 +136,7 @@ export default function ProfileNavigation() {
                   type="text"
                   defaultValue="Dinas Kesehatan Prov. Jawa Timur"
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-100 rounded-md px-4 py-2 text-[#001729]"
                 />
               </div>
 
@@ -127,9 +148,28 @@ export default function ProfileNavigation() {
                   type="email"
                   defaultValue="slametbudi@gmail.com"
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-100 rounded-md px-4 py-2 text-[#001729]"
                 />
               </div>
+            </div>
+
+            {/* Tombol */}
+            <div className="flex justify-end gap-4">
+              <button
+                type="button"
+                onClick={() => navigate("/UserStaff")}
+                className="bg-gray-300 text-[#001729] rounded-md px-6 py-2 hover:bg-gray-400"
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                className="bg-[#001729] text-white rounded-md px-6 py-2 hover:bg-blue-900"
+              >
+                Simpan
+              </button>
             </div>
 
           </form>

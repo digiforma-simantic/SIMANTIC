@@ -9,13 +9,39 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id(); // BIGINT unsigned, PK
+            $table->id();
+
+            // IDENTITAS DASAR
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password')->nullable(); // kalau nanti pakai SSO, boleh nullable
+            $table->string('password')->nullable(); // karena login via SSO
+
+            // OPSIONAL: ID USER DI SSO (JIKA ADA)
+            $table->string('sso_id')->nullable();
+
+            // OPD (boleh null kalau belum di-mapping)
+            $table->unsignedBigInteger('opd_id')->nullable();
+
+            // ROLE SIMANTIC (RBAC)
+            $table->enum('role', [
+                'staff',
+                'admin_opd',
+                'kepala_seksi',
+                'kepala_bidang',
+                'kepala_dinas',
+                'auditor',
+                'diskominfo',
+            ])->default('staff');
+
+            // STATUS & AUDIT
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('last_login_at')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
+
+            // Kalau nanti punya tabel opds:
+            // $table->foreign('opd_id')->references('id')->on('opds')->nullOnDelete();
         });
     }
 
