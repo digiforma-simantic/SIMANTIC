@@ -18,6 +18,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'email_verified_at',
 
         // tambahan untuk SSO & SIMANTIC
         'sso_id',
@@ -41,6 +42,7 @@ class User extends Authenticatable
     protected $casts = [
         'last_login_at' => 'datetime',
         'is_active'     => 'boolean',
+        'email_verified_at' => 'datetime',
     ];
 
     /* -------------------------------------------------------------------
