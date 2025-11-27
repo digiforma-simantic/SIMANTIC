@@ -29,6 +29,9 @@ Route::get('/ping', fn () => response()->json(['message' => 'pong 🏓']))
 
 Route::get('sso/callback', fn () => response()->json(['message' => 'pong 🏓']))
     ->name('ping');
+
+Route::post('/v1/rfc',      [RfcController::class, 'store'])->name('rfc.store');
+
 /**
  * Protected v1 (butuh Bearer token Sanctum)
  * Final path: /api/v1/...
@@ -63,7 +66,6 @@ Route::get('/sso/callback',[AuthController::class,'SSOCallback']);
          */
         Route::get('rfc',       [RfcController::class, 'index'])->name('rfc.index');
         Route::get('rfc/{rfc}', [RfcController::class, 'show' ])->name('rfc.show');
-        Route::post('rfc',      [RfcController::class, 'store'])->name('rfc.store');
 
         /**
          * Change Management

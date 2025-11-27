@@ -203,7 +203,6 @@ class RfcController extends Controller
      *   path="/api/v1/rfc",
      *   tags={"RFC"},
      *   summary="Buat RFC baru (Service Desk / OPD)",
-     *   security={{"bearerAuth":{}}},
      *   @OA\RequestBody(
      *     required=true,
      *     @OA\JsonContent(
@@ -343,104 +342,51 @@ class RfcController extends Controller
      * )
      */
 
-  public function store(Request $request)
-{
-    // 1️⃣ Mode integrasi dari Service Desk (punya rfc_id)
-    if ($request->has('rfc_id')) {
-        $validated = $request->validate([
-            'rfc_id'        => 'required|string',
-            'title'         => 'required|string',
-            'description'   => 'required|string',
-            'priority'      => 'required|in:low,medium,high',
-            'attachments'   => 'array',
-            'attachments.*' => 'string',
-            'request_at'    => 'required|date',
-            'asset_id'      => 'required|integer',
-        ]);
-
-        $user = $request->user(); // bisa service-account / null
-
-      $rfc = Rfc::create([
-    'ticket_code'      => $validated['rfc_id'],
-    'title'            => $validated['title'],
-    'description'      => $validated['description'],
-    'category'         => 'normal',
-    'urgency'          => $validated['priority'],
-    'priority'         => $validated['priority'],
-    'status'           => 'submitted',
-    'requester_id'     => $user->id ?? null,
-    'requester_opd_id' => $user->opd_id ?? null,
-    'tech_note'        => null,
-    'request_at'       => $validated['request_at'],
-    'asset_id'         => $validated['asset_id'],
-]);   // ✅ cukup begini
+    public function store(Request $request)
+    {
+        // 1️⃣ Mode integrasi dari Service Desk (punya rfc_id)
+        if ($request->has('rfc_id')) {
+            $validated = $request->validate([
+                'rfc_id'        => 'required|string',
+                'title'         => 'required|string',
+                'description'   => 'required|string',
+                'priority'      => 'required|in:low,medium,high',
+                'attachments'   => 'array',
+                'attachments.*' => 'string',
+                'request_at'    => 'required|date',
+                'asset_id'      => 'required|integer',
+            ]);
 
 
-        if (!empty($validated['attachments'])) {
-            foreach ($validated['attachments'] as $url) {
-                RfcAttachment::create([
-                    'rfc_id' => $rfc->id,
-                    'url'    => $url,
-                ]);
-            }
-        }
-
-        return response()->json([
-            'message' => 'RFC successfully created from Service Desk',
-            'data'    => $rfc->load('attachments'),
-        ], 201);
-    }
-
-    // 2️⃣ Mode lama: user OPD buat RFC langsung dari modul Change
-    $data = $request->validate([
-        'title'       => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'category'    => 'required|in:normal,standard,emergency',
-        'urgency'     => 'required|in:low,medium,high,critical',
-        'priority'    => 'required|in:low,medium,high',
-        'ci_ids'      => 'required|array|min:1',
-        'ci_ids.*'    => 'integer|exists:configuration_items,id',
-    ]);
-
-    if (!$request->user()->opd_id) {
-        return response()->json(['message' => 'User has no OPD assigned'], 422);
-    }
-
-    return DB::transaction(function () use ($request, $data) {
-        // 1️⃣ Buat RFC
         $rfc = Rfc::create([
-            'title'            => $data['title'],
-            'description'      => $data['description'] ?? null,
-            'category'         => $data['category'],
-            'urgency'          => $data['urgency'],
-            'priority'         => $data['priority'], // low/medium/high
-            'status'           => 'submitted',
-            'requester_id'     => $request->user()->id,
-            'requester_opd_id' => $request->user()->opd_id,
-        ]);
+        'ticket_code'      => $validated['rfc_id'],
+        'title'            => $validated['title'],
+        'description'      => $validated['description'],
+        'category'         => 'normal',
+        'urgency'          => $validated['priority'],
+        'priority'         => $validated['priority'],
+        'status'           => 'submitted',
+        'requester_id'     => $validated['sso_id'],
+        'tech_note'        => null,
+        'request_at'       => $validated['request_at'],
+        'asset_id'         => $validated['asset_id'],
+    ]);   // ✅ cukup begini
 
-        // 2️⃣ Hubungkan RFC dengan CI (pivot table rfc_ci)
-        $rfc->configurationItems()->sync($data['ci_ids']);
 
-        // 3️⃣ Hitung nilai risiko otomatis (ambil risk tertinggi dari risk_register)
-        $maxRisk = RiskRegister::whereIn('ci_id', $data['ci_ids'])->max('risk_score');
+            if (!empty($validated['attachments'])) {
+                foreach ($validated['attachments'] as $url) {
+                    RfcAttachment::create([
+                        'rfc_id' => $rfc->id,
+                        'url'    => $url,
+                    ]);
+                }
+            }
 
-        // 4️⃣ Selalu buat assessment record (meski risk_auto_score null)
-        $notes = $maxRisk !== null
-            ? 'Auto-calculated from CMDB risk register.'
-            : 'No risk register data found for selected CIs.';
-
-        $rfc->assessment()->create([
-            'completeness_ok'       => false,
-            'suggested_change_type' => null,
-            'risk_auto_score'       => $maxRisk,
-            'notes'                 => $notes,
-        ]);
-
-        // 5️⃣ Load relasi untuk response
-        $rfc->load(['configurationItems', 'assessment']);
-
-        return response()->json($rfc, 201);
-    });
-}
+            return response()->json([
+                'status'=> true,
+                'message' => 'RFC successfully created from Service Desk',
+                'data'    => $rfc->load('attachments'),
+            ], 201);
+        }
+    }
 }
