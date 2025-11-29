@@ -51,8 +51,9 @@ class ChangeController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Filter by OPD
-        if ($request->user()->opd_id) {
-            $query->where('requester_opd_id', $request->user()->opd_id);
+        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
+        if ($userDinasId) {
+            $query->where('requester_opd_id', $userDinasId);
         }
 
         // Optional filter by status
@@ -106,7 +107,8 @@ class ChangeController extends Controller
     public function show(Request $request, Rfc $change)
     {
         // Batasi hanya OPD pemilik
-        if ($request->user()->opd_id && $change->requester_opd_id !== $request->user()->opd_id) {
+        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
+        if ($userDinasId && $change->requester_opd_id !== $userDinasId) {
             return response()->json(['message' => 'You are not allowed to view this Change Request'], 403);
         }
 
@@ -171,7 +173,8 @@ class ChangeController extends Controller
             'ci_ids.*'    => 'integer|exists:configuration_items,id',
         ]);
 
-        if (!$request->user()->opd_id) {
+        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
+        if (!$userDinasId) {
             return response()->json(['message' => 'User has no OPD assigned'], 422);
         }
 
@@ -185,7 +188,7 @@ class ChangeController extends Controller
                 'priority'         => $data['priority'],
                 'status'           => 'submitted',
                 'requester_id'     => $request->user()->id,
-                'requester_opd_id' => $request->user()->opd_id,
+                'requester_opd_id' => $request->user()->dinas_id ?? $request->user()->opd_id,
             ]);
 
             // 2️⃣ Hubungkan ke CI terkait

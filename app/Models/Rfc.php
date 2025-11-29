@@ -19,6 +19,8 @@ class Rfc extends Model
         'requester_id',
         'requester_opd_id',
         'tech_note',
+        'request_at',
+        'asset_id',
     ];
 
     public function requester()
@@ -28,7 +30,7 @@ class Rfc extends Model
 
     public function requesterOpd()
     {
-        return $this->belongsTo(Opd::class, 'requester_opd_id');
+        return $this->belongsTo(Dinas::class, 'requester_opd_id');
     }
 
     public function configurationItems()

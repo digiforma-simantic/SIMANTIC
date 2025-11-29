@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\ConfigurationItem;
-use App\Models\Opd;
+use App\Models\Dinas;
 use Illuminate\Database\Seeder;
 
 class ConfigurationItemSeeder extends Seeder
@@ -11,8 +11,8 @@ class ConfigurationItemSeeder extends Seeder
     public function run(): void
     {
 
-        $diskominfo = Opd::where('type', 'diskominfo')->first();
-        $dinkes     = Opd::where('name', 'Dinas Kesehatan')->first();
+        $diskominfo = Dinas::where('type', 'diskominfo')->first();
+        $dinkes     = Dinas::where('name', 'Dinas Kesehatan')->first();
 
         ConfigurationItem::insert([
             [

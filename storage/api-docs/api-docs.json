@@ -12,6 +12,66 @@
         }
     ],
     "paths": {
+        "/api/sso/callback": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "SSO callback - exchange SSO token for API token",
+                "description": "Mengambil token SSO (query parameter 'token') dan memanggil service SSO untuk mengambil data user. Jika user belum ada, sistem membuat user baru dan mengembalikan token Sanctum.",
+                "operationId": "1bded800ac8e1180f64208c786a50e70",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "description": "Token SSO yang diterima dari provider SSO",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "eyJhbGciOi..."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil: mengembalikan token API (Sanctum)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "berhasil login"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|Vu0OZSgnHGwGGVaNxsHd7ojSYsipuxrIMlXqAiSOdd4034d1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: token tidak disediakan atau request SSO bermasalah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid SSO token"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/config-items": {
             "get": {
                 "tags": [
@@ -1824,7 +1884,7 @@
                                                     "type": "string",
                                                     "example": "admin_change"
                                                 },
-                                                "opd_id": {
+                                                "dinas_id": {
                                                     "type": "integer",
                                                     "example": 1
                                                 }
@@ -1982,128 +2042,6 @@
                     },
                     "422": {
                         "description": "Validasi gagal"
-                    },
-                    "404": {
-                        "description": "RFC / Change Request tidak ditemukan"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/changes/{change}/approve": {
-            "post": {
-                "tags": [
-                    "Change Approval"
-                ],
-                "summary": "Shortcut untuk menyetujui Change Request (decision=approve)",
-                "description": "POST /api/v1/changes/{change}/approve",
-                "operationId": "f720e1a4082b8cb1113a125df0355c0c",
-                "parameters": [
-                    {
-                        "name": "change",
-                        "in": "path",
-                        "description": "ID RFC / Change Request yang ingin di-approve",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 101
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": false,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "stage": {
-                                        "type": "string",
-                                        "enum": [
-                                            "kasi",
-                                            "kabid",
-                                            "kadis",
-                                            "diskominfo"
-                                        ],
-                                        "example": "kadis"
-                                    },
-                                    "note": {
-                                        "type": "string",
-                                        "example": "Disetujui, window maintenance sesuai."
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Keputusan approve tersimpan"
-                    },
-                    "404": {
-                        "description": "RFC / Change Request tidak ditemukan"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/changes/{change}/reject": {
-            "post": {
-                "tags": [
-                    "Change Approval"
-                ],
-                "summary": "Shortcut untuk menolak Change Request (decision=reject)",
-                "description": "POST /api/v1/changes/{change}/reject",
-                "operationId": "d58271673f5c5649427d537af7520d22",
-                "parameters": [
-                    {
-                        "name": "change",
-                        "in": "path",
-                        "description": "ID RFC / Change Request yang ingin di-reject",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 101
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": false,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "stage": {
-                                        "type": "string",
-                                        "enum": [
-                                            "kasi",
-                                            "kabid",
-                                            "kadis",
-                                            "diskominfo"
-                                        ],
-                                        "example": "kabid"
-                                    },
-                                    "note": {
-                                        "type": "string",
-                                        "example": "Ditolak, rencana rollback belum jelas."
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Keputusan reject tersimpan"
                     },
                     "404": {
                         "description": "RFC / Change Request tidak ditemukan"
@@ -2389,6 +2327,10 @@
     },
     "tags": [
         {
+            "name": "Auth",
+            "description": "Endpoints untuk autentikasi, SSO dan token"
+        },
+        {
             "name": "CMDB",
             "description": "Manajemen Configuration Item (CI) dan relasinya dalam CMDB"
         },
@@ -2419,10 +2361,6 @@
         {
             "name": "Change Management",
             "description": "Pengelolaan Request for Change (RFC) menjadi Change Request penuh, termasuk detail dan penilaian risiko"
-        },
-        {
-            "name": "Auth",
-            "description": "Auth"
         }
     ]
 }

@@ -31,7 +31,7 @@ class ConfigurationItem extends Model
 
     public function ownerOpd()
     {
-        return $this->belongsTo(Opd::class, 'owner_opd_id');
+        return $this->belongsTo(Dinas::class, 'owner_opd_id');
     }
 
     public function risks()

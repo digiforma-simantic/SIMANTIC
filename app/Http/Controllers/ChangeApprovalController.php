@@ -6,6 +6,7 @@ use App\Models\Rfc;
 use App\Models\RfcApproval;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 
 /**
  * @OA\Tag(
@@ -99,6 +100,12 @@ class ChangeApprovalController extends Controller
         $approval->decided_at  = Carbon::now();
         $approval->save();
 
+        // 🔔 1) Notifikasi ke aplikasi Service Desk (teknisi)
+        $this->notifyServiceDeskTechnician($change, $approval);
+
+        // 🔔 2) Notifikasi ke pemohon RFC (user OPD)
+        $this->notifyRequester($change, $approval);
+
         return response()->json([
             'message'  => 'Decision recorded',
             'approval' => $approval,
@@ -107,38 +114,6 @@ class ChangeApprovalController extends Controller
 
     /**
      * POST /api/v1/changes/{change}/approve
-     *
-     * @OA\Post(
-     *   path="/api/v1/changes/{change}/approve",
-     *   tags={"Change Approval"},
-     *   summary="Shortcut untuk menyetujui Change Request (decision=approve)",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="change",
-     *     in="path",
-     *     required=true,
-     *     description="ID RFC / Change Request yang ingin di-approve",
-     *     @OA\Schema(type="integer", example=101)
-     *   ),
-     *   @OA\RequestBody(
-     *     required=false,
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="stage",
-     *         type="string",
-     *         example="kadis",
-     *         enum={"kasi","kabid","kadis","diskominfo"}
-     *       ),
-     *       @OA\Property(
-     *         property="note",
-     *         type="string",
-     *         example="Disetujui, window maintenance sesuai."
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(response=200, description="Keputusan approve tersimpan"),
-     *   @OA\Response(response=404, description="RFC / Change Request tidak ditemukan")
-     * )
      */
     public function approve(Request $request, Rfc $change)
     {
@@ -151,38 +126,6 @@ class ChangeApprovalController extends Controller
 
     /**
      * POST /api/v1/changes/{change}/reject
-     *
-     * @OA\Post(
-     *   path="/api/v1/changes/{change}/reject",
-     *   tags={"Change Approval"},
-     *   summary="Shortcut untuk menolak Change Request (decision=reject)",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="change",
-     *     in="path",
-     *     required=true,
-     *     description="ID RFC / Change Request yang ingin di-reject",
-     *     @OA\Schema(type="integer", example=101)
-     *   ),
-     *   @OA\RequestBody(
-     *     required=false,
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="stage",
-     *         type="string",
-     *         example="kabid",
-     *         enum={"kasi","kabid","kadis","diskominfo"}
-     *       ),
-     *       @OA\Property(
-     *         property="note",
-     *         type="string",
-     *         example="Ditolak, rencana rollback belum jelas."
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(response=200, description="Keputusan reject tersimpan"),
-     *   @OA\Response(response=404, description="RFC / Change Request tidak ditemukan")
-     * )
      */
     public function reject(Request $request, Rfc $change)
     {
@@ -191,5 +134,69 @@ class ChangeApprovalController extends Controller
         ]);
 
         return $this->decide($request, $change);
+    }
+
+    /**
+     * 🔔 Notifikasi ke aplikasi Service Desk (teknisi)
+     * Dipanggil setiap ada keputusan approval baru.
+     *
+     * Di sini kamu panggil API internal-nya tim Service Desk,
+     * misalnya: POST /internal/rfc/approval-callback
+     */
+    protected function notifyServiceDeskTechnician(Rfc $rfc, RfcApproval $approval): void
+    {
+        // Kalau RFC ini bukan hasil integrasi Service Desk (tidak punya ticket_code),
+        // kamu bisa skip.
+        if (!$rfc->ticket_code) {
+            return;
+        }
+
+        try {
+            Http::withToken(config('services.servicedesk.token'))
+                ->post(
+                    rtrim(config('services.servicedesk.base_url'), '/') . '/internal/rfc/approval-callback',
+                    [
+                        'rfc_id'        => $rfc->ticket_code,  // ID di sistem Service Desk
+                        'status'        => $rfc->status,
+                        'decision'      => $approval->decision,
+                        'level'         => $approval->level,
+                        'note'          => $approval->reason,
+                        'decided_at'    => $approval->decided_at?->toISOString(),
+                    ]
+                );
+        } catch (\Throwable $e) {
+            // Jangan bikin approval gagal hanya karena notif gagal.
+            logger()->warning('Failed sending approval callback to Service Desk', [
+                'rfc_id' => $rfc->id,
+                'error'  => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * 🔔 Notifikasi ke pemohon RFC (user OPD)
+     *
+     * Implementasi bebas:
+     * - bisa tulis ke tabel notifications sendiri
+     * - atau kirim email / push, dsb.
+     */
+    protected function notifyRequester(Rfc $rfc, RfcApproval $approval): void
+    {
+        if (!$rfc->requester) {
+            return;
+        }
+
+        // Contoh sangat sederhana: pakai log dulu
+        logger()->info('Notify requester about RFC approval decision', [
+            'requester_id' => $rfc->requester_id,
+            'rfc_id'       => $rfc->id,
+            'decision'     => $approval->decision,
+            'level'        => $approval->level,
+        ]);
+
+        // Nanti bisa kamu ganti dengan:
+        // - model Notification
+        // - event + listener
+        // - email, dsb.
     }
 }

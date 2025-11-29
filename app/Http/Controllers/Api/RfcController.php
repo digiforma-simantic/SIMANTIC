@@ -75,8 +75,9 @@ class RfcController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Filter RFC hanya milik OPD user login (kecuali nanti ada role admin pusat)
-        if ($request->user()->opd_id) {
-            $query->where('requester_opd_id', $request->user()->opd_id);
+        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
+        if ($userDinasId) {
+            $query->where('requester_opd_id', $userDinasId);
         }
 
         // Optional filter status
@@ -113,7 +114,8 @@ class RfcController extends Controller
     public function show(Request $request, Rfc $rfc)
     {
         // Batasi akses per OPD (kecuali nanti kamu buat role admin pusat)
-        if ($request->user()->opd_id && $rfc->requester_opd_id !== $request->user()->opd_id) {
+        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
+        if ($userDinasId && $rfc->requester_opd_id !== $userDinasId) {
             return response()->json([
                 'message' => 'You are not allowed to view this RFC',
             ], 403);
@@ -146,7 +148,7 @@ class RfcController extends Controller
                 // Header: Info pemohon
                 'requester' => [
                     'name'     => $rfc->requester?->name,
-                    'position' => $rfc->requester?->role,
+                    'position' => $rfc->requester?->roleObj?->slug ?? $rfc->requester?->role,
                     'opd_name' => $rfc->requesterOpd?->name,
                 ],
 
@@ -174,7 +176,7 @@ class RfcController extends Controller
                 'approval' => [
                     'current_level'    => $currentApproval?->level,
                     'current_decision' => $currentApproval?->decision,
-                    'your_role'        => $user?->role,
+                    'your_role'        => $user?->roleObj?->slug ?? $user?->role,
                     'allowed_actions'  => $allowedActions,
                     'history'          => $rfc->approvals->map(function ($appr) {
                         return [
@@ -255,6 +257,19 @@ class RfcController extends Controller
      *             example=123,
      *             description="ID aset terdampak dari aplikasi Service Desk"
      *           )
+        *           @OA\Property(
+        *             property="sso_id",
+        *             type="string",
+        *             example="sds-12345",
+        *             description="SSO ID user pengirim dari Service Desk (opsional jika email tersedia)"
+        *           )
+        *           @OA\Property(
+        *             property="email",
+        *             type="string",
+        *             format="email",
+        *             example="user@example.com",
+        *             description="Email user pengirim dari Service Desk (opsional jika sso_id tersedia)"
+        *           )
      *         ),
      *         @OA\Schema(
      *           title="Request dari user OPD (modul Change)",
@@ -355,8 +370,63 @@ class RfcController extends Controller
                 'attachments.*' => 'string',
                 'request_at'    => 'required|date',
                 'asset_id'      => 'required|integer',
+                // Optional mapping fields from Service Desk
+                'sso_id'        => 'nullable|string',
+                'email'         => 'nullable|email',
             ]);
 
+
+        // If request includes an sso_id or email for requester, map to internal user id
+        $requesterInternalId = null;
+        $ssoId = $request->input('sso_id');
+        $email = $request->input('email');
+        if (!empty($ssoId) || !empty($email)) {
+            $requester = null;
+            if (!empty($ssoId)) {
+                $requester = \App\Models\User::where('sso_id', $ssoId)->first();
+            }
+            if (! $requester && !empty($email)) {
+                $requester = \App\Models\User::where('email', $email)->first();
+            }
+            if ($requester) {
+                $requesterInternalId = $requester->id;
+            } else {
+                // Mapping failed. See if we should fallback to a service-desk user.
+                $fallbackEmail = env('SERVICE_DESK_FALLBACK_EMAIL', null);
+                if ($fallbackEmail) {
+                    // Find or create a fallback service desk user
+                    $firstDinas = \App\Models\Dinas::first();
+                    // Ensure fallback user has OPD (dinas_id) set so FK constraint is satisfied.
+                    $fallbackUser = \App\Models\User::updateOrCreate(
+                        ['email' => $fallbackEmail],
+                        [
+                            'name' => 'Service Desk',
+                            'password' => bcrypt(\Illuminate\Support\Str::random(24)),
+                            'sso_id' => 'service-desk',
+                            'role_id' => null, // optional, seeder can set a role
+                            'dinas_id' => $firstDinas?->id ?? null,
+                        ]
+                    );
+                        // Ensure a dinas_id exists in case the user existed with null before.
+                        if (empty($fallbackUser->dinas_id) && $firstDinas) {
+                            $fallbackUser->dinas_id = $firstDinas->id;
+                            $fallbackUser->save();
+                        }
+                        $requesterInternalId = $fallbackUser->id;
+                } else {
+                    // Return validation error: mapping failed
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Requester not found: please include sso_id or email that maps to an existing user',
+                    ], 422);
+                }
+            }
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please include sso_id or email to identify requester',
+            ], 422);
+        }
 
         $rfc = Rfc::create([
         'ticket_code'      => $validated['rfc_id'],
@@ -366,7 +436,8 @@ class RfcController extends Controller
         'urgency'          => $validated['priority'],
         'priority'         => $validated['priority'],
         'status'           => 'submitted',
-        'requester_id'     => $validated['sso_id'],
+        'requester_id'     => $requesterInternalId,
+        'requester_opd_id' => optional(\App\Models\User::find($requesterInternalId))->dinas_id ?? null,
         'tech_note'        => null,
         'request_at'       => $validated['request_at'],
         'asset_id'         => $validated['asset_id'],

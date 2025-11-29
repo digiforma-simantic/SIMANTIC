@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Opd;
+use App\Models\Dinas;
 use Illuminate\Database\Seeder;
 
 class OpdSeeder extends Seeder
@@ -10,11 +10,11 @@ class OpdSeeder extends Seeder
     public function run(): void
     {
         // JANGAN truncate, karena ada FK dari users
-        // Opd::truncate();
+        // Dinastruncate();
 
         // Karena kamu pakai migrate:fresh --seed,
         // tabel opd PASTI kosong, jadi kita langsung insert saja.
-        Opd::insert([
+        Dinas::insert([
             [
                 'name'       => 'Dinas Komunikasi dan Informatika',
                 'type'       => 'diskominfo',

@@ -59,8 +59,9 @@ class ConfigurationItemController extends Controller
     {
         $query = ConfigurationItem::with('ownerOpd');
 
-        if ($request->user()->opd_id) {
-            $query->where('owner_opd_id', $request->user()->opd_id);
+        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
+        if ($userDinasId) {
+            $query->where('owner_opd_id', $userDinasId);
         }
 
         if ($type = $request->query('type')) {
@@ -151,11 +152,12 @@ class ConfigurationItemController extends Controller
             'relation_note' => 'nullable|string',
         ]);
 
-        if (!$request->user()->opd_id) {
+        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
+        if (!$userDinasId) {
             return response()->json(['message' => 'User has no OPD assigned'], 422);
         }
 
-        $data['owner_opd_id'] = $request->user()->opd_id;
+        $data['owner_opd_id'] = $request->user()->dinas_id ?? $request->user()->opd_id;
         // default awal, nanti bisa di-update dari risk register
         $data['risk_level']   = $data['criticality'] ?? 'low';
 

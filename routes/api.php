@@ -27,8 +27,7 @@ Route::post('/auth/dev/login', [DevLoginController::class, 'login'])
 Route::get('/ping', fn () => response()->json(['message' => 'pong 🏓']))
     ->name('ping');
 
-Route::get('sso/callback', fn () => response()->json(['message' => 'pong 🏓']))
-    ->name('ping');
+Route::get('sso/callback', [AuthController::class,'SSOCallback'])->name('sso.callback');
 
 Route::post('/v1/rfc',      [RfcController::class, 'store'])->name('rfc.store');
 
@@ -131,6 +130,14 @@ Route::get('/sso/callback',[AuthController::class,'SSOCallback']);
         Route::get('reports/change-summary',   [ReportController::class, 'changeSummary']);
         Route::get('reports/patch-compliance',[ReportController::class, 'patchCompliance']);
     });
+            /**
+         * Notifications
+         *  - GET  /api/v1/notifications
+         *  - POST /api/v1/notifications/{notification}/read
+         */
+        Route::get('notifications', [NotificationController::class, 'index']);
+        Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+
 
 /**
  * Fallback JSON (API-friendly)

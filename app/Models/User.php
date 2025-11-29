@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Role;
+use App\Models\Dinas;
 
 class User extends Authenticatable
 {
@@ -18,14 +20,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'email_verified_at',
-
-        // tambahan untuk SSO & SIMANTIC
+        'nip',
+        'jenis_kelamin',
+        'role_id',
+        'dinas_id',
+        'unit_kerja_id',
         'sso_id',
-        'role',
-        'opd_id',
-        'is_active',
-        'last_login_at',
     ];
 
     /**
@@ -33,17 +33,12 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
      * Casting tipe data
      */
-    protected $casts = [
-        'last_login_at' => 'datetime',
-        'is_active'     => 'boolean',
-        'email_verified_at' => 'datetime',
-    ];
+    protected $casts = [];
 
     /* -------------------------------------------------------------------
      |  RELASI-RELASI DATA SIMANTIC
@@ -53,7 +48,19 @@ class User extends Authenticatable
     // User → OPD (belongsTo)
     public function opd()
     {
-        return $this->belongsTo(Opd::class);
+        return $this->belongsTo(Dinas::class);
+    }
+
+    // User → Dinas (belongsTo via dinas_id)
+    public function dinas()
+    {
+        return $this->belongsTo(Dinas::class, 'dinas_id');
+    }
+
+    // User → Role (belongsTo)
+    public function roleObj()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
     // User sebagai pengaju RFC
@@ -85,11 +92,38 @@ class User extends Authenticatable
      |--------------------------------------------------------------------
      */
 
-    public function isStaff()         { return $this->role === 'staff'; }
-    public function isAdminOpd()      { return $this->role === 'admin_opd'; }
-    public function isKasi()          { return $this->role === 'kepala_seksi'; }
-    public function isKabid()         { return $this->role === 'kepala_bidang'; }
-    public function isKadis()         { return $this->role === 'kepala_dinas'; }
-    public function isAuditor()       { return $this->role === 'auditor'; }
-    public function isDiskominfo()    { return $this->role === 'diskominfo'; }
+    public function isStaff()
+    {
+        return ($this->roleObj?->slug ?? $this->role ?? null) === 'staff';
+    }
+
+    public function isAdminOpd()
+    {
+        return ($this->roleObj?->slug ?? $this->role ?? null) === 'admin_opd';
+    }
+
+    public function isKasi()
+    {
+        return ($this->roleObj?->slug ?? $this->role ?? null) === 'kepala_seksi';
+    }
+
+    public function isKabid()
+    {
+        return ($this->roleObj?->slug ?? $this->role ?? null) === 'kepala_bidang';
+    }
+
+    public function isKadis()
+    {
+        return ($this->roleObj?->slug ?? $this->role ?? null) === 'kepala_dinas';
+    }
+
+    public function isAuditor()
+    {
+        return ($this->roleObj?->slug ?? $this->role ?? null) === 'auditor';
+    }
+
+    public function isDiskominfo()
+    {
+        return ($this->roleObj?->slug ?? $this->role ?? null) === 'diskominfo';
+    }
 }

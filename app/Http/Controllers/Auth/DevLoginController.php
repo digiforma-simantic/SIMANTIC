@@ -52,7 +52,7 @@ use Illuminate\Support\Facades\Hash;
  *                 @OA\Property(property="name", type="string", example="Admin Change"),
  *                 @OA\Property(property="email", type="string", example="admin.change@example.com"),
  *                 @OA\Property(property="role", type="string", example="admin_change"),
- *                 @OA\Property(property="opd_id", type="integer", example=1)
+ *                 @OA\Property(property="dinas_id", type="integer", example=1)
  *             )
  *         )
  *     ),
@@ -110,8 +110,9 @@ class DevLoginController extends Controller
                 'id'    => $user->id,
                 'name'  => $user->name,
                 'email' => $user->email,
-                'role'  => $user->role,
-                'opd_id'=> $user->opd_id,
+                'role'  => $user->roleObj?->slug ?? $user->role,
+                'dinas_id'=> $user->dinas_id ?? $user->opd_id,
+                'sso_id'  => $user->sso_id ?? null,
             ],
         ], 200);
     }

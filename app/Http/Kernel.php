@@ -8,9 +8,10 @@ class Kernel extends HttpKernel
 {
     /**
      * Global HTTP middleware stack.
+     *
+     * Middleware di sini selalu dijalankan untuk setiap request.
      */
     protected $middleware = [
-        // Middleware global (aman minimal begini)
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
@@ -29,12 +30,15 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+
+            // ⛔ CSRF DIMATIKAN DULU (supaya Swagger / API tidak kena 419)
+            // \App\Http\Middleware\VerifyCsrfToken::class,
+
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
         'api' => [
-            // throttle & bindings
+            // API tidak pakai session & tidak pakai CSRF
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -52,7 +56,8 @@ class Kernel extends HttpKernel
         'signed'           => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle'         => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified'         => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        // kalau kamu bikin ScopeDinas, tambahkan aliasnya:
+
+        // middleware custom kamu
         'scope.dinas'      => \App\Http\Middleware\ScopeDinas::class,
     ];
 }

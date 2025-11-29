@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('opd', function (Blueprint $table) {
+        Schema::create('dinas', function (Blueprint $table) {
             $table->id(); // BIGINT, PK
             $table->string('name', 200);
             $table->enum('type', ['dinas', 'diskominfo', 'badan']);
@@ -19,6 +19,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('opd');
+        Schema::dropIfExists('dinas');
     }
 };

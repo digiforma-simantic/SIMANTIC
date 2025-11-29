@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Opd extends Model
+class Dinas extends Model
 {
     protected $table = 'opd';
 
