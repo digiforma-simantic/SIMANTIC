@@ -9,90 +9,31 @@ class Rfc extends Model
     protected $table = 'rfc';
 
     protected $fillable = [
-        'ticket_code',
+        'rfc_service_id',
         'title',
         'description',
-        'category',
-        'urgency',
         'priority',          // low | medium | high
-        'status',
-        'requester_id',
-        'requester_opd_id',
-        'tech_note',
-        'request_at',
-        'asset_id',
+        'attachments',
+        'requested_at',
+        'asset_uuid',
+        'sso_id',
     ];
 
-    public function requester()
-    {
-        return $this->belongsTo(User::class, 'requester_id');
-    }
+    protected $casts = [
+        'attachments' => 'array',
+        'requested_at' => 'datetime',
+    ];
 
-    public function requesterOpd()
-    {
-        return $this->belongsTo(Dinas::class, 'requester_opd_id');
-    }
-
-    public function configurationItems()
-    {
-        return $this->belongsToMany(ConfigurationItem::class, 'rfc_ci', 'rfc_id', 'ci_id');
-    }
-
-    public function assessment()
-    {
-        return $this->hasOne(RfcAssessment::class);
-    }
-
+    // Legacy relationships - kept for backward compatibility with Change Management features
+    // Note: RFC is now Service Desk only and does not store requester_id or requester_opd_id
+    
     public function approvals()
     {
         return $this->hasMany(RfcApproval::class);
     }
 
-    // approval yang lagi menunggu (status pending)
-    public function currentApproval()
-    {
-        return $this->hasOne(RfcApproval::class)
-                    ->where('status', 'pending')
-                    ->latest(); // ambil pending terakhir kalau lebih dari 1
-    }
-
-    public function impactReport()
-    {
-        return $this->hasOne(ImpactReport::class);
-    }
-
-    public function changePlan()
-    {
-        return $this->hasOne(ChangePlan::class);
-    }
-
-    public function execution()
-    {
-        return $this->hasOne(ChangeExecution::class);
-    }
-
-    public function pir()
-    {
-        return $this->hasOne(Pir::class);
-    }
-
-    public function complianceReview()
-    {
-        return $this->hasOne(ComplianceReview::class);
-    }
-
-    public function maintenanceLogs()
-    {
-        return $this->hasMany(MaintenanceLog::class, 'ref_rfc_id');
-    }
-
-    public function patchDeployments()
-    {
-        return $this->hasMany(PatchDeployment::class, 'ref_rfc_id');
-    }
-
-    // relasi ke tabel rfc_attachments
-    public function attachments()
+    // relasi ke tabel rfc_attachments (renamed to avoid collision with attachments JSON column)
+    public function rfcAttachments()
     {
         return $this->hasMany(RfcAttachment::class);
     }

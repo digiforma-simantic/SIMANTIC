@@ -71,18 +71,13 @@ class RfcController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Rfc::with(['requester', 'requesterOpd', 'configurationItems', 'assessment'])
-            ->orderBy('created_at', 'desc');
+        $query = Rfc::orderBy('created_at', 'desc');
 
-        // Filter RFC hanya milik OPD user login (kecuali nanti ada role admin pusat)
-        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
-        if ($userDinasId) {
-            $query->where('requester_opd_id', $userDinasId);
-        }
+        // Keep the query simple: return RFC records without OPD/requester filtering.
 
         // Optional filter status
-        if ($status = $request->query('status')) {
-            $query->where('status', $status);
+        if ($priority = $request->query('priority')) {
+            $query->where('priority', $priority);
         }
 
         $perPage = (int) $request->query('per_page', 15);
@@ -113,82 +108,33 @@ class RfcController extends Controller
      */
     public function show(Request $request, Rfc $rfc)
     {
-        // Batasi akses per OPD (kecuali nanti kamu buat role admin pusat)
-        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
-        if ($userDinasId && $rfc->requester_opd_id !== $userDinasId) {
-            return response()->json([
-                'message' => 'You are not allowed to view this RFC',
-            ], 403);
-        }
-
-        $rfc->load([
-            'requester',
-            'requesterOpd',
-            'attachments',
-            'approvals.approver',
-            'currentApproval',
-        ]);
-
-        $user            = $request->user();
-        $currentApproval = $rfc->currentApproval;
-
-        // Hitung allowed actions berdasarkan approver yang sedang pending
-        $allowedActions = [];
-        if ($currentApproval && $user && $currentApproval->approver_id === $user->id) {
-            $allowedActions = ['need_info', 'approve', 'reject', 'forward'];
-        }
+        // No OPD/requester access control required for simplified RFC model.
+        // Load minimal relations if available.
+        $rfc->load(['rfcAttachments']);
 
         return response()->json([
             'data' => [
                 'id'          => $rfc->id,
-                'ticket_code' => $rfc->ticket_code,
-                'status'      => $rfc->status,
-                'category'    => $rfc->category,
-
-                // Header: Info pemohon
-                'requester' => [
-                    'name'     => $rfc->requester?->name,
-                    'position' => $rfc->requester?->roleObj?->slug ?? $rfc->requester?->role,
-                    'opd_name' => $rfc->requesterOpd?->name,
-                ],
+                'rfc_service_id' => $rfc->rfc_service_id,
 
                 // Detail RFC: untuk isi card di UI mobile
                 'rfc_detail' => [
                     'title'           => $rfc->title,
                     'affected_asset'  => null, // nanti bisa diisi dari relasi CI
                     'description'     => $rfc->description,
-                    'technician_note' => $rfc->tech_note,
+                    'technician_note' => null,
                     'priority_label'  => $rfc->priority_label, // Low / Medium / High
                     'priority_code'   => $rfc->priority,       // low / medium / high
+                    'asset_uuid'      => $rfc->asset_uuid,
+                    'sso_id'          => $rfc->sso_id,
+                    'requested_at'    => optional($rfc->requested_at)->toDateTimeString(),
                 ],
 
                 // File bukti
-                'attachments' => $rfc->attachments->map(function ($a) {
-                    return [
-                        'id'        => $a->id,
-                        'file_name' => $a->file_name,
-                        'url'       => $a->url,
-                        'mime_type' => $a->mime_type,
-                    ];
-                })->values(),
+                'attachments' => $rfc->attachments ?? [],
 
                 // Informasi approval berjenjang
-                'approval' => [
-                    'current_level'    => $currentApproval?->level,
-                    'current_decision' => $currentApproval?->decision,
-                    'your_role'        => $user?->roleObj?->slug ?? $user?->role,
-                    'allowed_actions'  => $allowedActions,
-                    'history'          => $rfc->approvals->map(function ($appr) {
-                        return [
-                            'level'      => $appr->level,
-                            'decision'   => $appr->decision,
-                            'status'     => $appr->isPending() ? 'pending' : 'done',
-                            'by'         => $appr->approver?->name,
-                            'note'       => $appr->reason,
-                            'decided_at' => optional($appr->decided_at)->toDateTimeString(),
-                        ];
-                    })->values(),
-                ],
+                // Removed approval-related details in simplified RFC model
             ],
         ]);
     }
@@ -204,146 +150,100 @@ class RfcController extends Controller
      * @OA\Post(
      *   path="/api/v1/rfc",
      *   tags={"RFC"},
-     *   summary="Buat RFC baru (Service Desk / OPD)",
+     *   summary="Buat RFC baru (Service Desk) - No Authentication Required",
      *   @OA\RequestBody(
      *     required=true,
+     *     description="Request dari aplikasi Service Desk",
      *     @OA\JsonContent(
-     *       oneOf={
-     *         @OA\Schema(
-     *           title="Request dari Service Desk",
-     *           required={"rfc_id","title","description","priority","request_at","asset_id"},
-     *           @OA\Property(
-     *             property="rfc_id",
-     *             type="string",
-     *             example="RFC-2025-0001",
-     *             description="ID RFC dari aplikasi Service Desk"
-     *           ),
-     *           @OA\Property(
-     *             property="title",
-     *             type="string",
-     *             example="Pembaruan Aplikasi E-Kinerja Versi 2.1"
-     *           ),
-     *           @OA\Property(
-     *             property="description",
-     *             type="string",
-     *             example="Diperlukan pembaruan modul pelaporan kinerja agar sesuai pedoman terbaru BKN."
-     *           ),
-     *           @OA\Property(
-     *             property="priority",
-     *             type="string",
-     *             enum={"low","medium","high"},
-     *             example="low",
-     *             description="Prioritas dari Service Desk"
-     *           ),
-     *           @OA\Property(
-     *             property="attachments",
-     *             type="array",
-     *             @OA\Items(
-     *               type="string",
-     *               example="https://api-sindra.co.id/storage/rfc/1.pdf"
-     *             ),
-     *             description="Daftar URL lampiran dari Service Desk"
-     *           ),
-     *           @OA\Property(
-     *             property="request_at",
-     *             type="string",
-     *             format="date-time",
-     *             example="2025-11-20T10:45:00+07:00",
-     *             description="Waktu request dibuat di aplikasi Service Desk"
-     *           ),
-     *           @OA\Property(
-     *             property="asset_id",
-     *             type="integer",
-     *             example=123,
-     *             description="ID aset terdampak dari aplikasi Service Desk"
-     *           )
-        *           @OA\Property(
-        *             property="sso_id",
-        *             type="string",
-        *             example="sds-12345",
-        *             description="SSO ID user pengirim dari Service Desk (opsional jika email tersedia)"
-        *           )
-        *           @OA\Property(
-        *             property="email",
-        *             type="string",
-        *             format="email",
-        *             example="user@example.com",
-        *             description="Email user pengirim dari Service Desk (opsional jika sso_id tersedia)"
-        *           )
-     *         ),
-     *         @OA\Schema(
-     *           title="Request dari user OPD (modul Change)",
-     *           required={"title","category","urgency","priority","ci_ids"},
-     *           @OA\Property(
-     *             property="title",
-     *             type="string",
-     *             example="Upgrade Database SIM Pegawai"
-     *           ),
-     *           @OA\Property(
-     *             property="description",
-     *             type="string",
-     *             example="Perlu upgrade ke versi 13 untuk compliance."
-     *           ),
-     *           @OA\Property(
-     *             property="category",
-     *             type="string",
-     *             enum={"normal","standard","emergency"},
-     *             example="normal"
-     *           ),
-     *           @OA\Property(
-     *             property="urgency",
-     *             type="string",
-     *             enum={"low","medium","high","critical"},
-     *             example="high"
-     *           ),
-     *           @OA\Property(
-     *             property="priority",
-     *             type="string",
-     *             enum={"low","medium","high"},
-     *             example="medium"
-     *           ),
-     *           @OA\Property(
-     *             property="ci_ids",
-     *             type="array",
-     *             description="Daftar ID Configuration Item yang terdampak",
-     *             @OA\Items(type="integer", example=101)
-     *           )
-     *         )
-     *       }
+     *       required={"title","priority"},
+     *       @OA\Property(
+     *         property="rfc_service_id",
+     *         type="string",
+     *         example="SD-2025-001",
+     *         description="ID RFC dari aplikasi Service Desk (atau gunakan rfc_id)"
+     *       ),
+     *       @OA\Property(
+     *         property="rfc_id",
+     *         type="string",
+     *         example="RFC-2025-0001",
+     *         description="ID RFC dari aplikasi Service Desk (alternatif dari rfc_service_id)"
+     *       ),
+     *       @OA\Property(
+     *         property="title",
+     *         type="string",
+     *         maxLength=255,
+     *         example="Pembaruan Aplikasi E-Kinerja Versi 2.1",
+     *         description="Judul RFC (required, max 255 karakter)"
+     *       ),
+     *       @OA\Property(
+     *         property="description",
+     *         type="string",
+     *         example="Diperlukan pembaruan modul pelaporan kinerja agar sesuai pedoman terbaru BKN.",
+     *         description="Deskripsi detail RFC (nullable)"
+     *       ),
+     *       @OA\Property(
+     *         property="priority",
+     *         type="string",
+     *         enum={"low","medium","high"},
+     *         example="high",
+     *         description="Prioritas RFC (required)"
+     *       ),
+     *       @OA\Property(
+     *         property="attachments",
+     *         type="array",
+     *         @OA\Items(type="string"),
+     *         example={"https://api-sindra.co.id/storage/rfc/doc1.pdf", "https://api-sindra.co.id/storage/rfc/img1.jpg"},
+     *         description="Array URL lampiran dari Service Desk (nullable)"
+     *       ),
+     *       @OA\Property(
+     *         property="requested_at",
+     *         type="string",
+     *         format="date-time",
+     *         example="2025-12-02 10:45:00",
+     *         description="Timestamp request dibuat di Service Desk (nullable, atau gunakan request_at)"
+     *       ),
+     *       @OA\Property(
+     *         property="asset_uuid",
+     *         type="string",
+     *         example="uuid-asset-123",
+     *         description="UUID aset terdampak (nullable)"
+     *       ),
+     *       @OA\Property(
+     *         property="sso_id",
+     *         type="string",
+     *         example="sso-user-12345",
+     *         description="SSO ID user pemohon (nullable, atau gunakan email)"
+     *       ),
+     *       @OA\Property(
+     *         property="email",
+     *         type="string",
+     *         format="email",
+     *         example="user@example.com",
+     *         description="Email user pemohon (nullable, alternatif dari sso_id)"
+     *       )
      *     )
      *   ),
      *   @OA\Response(
      *     response=201,
      *     description="RFC berhasil dibuat",
      *     @OA\JsonContent(
-     *       oneOf={
-     *         @OA\Schema(
-     *           title="Response dari Service Desk",
-     *           @OA\Property(property="message", type="string", example="RFC successfully created from Service Desk"),
-     *           @OA\Property(
-     *             property="data",
-     *             type="object",
-     *             @OA\Property(property="id", type="integer", example=1),
-     *             @OA\Property(property="ticket_code", type="string", example="RFC-2025-0001"),
-     *             @OA\Property(property="title", type="string", example="Pembaruan Aplikasi E-Kinerja Versi 2.1"),
-     *             @OA\Property(property="description", type="string"),
-     *             @OA\Property(property="category", type="string", example="normal"),
-     *             @OA\Property(property="urgency", type="string", example="low"),
-     *             @OA\Property(property="priority", type="string", example="low"),
-     *             @OA\Property(property="status", type="string", example="submitted")
-     *           )
-     *         ),
-     *         @OA\Schema(
-     *           title="Response dari user OPD",
-     *           @OA\Property(property="id", type="integer", example=2),
-     *           @OA\Property(property="title", type="string", example="Upgrade Database SIM Pegawai"),
-     *           @OA\Property(property="description", type="string"),
-     *           @OA\Property(property="category", type="string", example="normal"),
-     *           @OA\Property(property="urgency", type="string", example="high"),
-     *           @OA\Property(property="priority", type="string", example="medium"),
-     *           @OA\Property(property="status", type="string", example="submitted")
-     *         )
-     *       }
+     *       @OA\Property(property="status", type="boolean", example=true),
+     *       @OA\Property(property="message", type="string", example="RFC successfully created from Service Desk"),
+     *       @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         @OA\Property(property="id", type="integer", example=1),
+     *         @OA\Property(property="rfc_service_id", type="string", example="SD-2025-001"),
+     *         @OA\Property(property="title", type="string", example="Pembaruan Aplikasi E-Kinerja Versi 2.1"),
+     *         @OA\Property(property="description", type="string", example="Diperlukan pembaruan modul..."),
+     *         @OA\Property(property="priority", type="string", example="high"),
+     *         @OA\Property(property="attachments", type="array", @OA\Items(type="string")),
+     *         @OA\Property(property="requested_at", type="string", example="2025-12-02 10:45:00"),
+     *         @OA\Property(property="asset_uuid", type="string", example="uuid-asset-123"),
+     *         @OA\Property(property="sso_id", type="string", example="sso-user-12345"),
+     *         @OA\Property(property="created_at", type="string", example="2025-12-02 11:00:00"),
+     *         @OA\Property(property="updated_at", type="string", example="2025-12-02 11:00:00")
+     *       )
      *     )
      *   ),
      *   @OA\Response(
@@ -359,105 +259,54 @@ class RfcController extends Controller
 
     public function store(Request $request)
     {
-        // 1️⃣ Mode integrasi dari Service Desk (punya rfc_id)
-        if ($request->has('rfc_id')) {
-            $validated = $request->validate([
-                'rfc_id'        => 'required|string',
-                'title'         => 'required|string',
-                'description'   => 'required|string',
-                'priority'      => 'required|in:low,medium,high',
-                'attachments'   => 'array',
-                'attachments.*' => 'string',
-                'request_at'    => 'required|date',
-                'asset_id'      => 'required|integer',
-                // Optional mapping fields from Service Desk
-                'sso_id'        => 'nullable|string',
-                'email'         => 'nullable|email',
-            ]);
+        // Service Desk Integration - accept RFC data from external Service Desk system
+        $validated = $request->validate([
+            'rfc_id'             => 'nullable|string|max:255',
+            'rfc_service_id'     => 'nullable|string|max:255',
+            'title'              => 'required|string|max:255',
+            'description'        => 'nullable|string',
+            'priority'           => 'required|in:low,medium,high',
+            'attachments'        => 'nullable|array',
+            'attachments.*'      => 'string',
+            'requested_at'       => 'nullable|date',
+            'request_at'         => 'nullable|date',
+            'asset_uuid'         => 'nullable|string|max:255',
+            'asset_id'           => 'nullable|string|max:255', // legacy field
+            'sso_id'             => 'nullable|string|max:255',
+            'email'              => 'nullable|email',
+        ]);
 
+        // Map rfc_id or rfc_service_id to rfc_service_id field
+        $rfcServiceId = $validated['rfc_service_id'] ?? $validated['rfc_id'] ?? null;
 
-        // If request includes an sso_id or email for requester, map to internal user id
-        $requesterInternalId = null;
-        $ssoId = $request->input('sso_id');
-        $email = $request->input('email');
-        if (!empty($ssoId) || !empty($email)) {
-            $requester = null;
-            if (!empty($ssoId)) {
-                $requester = \App\Models\User::where('sso_id', $ssoId)->first();
-            }
-            if (! $requester && !empty($email)) {
-                $requester = \App\Models\User::where('email', $email)->first();
-            }
-            if ($requester) {
-                $requesterInternalId = $requester->id;
-            } else {
-                // Mapping failed. See if we should fallback to a service-desk user.
-                $fallbackEmail = env('SERVICE_DESK_FALLBACK_EMAIL', null);
-                if ($fallbackEmail) {
-                    // Find or create a fallback service desk user
-                    $firstDinas = \App\Models\Dinas::first();
-                    // Ensure fallback user has OPD (dinas_id) set so FK constraint is satisfied.
-                    $fallbackUser = \App\Models\User::updateOrCreate(
-                        ['email' => $fallbackEmail],
-                        [
-                            'name' => 'Service Desk',
-                            'password' => bcrypt(\Illuminate\Support\Str::random(24)),
-                            'sso_id' => 'service-desk',
-                            'role_id' => null, // optional, seeder can set a role
-                            'dinas_id' => $firstDinas?->id ?? null,
-                        ]
-                    );
-                        // Ensure a dinas_id exists in case the user existed with null before.
-                        if (empty($fallbackUser->dinas_id) && $firstDinas) {
-                            $fallbackUser->dinas_id = $firstDinas->id;
-                            $fallbackUser->save();
-                        }
-                        $requesterInternalId = $fallbackUser->id;
-                } else {
-                    // Return validation error: mapping failed
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Requester not found: please include sso_id or email that maps to an existing user',
-                    ], 422);
-                }
-            }
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'Please include sso_id or email to identify requester',
-            ], 422);
-        }
-
+        // Create RFC with Service Desk fields only
         $rfc = Rfc::create([
-        'ticket_code'      => $validated['rfc_id'],
-        'title'            => $validated['title'],
-        'description'      => $validated['description'],
-        'category'         => 'normal',
-        'urgency'          => $validated['priority'],
-        'priority'         => $validated['priority'],
-        'status'           => 'submitted',
-        'requester_id'     => $requesterInternalId,
-        'requester_opd_id' => optional(\App\Models\User::find($requesterInternalId))->dinas_id ?? null,
-        'tech_note'        => null,
-        'request_at'       => $validated['request_at'],
-        'asset_id'         => $validated['asset_id'],
-    ]);   // ✅ cukup begini
+            'rfc_service_id' => $rfcServiceId,
+            'title'          => $validated['title'],
+            'description'    => $validated['description'] ?? null,
+            'priority'       => $validated['priority'],
+            'attachments'    => $validated['attachments'] ?? null,
+            'requested_at'   => $validated['requested_at'] ?? $validated['request_at'] ?? now(),
+            'asset_uuid'     => $validated['asset_uuid'] ?? $validated['asset_id'] ?? null,
+            'sso_id'         => $validated['sso_id'] ?? $validated['email'] ?? null,
+        ]);
 
-
-            if (!empty($validated['attachments'])) {
-                foreach ($validated['attachments'] as $url) {
-                    RfcAttachment::create([
-                        'rfc_id' => $rfc->id,
-                        'url'    => $url,
-                    ]);
-                }
-            }
-
-            return response()->json([
-                'status'=> true,
-                'message' => 'RFC successfully created from Service Desk',
-                'data'    => $rfc->load('attachments'),
-            ], 201);
-        }
+        return response()->json([
+            'status'  => true,
+            'message' => 'RFC successfully created from Service Desk',
+            'data'    => [
+                'id'              => $rfc->id,
+                'rfc_service_id'  => $rfc->rfc_service_id,
+                'title'           => $rfc->title,
+                'description'     => $rfc->description,
+                'priority'        => $rfc->priority,
+                'attachments'     => $rfc->attachments,
+                'requested_at'    => optional($rfc->requested_at)->toDateTimeString(),
+                'asset_uuid'      => $rfc->asset_uuid,
+                'sso_id'          => $rfc->sso_id,
+                'created_at'      => $rfc->created_at->toDateTimeString(),
+                'updated_at'      => $rfc->updated_at->toDateTimeString(),
+            ],
+        ], 201);
     }
 }

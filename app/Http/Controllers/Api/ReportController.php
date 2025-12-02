@@ -31,22 +31,19 @@ class ReportController extends Controller
      *     @OA\JsonContent(
      *       type="object",
      *       @OA\Property(property="overview", type="object",
-     *         @OA\Property(property="total_rfc", type="integer", example=124),
-     *         @OA\Property(property="approved", type="integer", example=87),
-     *         @OA\Property(property="rejected", type="integer", example=12),
-     *         @OA\Property(property="in_progress", type="integer", example=25)
+     *         @OA\Property(property="total_rfc", type="integer", example=124)
      *       ),
-     *       @OA\Property(property="by_category", type="object",
-     *         @OA\Property(property="normal", type="integer", example=72),
-     *         @OA\Property(property="standard", type="integer", example=40),
-     *         @OA\Property(property="emergency", type="integer", example=12)
+     *       @OA\Property(property="by_priority", type="object",
+     *         @OA\Property(property="low", type="integer", example=72),
+     *         @OA\Property(property="medium", type="integer", example=40),
+     *         @OA\Property(property="high", type="integer", example=12)
      *       ),
      *       @OA\Property(property="chart", type="object",
      *         @OA\Property(property="labels", type="array",
-     *           @OA\Items(type="string", example="approved")
+     *           @OA\Items(type="string", example="Low")
      *         ),
      *         @OA\Property(property="data", type="array",
-     *           @OA\Items(type="integer", example=30)
+     *           @OA\Items(type="integer", example=72)
      *         )
      *       )
      *     )
@@ -55,33 +52,27 @@ class ReportController extends Controller
      */
     public function changeSummary()
     {
-        // Data agregat RFC
+        // Data agregat RFC (now from Service Desk)
         $total = Rfc::count();
-        $approved = Rfc::where('status', 'approved')->count();
-        $rejected = Rfc::where('status', 'rejected')->count();
-        $inProgress = Rfc::whereIn('status', ['submitted', 'under_review'])->count();
-
-        // Data kategori RFC
-        $byCategory = [
-            'normal'    => Rfc::where('category', 'normal')->count(),
-            'standard'  => Rfc::where('category', 'standard')->count(),
-            'emergency' => Rfc::where('category', 'emergency')->count(),
+        
+        // RFC now uses priority instead of status/category
+        $byPriority = [
+            'low'    => Rfc::where('priority', 'low')->count(),
+            'medium' => Rfc::where('priority', 'medium')->count(),
+            'high'   => Rfc::where('priority', 'high')->count(),
         ];
 
         // Format untuk grafik
         $chart = [
-            'labels' => ['Approved', 'Rejected', 'In Progress'],
-            'data'   => [$approved, $rejected, $inProgress],
+            'labels' => ['Low', 'Medium', 'High'],
+            'data'   => [$byPriority['low'], $byPriority['medium'], $byPriority['high']],
         ];
 
         return response()->json([
             'overview' => [
-                'total_rfc'   => $total,
-                'approved'    => $approved,
-                'rejected'    => $rejected,
-                'in_progress' => $inProgress,
+                'total_rfc' => $total,
             ],
-            'by_category' => $byCategory,
+            'by_priority' => $byPriority,
             'chart'       => $chart,
         ]);
     }

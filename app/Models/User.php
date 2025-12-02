@@ -63,7 +63,8 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-    // User sebagai pengaju RFC
+    // Legacy: User as RFC requester (RFC now from Service Desk only)
+    // Kept for backward compatibility - relationship no longer used
     public function requestedRfcs()
     {
         return $this->hasMany(Rfc::class, 'requester_id');

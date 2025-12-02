@@ -145,9 +145,9 @@ class ChangeApprovalController extends Controller
      */
     protected function notifyServiceDeskTechnician(Rfc $rfc, RfcApproval $approval): void
     {
-        // Kalau RFC ini bukan hasil integrasi Service Desk (tidak punya ticket_code),
+        // Kalau RFC ini bukan hasil integrasi Service Desk (tidak punya rfc_service_id),
         // kamu bisa skip.
-        if (!$rfc->ticket_code) {
+        if (!$rfc->rfc_service_id) {
             return;
         }
 
@@ -156,8 +156,7 @@ class ChangeApprovalController extends Controller
                 ->post(
                     rtrim(config('services.servicedesk.base_url'), '/') . '/internal/rfc/approval-callback',
                     [
-                        'rfc_id'        => $rfc->ticket_code,  // ID di sistem Service Desk
-                        'status'        => $rfc->status,
+                        'rfc_id'        => $rfc->rfc_service_id,  // ID di sistem Service Desk
                         'decision'      => $approval->decision,
                         'level'         => $approval->level,
                         'note'          => $approval->reason,
@@ -174,27 +173,23 @@ class ChangeApprovalController extends Controller
     }
 
     /**
-     * 🔔 Notifikasi ke pemohon RFC (user OPD)
+     * 🔔 Notifikasi ke pemohon RFC (Service Desk integration)
      *
-     * Implementasi bebas:
-     * - bisa tulis ke tabel notifications sendiri
-     * - atau kirim email / push, dsb.
+     * Note: RFC is now created by Service Desk, so notification should be
+     * sent back to Service Desk rather than internal users.
+     * This method is kept for future extension.
      */
     protected function notifyRequester(Rfc $rfc, RfcApproval $approval): void
     {
-        if (!$rfc->requester) {
-            return;
-        }
-
-        // Contoh sangat sederhana: pakai log dulu
-        logger()->info('Notify requester about RFC approval decision', [
-            'requester_id' => $rfc->requester_id,
+        // Log the approval decision
+        logger()->info('RFC approval decision recorded', [
             'rfc_id'       => $rfc->id,
+            'rfc_service_id' => $rfc->rfc_service_id,
             'decision'     => $approval->decision,
             'level'        => $approval->level,
         ]);
 
-        // Nanti bisa kamu ganti dengan:
+        // Future: Implement internal notification system
         // - model Notification
         // - event + listener
         // - email, dsb.

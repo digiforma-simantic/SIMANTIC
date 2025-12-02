@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ConfigurationItemSeeder::class,
             RiskRegisterSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

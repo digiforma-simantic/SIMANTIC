@@ -2,21 +2,65 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logoSimantic from "../assets/logo-simantic-2.png";
 
+// Base URL API backend Laravel
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
 export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // contoh tindakan setelah submit
-    localStorage.setItem("isLoggedIn", "true");
-    navigate("/Admin/DashboardAdmin");
+    const form = e.target;
+    const body = {
+      email: form.email.value,
+      password: form.password.value,
+    };
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/dev/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      // Coba parse JSON sekali saja
+      let data = null;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        console.warn("Response is not valid JSON:", parseErr);
+      }
+
+      if (!res.ok) {
+        console.error("Login failed:", res.status, data);
+        alert((data && data.message) || "Login failed");
+        return;
+      }
+
+      // Simpan token & user info
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data?.user) {
+        localStorage.setItem("user_email", data.user.email || "");
+      }
+      localStorage.setItem("isLoggedIn", "true");
+
+      // Redirect setelah login
+navigate('/admin/dashboard');
+    } catch (err) {
+      console.error("Login error", err);
+      alert("Failed to login");
+    }
   }
 
   return (
     <div className="min-h-screen bg-[#F7FCFF] flex items-center justify-center p-4 font-['Geologica']">
       <div className="w-full max-w-4xl bg-[#F2FAFF] rounded-lg shadow-sm py-14">
-
         {/* Header */}
         <div className="w-full px-6 sm:px-8 pb-4">
           <h1 className="text-center text-xl sm:text-2xl font-extrabold text-[#00223E]">
@@ -26,19 +70,23 @@ export default function Login() {
 
         {/* Body */}
         <div className="flex flex-col lg:flex-row">
-
           {/* Left Logo */}
           <div className="flex flex-1 items-center justify-center lg:border-r border-gray-300 p-8 sm:p-10">
             <div className="flex items-center gap-4">
-              <img src={logoSimantic} alt="SIMANTIC" className="h-16 w-auto object-contain" />
-              <span className="text-2xl font-extrabold text-[#00223E] uppercase">SIMANTIC</span>
+              <img
+                src={logoSimantic}
+                alt="SIMANTIC"
+                className="h-16 w-auto object-contain"
+              />
+              <span className="text-2xl font-extrabold text-[#00223E] uppercase">
+                SIMANTIC
+              </span>
             </div>
           </div>
 
           {/* Right Form */}
           <div className="flex flex-col flex-1 p-8 sm:p-10">
             <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
-
               {/* Email */}
               <input
                 name="email"
@@ -61,11 +109,15 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                  aria-label={
+                    showPassword
+                      ? "Sembunyikan kata sandi"
+                      : "Tampilkan kata sandi"
+                  }
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700"
                 >
                   {showPassword ? (
-                    /* Eye open */
+                    // Eye open
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -87,7 +139,7 @@ export default function Login() {
                       />
                     </svg>
                   ) : (
-                    /* Eye slash */
+                    // Eye slash
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -107,7 +159,10 @@ export default function Login() {
               </div>
 
               <div className="flex justify-end">
-                <Link to="/forgot-password" className="text-sm font-bold text-[#00223E] hover:underline">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-bold text-[#00223E] hover:underline"
+                >
                   Lupa Kata Sandi?
                 </Link>
               </div>
@@ -119,7 +174,6 @@ export default function Login() {
               >
                 Masuk
               </button>
-
             </form>
           </div>
         </div>
@@ -128,6 +182,7 @@ export default function Login() {
   );
 }
 
+// (Opsional) ikon Google kalau nanti mau dipakai login Google
 function GoogleIcon({ className = "h-5 w-5" }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">

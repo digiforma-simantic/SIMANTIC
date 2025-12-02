@@ -24,6 +24,8 @@ class Dinas extends Model
         return $this->hasMany(ConfigurationItem::class, 'owner_opd_id');
     }
 
+    // Legacy: RFCs requested by this OPD (RFC now from Service Desk only)
+    // Kept for backward compatibility - relationship no longer used
     public function rfcsAsRequester()
     {
         return $this->hasMany(Rfc::class, 'requester_opd_id');

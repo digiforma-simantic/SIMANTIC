@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id(); // BIGINT, PK
             $table->string('name', 255);
             $table->string('type', 100);
-            $table->foreignId('owner_opd_id')->constrained('opd');
+            $table->foreignId('owner_opd_id')->constrained('dinas');
             $table->enum('environment', ['production', 'staging', 'development']);
             $table->enum('criticality', ['low', 'medium', 'high', 'critical']);
             $table->enum('status', ['active', 'under_change', 'retired', 'maintenance']);

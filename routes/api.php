@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\DevLoginController;
 use App\Http\Controllers\Api\ConfigurationItemController;
 use App\Http\Controllers\Api\RfcController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\CmdbController;
 use App\Http\Controllers\ChangeController;
 use App\Http\Controllers\ChangeApprovalController;
@@ -65,6 +66,11 @@ Route::get('/sso/callback',[AuthController::class,'SSOCallback']);
          */
         Route::get('rfc',       [RfcController::class, 'index'])->name('rfc.index');
         Route::get('rfc/{rfc}', [RfcController::class, 'show' ])->name('rfc.show');
+
+        /**
+         * Notifications - staff specific endpoint
+         */
+        Route::get('notification/staff', [NotificationController::class, 'staff'])->name('notification.staff');
 
         /**
          * Change Management
@@ -129,14 +135,14 @@ Route::get('/sso/callback',[AuthController::class,'SSOCallback']);
          */
         Route::get('reports/change-summary',   [ReportController::class, 'changeSummary']);
         Route::get('reports/patch-compliance',[ReportController::class, 'patchCompliance']);
-    });
-            /**
-         * Notifications
-         *  - GET  /api/v1/notifications
-         *  - POST /api/v1/notifications/{notification}/read
-         */
-        Route::get('notifications', [NotificationController::class, 'index']);
-        Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+                /**
+                 * Notifications REST (existing endpoints, protected by auth:sanctum)
+                 *  - GET  /api/v1/notifications
+                 *  - POST /api/v1/notifications/{notification}/read
+                 */
+                Route::get('notifications', [NotificationController::class, 'index']);
+                Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+        });
 
 
 /**
