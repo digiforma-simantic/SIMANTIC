@@ -737,6 +737,145 @@
                 ]
             }
         },
+        "/api/v1/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Daftar notifikasi user login",
+                "description": "GET /api/v1/notifications\n\nMenampilkan daftar notifikasi milik user login.",
+                "operationId": "b5f7780e452f902c5152be76449f16ab",
+                "parameters": [
+                    {
+                        "name": "only_unread",
+                        "in": "query",
+                        "description": "Jika =1, hanya ambil notifikasi yang belum dibaca",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil daftar notifikasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 10
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Permintaan disetujui"
+                                            },
+                                            "message": {
+                                                "type": "string",
+                                                "example": "Perubahan Install Aplikasi Kerja telah disetujui Kepala Dinas."
+                                            },
+                                            "ref_type": {
+                                                "type": "string",
+                                                "example": "rfc"
+                                            },
+                                            "ref_id": {
+                                                "type": "integer",
+                                                "example": 5
+                                            },
+                                            "is_read": {
+                                                "type": "boolean",
+                                                "example": false
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "example": "2025-08-17T10:30:00Z"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/notification/staff": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Daftar notifikasi staf pengaju (grouped: today/yesterday)",
+                "description": "GET /api/v1/notification/staff\nReturn notifications for staff (requester) grouped by today / yesterday.",
+                "operationId": "aa5140be3ab171a61623350e402cab9e",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil notifikasi staff (grouped)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "today": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "description": {
+                                                                "type": "string"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string"
+                                                            },
+                                                            "time_label": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "yesterday": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/patch-catalogs": {
             "get": {
                 "tags": [
@@ -1276,33 +1415,21 @@
                                                 "total_rfc": {
                                                     "type": "integer",
                                                     "example": 124
-                                                },
-                                                "approved": {
-                                                    "type": "integer",
-                                                    "example": 87
-                                                },
-                                                "rejected": {
-                                                    "type": "integer",
-                                                    "example": 12
-                                                },
-                                                "in_progress": {
-                                                    "type": "integer",
-                                                    "example": 25
                                                 }
                                             },
                                             "type": "object"
                                         },
-                                        "by_category": {
+                                        "by_priority": {
                                             "properties": {
-                                                "normal": {
+                                                "low": {
                                                     "type": "integer",
                                                     "example": 72
                                                 },
-                                                "standard": {
+                                                "medium": {
                                                     "type": "integer",
                                                     "example": 40
                                                 },
-                                                "emergency": {
+                                                "high": {
                                                     "type": "integer",
                                                     "example": 12
                                                 }
@@ -1315,14 +1442,14 @@
                                                     "type": "array",
                                                     "items": {
                                                         "type": "string",
-                                                        "example": "approved"
+                                                        "example": "Low"
                                                     }
                                                 },
                                                 "data": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "integer",
-                                                        "example": 30
+                                                        "example": 72
                                                     }
                                                 }
                                             },
@@ -1540,129 +1667,75 @@
                 "tags": [
                     "RFC"
                 ],
-                "summary": "Buat RFC baru (Service Desk / OPD)",
+                "summary": "Buat RFC baru (Service Desk) - No Authentication Required",
                 "description": "POST /api/v1/rfc\n\nNOTE:\n- Kalau body mengandung \"rfc_id\" → dianggap request dari aplikasi SERVICE DESK.\n- Kalau body mengandung \"ci_ids\" → dianggap request dari user OPD (flow lama + auto assessment).",
                 "operationId": "a499ce14e083680fe755781dce428af1",
                 "requestBody": {
+                    "description": "Request dari aplikasi Service Desk",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "oneOf": [
-                                    {
-                                        "title": "Request dari Service Desk",
-                                        "required": [
-                                            "rfc_id",
-                                            "title",
-                                            "description",
-                                            "priority",
-                                            "request_at",
-                                            "asset_id"
-                                        ],
-                                        "properties": {
-                                            "rfc_id": {
-                                                "description": "ID RFC dari aplikasi Service Desk",
-                                                "type": "string",
-                                                "example": "RFC-2025-0001"
-                                            },
-                                            "title": {
-                                                "type": "string",
-                                                "example": "Pembaruan Aplikasi E-Kinerja Versi 2.1"
-                                            },
-                                            "description": {
-                                                "type": "string",
-                                                "example": "Diperlukan pembaruan modul pelaporan kinerja agar sesuai pedoman terbaru BKN."
-                                            },
-                                            "priority": {
-                                                "description": "Prioritas dari Service Desk",
-                                                "type": "string",
-                                                "enum": [
-                                                    "low",
-                                                    "medium",
-                                                    "high"
-                                                ],
-                                                "example": "low"
-                                            },
-                                            "attachments": {
-                                                "description": "Daftar URL lampiran dari Service Desk",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string",
-                                                    "example": "https://api-sindra.co.id/storage/rfc/1.pdf"
-                                                }
-                                            },
-                                            "request_at": {
-                                                "description": "Waktu request dibuat di aplikasi Service Desk",
-                                                "type": "string",
-                                                "format": "date-time",
-                                                "example": "2025-11-20T10:45:00+07:00"
-                                            },
-                                            "asset_id": {
-                                                "description": "ID aset terdampak dari aplikasi Service Desk",
-                                                "type": "integer",
-                                                "example": 123
-                                            }
-                                        },
-                                        "type": "object"
+                                "required": [
+                                    "title",
+                                    "priority"
+                                ],
+                                "properties": {
+                                    "rfc_service_id": {
+                                        "description": "ID RFC dari aplikasi Service Desk",
+                                        "type": "string",
+                                        "example": "SD-2025-001"
                                     },
-                                    {
-                                        "title": "Request dari user OPD (modul Change)",
-                                        "required": [
-                                            "title",
-                                            "category",
-                                            "urgency",
-                                            "priority",
-                                            "ci_ids"
+                                    "title": {
+                                        "description": "Judul RFC (required, max 255 karakter)",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Upgrade Server Production"
+                                    },
+                                    "description": {
+                                        "description": "Deskripsi detail RFC (nullable)",
+                                        "type": "string",
+                                        "example": "Perlu upgrade RAM"
+                                    },
+                                    "priority": {
+                                        "description": "Prioritas RFC (required)",
+                                        "type": "string",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high"
                                         ],
-                                        "properties": {
-                                            "title": {
-                                                "type": "string",
-                                                "example": "Upgrade Database SIM Pegawai"
-                                            },
-                                            "description": {
-                                                "type": "string",
-                                                "example": "Perlu upgrade ke versi 13 untuk compliance."
-                                            },
-                                            "category": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "normal",
-                                                    "standard",
-                                                    "emergency"
-                                                ],
-                                                "example": "normal"
-                                            },
-                                            "urgency": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "low",
-                                                    "medium",
-                                                    "high",
-                                                    "critical"
-                                                ],
-                                                "example": "high"
-                                            },
-                                            "priority": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "low",
-                                                    "medium",
-                                                    "high"
-                                                ],
-                                                "example": "medium"
-                                            },
-                                            "ci_ids": {
-                                                "description": "Daftar ID Configuration Item yang terdampak",
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "integer",
-                                                    "example": 101
-                                                }
-                                            }
+                                        "example": "high"
+                                    },
+                                    "attachments": {
+                                        "description": "Array URL lampiran dari Service Desk (nullable)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
                                         },
-                                        "type": "object"
+                                        "example": [
+                                            "file1.pdf",
+                                            "file2.jpg"
+                                        ]
+                                    },
+                                    "requested_at": {
+                                        "description": "Timestamp request dibuat di Service Desk (nullable)",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-12-02 10:00:00"
+                                    },
+                                    "asset_uuid": {
+                                        "description": "UUID aset terdampak (nullable)",
+                                        "type": "string",
+                                        "example": "uuid-123"
+                                    },
+                                    "sso_id": {
+                                        "description": "SSO ID user pemohon (nullable)",
+                                        "type": "string",
+                                        "example": "sso-user-001"
                                     }
-                                ]
+                                },
+                                "type": "object"
                             }
                         }
                     }
@@ -1673,87 +1746,69 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "title": "Response dari Service Desk",
-                                            "properties": {
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "RFC successfully created from Service Desk"
-                                                },
-                                                "data": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "integer",
-                                                            "example": 1
-                                                        },
-                                                        "ticket_code": {
-                                                            "type": "string",
-                                                            "example": "RFC-2025-0001"
-                                                        },
-                                                        "title": {
-                                                            "type": "string",
-                                                            "example": "Pembaruan Aplikasi E-Kinerja Versi 2.1"
-                                                        },
-                                                        "description": {
-                                                            "type": "string"
-                                                        },
-                                                        "category": {
-                                                            "type": "string",
-                                                            "example": "normal"
-                                                        },
-                                                        "urgency": {
-                                                            "type": "string",
-                                                            "example": "low"
-                                                        },
-                                                        "priority": {
-                                                            "type": "string",
-                                                            "example": "low"
-                                                        },
-                                                        "status": {
-                                                            "type": "string",
-                                                            "example": "submitted"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
-                                        {
-                                            "title": "Response dari user OPD",
+                                        "message": {
+                                            "type": "string",
+                                            "example": "RFC successfully created from Service Desk"
+                                        },
+                                        "data": {
                                             "properties": {
                                                 "id": {
                                                     "type": "integer",
-                                                    "example": 2
+                                                    "example": 1
+                                                },
+                                                "rfc_service_id": {
+                                                    "type": "string",
+                                                    "example": "SD-2025-001"
                                                 },
                                                 "title": {
                                                     "type": "string",
-                                                    "example": "Upgrade Database SIM Pegawai"
+                                                    "example": "Upgrade Server Production"
                                                 },
                                                 "description": {
-                                                    "type": "string"
-                                                },
-                                                "category": {
                                                     "type": "string",
-                                                    "example": "normal"
-                                                },
-                                                "urgency": {
-                                                    "type": "string",
-                                                    "example": "high"
+                                                    "example": "Perlu upgrade RAM"
                                                 },
                                                 "priority": {
                                                     "type": "string",
-                                                    "example": "medium"
+                                                    "example": "high"
                                                 },
-                                                "status": {
+                                                "attachments": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "file1.pdf"
+                                                    }
+                                                },
+                                                "requested_at": {
                                                     "type": "string",
-                                                    "example": "submitted"
+                                                    "example": "2025-12-02 10:00:00"
+                                                },
+                                                "asset_uuid": {
+                                                    "type": "string",
+                                                    "example": "uuid-123"
+                                                },
+                                                "sso_id": {
+                                                    "type": "string",
+                                                    "example": "sso-user-001"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "2025-12-02 11:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "example": "2025-12-02 11:00:00"
                                                 }
                                             },
                                             "type": "object"
                                         }
-                                    ]
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -2059,23 +2114,23 @@
                 "tags": [
                     "Change Management"
                 ],
-                "summary": "Daftar Change Request milik OPD user login",
+                "summary": "List Change Requests (Service Desk RFCs)",
                 "operationId": "35d87db82c2f376f4600bd4cb684222d",
                 "parameters": [
                     {
-                        "name": "status",
+                        "name": "priority",
                         "in": "query",
-                        "description": "Filter status change (misal: submitted, planning, approved)",
+                        "description": "Filter by priority (low, medium, high)",
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "example": "submitted"
+                            "example": "high"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Daftar Change Request berhasil diambil",
+                        "description": "List of RFCs from Service Desk",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2086,25 +2141,17 @@
                                                 "type": "integer",
                                                 "example": 101
                                             },
+                                            "rfc_service_id": {
+                                                "type": "string",
+                                                "example": "SD-2025-001"
+                                            },
                                             "title": {
                                                 "type": "string",
                                                 "example": "Upgrade Database SIM Pegawai"
                                             },
-                                            "category": {
-                                                "type": "string",
-                                                "example": "normal"
-                                            },
-                                            "urgency": {
-                                                "type": "string",
-                                                "example": "high"
-                                            },
                                             "priority": {
                                                 "type": "string",
-                                                "example": "P2"
-                                            },
-                                            "status": {
-                                                "type": "string",
-                                                "example": "planning"
+                                                "example": "high"
                                             }
                                         },
                                         "type": "object"
@@ -2124,100 +2171,14 @@
                 "tags": [
                     "Change Management"
                 ],
-                "summary": "Membuat Change Request baru berdasarkan RFC dan CI terpilih",
+                "summary": "Create Change Request - DEPRECATED (RFC now Service Desk only)",
                 "operationId": "32f52b16ee62bc010e3dc2c2a216ade7",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "title",
-                                    "category",
-                                    "urgency",
-                                    "priority",
-                                    "ci_ids"
-                                ],
-                                "properties": {
-                                    "title": {
-                                        "type": "string",
-                                        "example": "Upgrade Database SIM Pegawai"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Perlu upgrade PostgreSQL 14 ke 15"
-                                    },
-                                    "category": {
-                                        "type": "string",
-                                        "enum": [
-                                            "normal",
-                                            "standard",
-                                            "emergency"
-                                        ],
-                                        "example": "normal"
-                                    },
-                                    "urgency": {
-                                        "type": "string",
-                                        "enum": [
-                                            "low",
-                                            "medium",
-                                            "high",
-                                            "critical"
-                                        ],
-                                        "example": "high"
-                                    },
-                                    "priority": {
-                                        "type": "string",
-                                        "enum": [
-                                            "P4",
-                                            "P3",
-                                            "P2",
-                                            "P1"
-                                        ],
-                                        "example": "P2"
-                                    },
-                                    "ci_ids": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer",
-                                            "example": 301
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
-                    "201": {
-                        "description": "Change Request berhasil dibuat",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": 101
-                                        },
-                                        "title": {
-                                            "type": "string",
-                                            "example": "Upgrade Database SIM Pegawai"
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "example": "submitted"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validasi gagal atau user belum memiliki OPD"
+                    "501": {
+                        "description": "RFC creation disabled - RFCs are now created via Service Desk integration only"
                     }
                 },
+                "deprecated": true,
                 "security": [
                     {
                         "bearerAuth": []
@@ -2230,13 +2191,13 @@
                 "tags": [
                     "Change Management"
                 ],
-                "summary": "Menampilkan detail lengkap Change Request (RFC + Change Plan + Review)",
+                "summary": "Show RFC details from Service Desk",
                 "operationId": "ae33abe9f8a6526b239fda63dc3df93f",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID Change Request",
+                        "description": "RFC ID",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -2246,7 +2207,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detail Change berhasil diambil",
+                        "description": "RFC details",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2255,44 +2216,38 @@
                                             "type": "integer",
                                             "example": 101
                                         },
+                                        "rfc_service_id": {
+                                            "type": "string",
+                                            "example": "SD-2025-001"
+                                        },
                                         "title": {
                                             "type": "string",
                                             "example": "Upgrade Database SIM Pegawai"
                                         },
-                                        "category": {
+                                        "description": {
                                             "type": "string",
-                                            "example": "normal"
-                                        },
-                                        "urgency": {
-                                            "type": "string",
-                                            "example": "high"
+                                            "example": "Perlu upgrade PostgreSQL"
                                         },
                                         "priority": {
                                             "type": "string",
-                                            "example": "P2"
+                                            "example": "high"
                                         },
-                                        "status": {
+                                        "asset_uuid": {
                                             "type": "string",
-                                            "example": "approved"
+                                            "example": "uuid-123"
                                         },
-                                        "requester_opd": {
+                                        "sso_id": {
                                             "type": "string",
-                                            "example": "Dinas Kominfo"
+                                            "example": "sso-456"
                                         },
-                                        "configuration_items": {
+                                        "requested_at": {
+                                            "type": "string",
+                                            "example": "2025-11-20 10:30:00"
+                                        },
+                                        "attachments": {
                                             "type": "array",
                                             "items": {
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string",
-                                                        "example": "Server SPBE 01"
-                                                    },
-                                                    "status": {
-                                                        "type": "string",
-                                                        "example": "active"
-                                                    }
-                                                },
-                                                "type": "object"
+                                                "type": "string"
                                             }
                                         }
                                     },
@@ -2301,11 +2256,8 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Tidak boleh melihat Change milik OPD lain"
-                    },
                     "404": {
-                        "description": "Change Request tidak ditemukan"
+                        "description": "RFC not found"
                     }
                 },
                 "security": [
@@ -2337,6 +2289,10 @@
         {
             "name": "Maintenance Management",
             "description": "Penjadwalan dan hasil pekerjaan maintenance (routine, ad-hoc, emergency)"
+        },
+        {
+            "name": "Notifications",
+            "description": "Notifikasi untuk user pengaju / pengguna aplikasi"
         },
         {
             "name": "Patch Catalog",

@@ -160,25 +160,19 @@ class RfcController extends Controller
      *         property="rfc_service_id",
      *         type="string",
      *         example="SD-2025-001",
-     *         description="ID RFC dari aplikasi Service Desk (atau gunakan rfc_id)"
-     *       ),
-     *       @OA\Property(
-     *         property="rfc_id",
-     *         type="string",
-     *         example="RFC-2025-0001",
-     *         description="ID RFC dari aplikasi Service Desk (alternatif dari rfc_service_id)"
+     *         description="ID RFC dari aplikasi Service Desk"
      *       ),
      *       @OA\Property(
      *         property="title",
      *         type="string",
      *         maxLength=255,
-     *         example="Pembaruan Aplikasi E-Kinerja Versi 2.1",
+     *         example="Upgrade Server Production",
      *         description="Judul RFC (required, max 255 karakter)"
      *       ),
      *       @OA\Property(
      *         property="description",
      *         type="string",
-     *         example="Diperlukan pembaruan modul pelaporan kinerja agar sesuai pedoman terbaru BKN.",
+     *         example="Perlu upgrade RAM",
      *         description="Deskripsi detail RFC (nullable)"
      *       ),
      *       @OA\Property(
@@ -192,34 +186,27 @@ class RfcController extends Controller
      *         property="attachments",
      *         type="array",
      *         @OA\Items(type="string"),
-     *         example={"https://api-sindra.co.id/storage/rfc/doc1.pdf", "https://api-sindra.co.id/storage/rfc/img1.jpg"},
+     *         example={"file1.pdf", "file2.jpg"},
      *         description="Array URL lampiran dari Service Desk (nullable)"
      *       ),
      *       @OA\Property(
      *         property="requested_at",
      *         type="string",
      *         format="date-time",
-     *         example="2025-12-02 10:45:00",
-     *         description="Timestamp request dibuat di Service Desk (nullable, atau gunakan request_at)"
+     *         example="2025-12-02 10:00:00",
+     *         description="Timestamp request dibuat di Service Desk (nullable)"
      *       ),
      *       @OA\Property(
      *         property="asset_uuid",
      *         type="string",
-     *         example="uuid-asset-123",
+     *         example="uuid-123",
      *         description="UUID aset terdampak (nullable)"
      *       ),
      *       @OA\Property(
      *         property="sso_id",
      *         type="string",
-     *         example="sso-user-12345",
-     *         description="SSO ID user pemohon (nullable, atau gunakan email)"
-     *       ),
-     *       @OA\Property(
-     *         property="email",
-     *         type="string",
-     *         format="email",
-     *         example="user@example.com",
-     *         description="Email user pemohon (nullable, alternatif dari sso_id)"
+     *         example="sso-user-001",
+     *         description="SSO ID user pemohon (nullable)"
      *       )
      *     )
      *   ),
@@ -234,13 +221,13 @@ class RfcController extends Controller
      *         type="object",
      *         @OA\Property(property="id", type="integer", example=1),
      *         @OA\Property(property="rfc_service_id", type="string", example="SD-2025-001"),
-     *         @OA\Property(property="title", type="string", example="Pembaruan Aplikasi E-Kinerja Versi 2.1"),
-     *         @OA\Property(property="description", type="string", example="Diperlukan pembaruan modul..."),
+     *         @OA\Property(property="title", type="string", example="Upgrade Server Production"),
+     *         @OA\Property(property="description", type="string", example="Perlu upgrade RAM"),
      *         @OA\Property(property="priority", type="string", example="high"),
-     *         @OA\Property(property="attachments", type="array", @OA\Items(type="string")),
-     *         @OA\Property(property="requested_at", type="string", example="2025-12-02 10:45:00"),
-     *         @OA\Property(property="asset_uuid", type="string", example="uuid-asset-123"),
-     *         @OA\Property(property="sso_id", type="string", example="sso-user-12345"),
+     *         @OA\Property(property="attachments", type="array", @OA\Items(type="string", example="file1.pdf")),
+     *         @OA\Property(property="requested_at", type="string", example="2025-12-02 10:00:00"),
+     *         @OA\Property(property="asset_uuid", type="string", example="uuid-123"),
+     *         @OA\Property(property="sso_id", type="string", example="sso-user-001"),
      *         @OA\Property(property="created_at", type="string", example="2025-12-02 11:00:00"),
      *         @OA\Property(property="updated_at", type="string", example="2025-12-02 11:00:00")
      *       )

@@ -39,7 +39,7 @@ class NotificationController extends Controller
      *       @OA\Items(
      *         @OA\Property(property="id", type="integer", example=10),
      *         @OA\Property(property="title", type="string", example="Permintaan disetujui"),
-     *         @OA\Property(property="message", type="string", example="Perubahan \"Install Aplikasi Kerja\" telah disetujui Kepala Dinas."),
+     *         @OA\Property(property="message", type="string", example="Perubahan Install Aplikasi Kerja telah disetujui Kepala Dinas."),
      *         @OA\Property(property="ref_type", type="string", example="rfc"),
      *         @OA\Property(property="ref_id", type="integer", example=5),
      *         @OA\Property(property="is_read", type="boolean", example=false),
