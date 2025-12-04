@@ -1724,6 +1724,11 @@
                                         "format": "date-time",
                                         "example": "2025-12-02 10:00:00"
                                     },
+                                    "ci_code": {
+                                        "description": "Configuration Item code untuk callback (nullable)",
+                                        "type": "string",
+                                        "example": "CI-2025-001"
+                                    },
                                     "asset_uuid": {
                                         "description": "UUID aset terdampak (nullable)",
                                         "type": "string",
@@ -1765,6 +1770,10 @@
                                                     "type": "string",
                                                     "example": "SD-2025-001"
                                                 },
+                                                "ci_code": {
+                                                    "type": "string",
+                                                    "example": "CI-2025-001"
+                                                },
                                                 "title": {
                                                     "type": "string",
                                                     "example": "Upgrade Server Production"
@@ -1776,6 +1785,10 @@
                                                 "priority": {
                                                     "type": "string",
                                                     "example": "high"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
                                                 },
                                                 "attachments": {
                                                     "type": "array",

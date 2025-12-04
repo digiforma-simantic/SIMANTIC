@@ -11,9 +11,12 @@ return new class extends Migration
         Schema::create('rfc', function (Blueprint $table) {
             $table->id();
             $table->string('rfc_service_id')->nullable();
+            $table->string('ci_code')->nullable();
             $table->string('title', 255);
             $table->text('description')->nullable();
             $table->enum('priority', ['low', 'medium', 'high'])->default('low');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->text('config_comment')->nullable();
             $table->json('attachments')->nullable();
             $table->timestamp('requested_at')->nullable();
             $table->string('asset_uuid')->nullable();
@@ -21,6 +24,7 @@ return new class extends Migration
 
             $table->timestamps();
             $table->index('rfc_service_id');
+            $table->index('ci_code');
         });
     }
 

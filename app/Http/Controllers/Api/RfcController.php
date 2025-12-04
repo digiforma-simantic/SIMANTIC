@@ -197,6 +197,12 @@ class RfcController extends Controller
      *         description="Timestamp request dibuat di Service Desk (nullable)"
      *       ),
      *       @OA\Property(
+     *         property="ci_code",
+     *         type="string",
+     *         example="CI-2025-001",
+     *         description="Configuration Item code untuk callback (nullable)"
+     *       ),
+     *       @OA\Property(
      *         property="asset_uuid",
      *         type="string",
      *         example="uuid-123",
@@ -221,9 +227,11 @@ class RfcController extends Controller
      *         type="object",
      *         @OA\Property(property="id", type="integer", example=1),
      *         @OA\Property(property="rfc_service_id", type="string", example="SD-2025-001"),
+     *         @OA\Property(property="ci_code", type="string", example="CI-2025-001"),
      *         @OA\Property(property="title", type="string", example="Upgrade Server Production"),
      *         @OA\Property(property="description", type="string", example="Perlu upgrade RAM"),
      *         @OA\Property(property="priority", type="string", example="high"),
+     *         @OA\Property(property="status", type="string", example="pending"),
      *         @OA\Property(property="attachments", type="array", @OA\Items(type="string", example="file1.pdf")),
      *         @OA\Property(property="requested_at", type="string", example="2025-12-02 10:00:00"),
      *         @OA\Property(property="asset_uuid", type="string", example="uuid-123"),
@@ -250,6 +258,7 @@ class RfcController extends Controller
         $validated = $request->validate([
             'rfc_id'             => 'nullable|string|max:255',
             'rfc_service_id'     => 'nullable|string|max:255',
+            'ci_code'            => 'nullable|string|max:255',
             'title'              => 'required|string|max:255',
             'description'        => 'nullable|string',
             'priority'           => 'required|in:low,medium,high',
@@ -269,9 +278,11 @@ class RfcController extends Controller
         // Create RFC with Service Desk fields only
         $rfc = Rfc::create([
             'rfc_service_id' => $rfcServiceId,
+            'ci_code'        => $validated['ci_code'] ?? null,
             'title'          => $validated['title'],
             'description'    => $validated['description'] ?? null,
             'priority'       => $validated['priority'],
+            'status'         => 'pending',
             'attachments'    => $validated['attachments'] ?? null,
             'requested_at'   => $validated['requested_at'] ?? $validated['request_at'] ?? now(),
             'asset_uuid'     => $validated['asset_uuid'] ?? $validated['asset_id'] ?? null,
@@ -284,9 +295,11 @@ class RfcController extends Controller
             'data'    => [
                 'id'              => $rfc->id,
                 'rfc_service_id'  => $rfc->rfc_service_id,
+                'ci_code'         => $rfc->ci_code,
                 'title'           => $rfc->title,
                 'description'     => $rfc->description,
                 'priority'        => $rfc->priority,
+                'status'          => $rfc->status,
                 'attachments'     => $rfc->attachments,
                 'requested_at'    => optional($rfc->requested_at)->toDateTimeString(),
                 'asset_uuid'      => $rfc->asset_uuid,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Rfc;
 use App\Models\RfcApproval;
+use App\Services\ServiceDeskCallbackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -46,8 +47,8 @@ class ChangeApprovalController extends Controller
      *         property="decision",
      *         type="string",
      *         description="Keputusan approval",
-     *         example="approve",
-     *         enum={"approve","reject","need_info"}
+     *         example="approved",
+     *         enum={"approved","rejected","need_info"}
      *       ),
      *       @OA\Property(
      *         property="note",
@@ -82,7 +83,7 @@ class ChangeApprovalController extends Controller
     {
         $data = $request->validate([
             'stage'    => 'required|string|in:kasi,kabid,kadis,diskominfo',
-            'decision' => 'required|string|in:approve,reject,need_info',
+            'decision' => 'required|string|in:approved,rejected,need_info',
             'note'     => 'nullable|string',
         ]);
 
@@ -94,22 +95,56 @@ class ChangeApprovalController extends Controller
             'level'  => $level,
         ]);
 
-        $approval->approver_id = $request->user()->id;
-        $approval->decision    = $data['decision'] === 'need_info' ? 'revise' : $data['decision'];
+        $approval->approver_id = $request->user()?->id;
+        // Map decision for database storage
+        $approval->decision = $data['decision'] === 'need_info' ? 'revise' : $data['decision'];
         $approval->reason      = $data['note'] ?? null;
         $approval->decided_at  = Carbon::now();
         $approval->save();
 
-        // 🔔 1) Notifikasi ke aplikasi Service Desk (teknisi)
-        $this->notifyServiceDeskTechnician($change, $approval);
+        // Map decision to RFC status
+        $rfcStatus = $this->mapDecisionToStatus($approval->decision);
+        
+        // Update RFC status
+        $change->status = $rfcStatus;
+        $change->save();
+
+        // 🔔 Send callback to Service Desk
+        $callbackService = app(ServiceDeskCallbackService::class);
+        $callbackSent = $callbackService->sendStatus($change, $rfcStatus, $data['note'] ?? null);
+
+        // 🔔 1) Notifikasi ke aplikasi Service Desk (teknisi) - Legacy
+        // $this->notifyServiceDeskTechnician($change, $approval);
 
         // 🔔 2) Notifikasi ke pemohon RFC (user OPD)
         $this->notifyRequester($change, $approval);
 
         return response()->json([
-            'message'  => 'Decision recorded',
-            'approval' => $approval,
+            'status'   => true,
+            'message'  => 'RFC status updated successfully',
+            'data'     => [
+                'rfc_id'         => $change->id,
+                'rfc_status'     => $change->status,
+                'approval'       => $approval,
+                'callback_sent'  => $callbackSent,
+            ],
         ]);
+    }
+
+    /**
+     * Map approval decision to RFC status
+     *
+     * @param string $decision
+     * @return string
+     */
+    protected function mapDecisionToStatus(string $decision): string
+    {
+        return match($decision) {
+            'approved' => 'approved',
+            'rejected' => 'rejected',
+            'revise' => 'pending',
+            default => 'approved',
+        };
     }
 
     /**
@@ -118,7 +153,7 @@ class ChangeApprovalController extends Controller
     public function approve(Request $request, Rfc $change)
     {
         $request->merge([
-            'decision' => 'approve',
+            'decision' => 'approved',
         ]);
 
         return $this->decide($request, $change);
@@ -130,7 +165,7 @@ class ChangeApprovalController extends Controller
     public function reject(Request $request, Rfc $change)
     {
         $request->merge([
-            'decision' => 'reject',
+            'decision' => 'rejected',
         ]);
 
         return $this->decide($request, $change);
@@ -145,6 +180,7 @@ class ChangeApprovalController extends Controller
      */
     protected function notifyServiceDeskTechnician(Rfc $rfc, RfcApproval $approval): void
     {
+      
         // Kalau RFC ini bukan hasil integrasi Service Desk (tidak punya rfc_service_id),
         // kamu bisa skip.
         if (!$rfc->rfc_service_id) {

@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'service_desk' => [
+        'callback_url' => env('SERVICE_DESK_CALLBACK_URL', 'https://api-sindra.okkyprojects.com/api/request-changes/callback'),
+    ],
+
 ];

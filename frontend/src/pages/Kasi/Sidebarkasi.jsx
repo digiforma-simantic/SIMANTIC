@@ -1,15 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import simantic from "../assets/logosimantic.png";
-import homeIcon from "../assets/home-outline.png";
-import permohonanIcon from "../assets/permohonan.png";
-import helpIcon from "../assets/message-question.png";
-import logoutIcon from "../assets/Logout_Icon_UIA.png";
+import simantic from "../../assets/logosimantic.png";
+import homeIcon from "../../assets/home-outline.png";
+import permohonanIcon from "../../assets/permohonan.png";
+import helpIcon from "../../assets/message-question.png";
+import logoutIcon from "../../assets/Logout_Icon_UIA.png";
+import riwayatIcon from "../../assets/riwayat.png";
 
 const Sidebar = ({ isOpen, onClose }) => {
+  const [openPermohonan, setOpenPermohonan] = useState(false);
+  const [openApproval, setOpenApproval] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    setOpenPermohonan(location.pathname.startsWith("/detail-permohonan"));
+    setOpenApproval(location.pathname.startsWith("/riwayat-approval"));
+  }, [location.pathname]);
 
   const SidebarItem = ({ icon, label, onClick, children, open, active }) => (
     <div className="w-full">
@@ -80,15 +89,22 @@ const Sidebar = ({ isOpen, onClose }) => {
           <SidebarItem
             icon={homeIcon}
             label="Dashboard"
-            onClick={() => navigate("/staff/dashboardstaff")}
-            active={location.pathname === "/staff/dashboardstaff"}
+            onClick={() => navigate("/kasi/dashboardkasi")}
+            active={location.pathname === "/kasi/dashboardkasi"}
           />
 
           <SidebarItem
             icon={permohonanIcon}
             label="Aset"
-            onClick={() => navigate("/staff/asetstaff")}
-            active={location.pathname.startsWith("/staff/asetstaff")}
+            onClick={() => navigate("/Kasi/AsetSayaKasi")}
+            active={location.pathname.startsWith("/Kasi/AsetSayaKasi")}
+          />
+
+          <SidebarItem
+            icon={riwayatIcon}
+            label="Riwayat"
+            onClick={() => navigate("/kasi/riwayatapprovalkasi")}
+            active={location.pathname.startsWith("/kasi/riwayatapprovalkasi")}
           />
         </nav>
 
@@ -100,8 +116,8 @@ const Sidebar = ({ isOpen, onClose }) => {
         <SidebarItem 
           icon={helpIcon} 
           label="Bantuan" 
-          onClick={() => navigate("/staff/bantuanstaff")}
-          active={location.pathname === "/staff/bantuanstaff"} 
+          onClick={() => navigate("/Kasi/BantuanKasi")}
+          active={location.pathname === "/Kasi/BantuanKasi"} 
         />
 
         <SidebarItem 

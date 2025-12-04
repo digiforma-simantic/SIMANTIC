@@ -28,9 +28,22 @@ Route::post('/auth/dev/login', [DevLoginController::class, 'login'])
 Route::get('/ping', fn () => response()->json(['message' => 'pong 🏓']))
     ->name('ping');
 
-Route::get('sso/callback', [AuthController::class,'SSOCallback'])->name('sso.callback');
+Route::get('sso/callback', [AuthController::class,'directLogin'])->name('sso.callback');
+Route::get('sso/token-exchange', [AuthController::class,'SSOCallback'])->name('sso.token-exchange');
+Route::get('v1/auth/sso/direct-login', [AuthController::class, 'directLogin'])->name('sso.direct-login');
 
 Route::post('/v1/rfc',      [RfcController::class, 'store'])->name('rfc.store');
+
+/**
+ * Approval flow (no auth required - called by Service Desk)
+ * Body JSON: { "stage":"kasi|kabid|diskominfo", "decision":"approve|reject|need_info", "note":"..." }
+ */
+Route::post('v1/rfc/{change}/decisions', [ChangeApprovalController::class, 'decide'])
+    ->name('rfc.decisions');
+Route::post('v1/rfc/{change}/approve', [ChangeApprovalController::class, 'approve'])
+    ->name('rfc.approve');
+Route::post('v1/rfc/{change}/reject',  [ChangeApprovalController::class, 'reject'])
+    ->name('rfc.reject');
 
 /**
  * Protected v1 (butuh Bearer token Sanctum)
@@ -43,7 +56,6 @@ Route::prefix('v1')
         // Debug: cek siapa user yang login (hapus saat production)
         Route::get('me', fn (Request $r) => response()->json($r->user()))
             ->name('me');
-Route::get('/sso/callback',[AuthController::class,'SSOCallback']);
         /**
          * CMDB (CRUD Configuration Item)
          */
@@ -82,15 +94,12 @@ Route::get('/sso/callback',[AuthController::class,'SSOCallback']);
         });
 
         /**
-         * Approval flow
-         * Body JSON: { "stage":"kasi|kabid|diskominfo", "decision":"approve|reject|need_info", "note":"..." }
+         * Maintenance Management
+         *  - GET  /api/v1/maintenance-jobs
+         *  - POST /api/v1/maintenance-jobs
+         *  - GET  /api/v1/maintenance-jobs/{maintenance_job}
+         *  - POST /api/v1/maintenance-jobs/{job}/result
          */
-        Route::post('changes/{change}/decisions', [ChangeApprovalController::class, 'decide'])
-            ->name('changes.decisions');
-        Route::post('changes/{change}/approve', [ChangeApprovalController::class, 'approve'])
-            ->name('changes.approve');
-        Route::post('changes/{change}/reject',  [ChangeApprovalController::class, 'reject'])
-            ->name('changes.reject');
 
         /**
          * Maintenance Management

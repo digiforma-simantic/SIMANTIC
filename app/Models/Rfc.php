@@ -10,9 +10,12 @@ class Rfc extends Model
 
     protected $fillable = [
         'rfc_service_id',
+        'ci_code',
         'title',
         'description',
         'priority',          // low | medium | high
+        'status',            // pending | approved | rejected
+        'config_comment',
         'attachments',
         'requested_at',
         'asset_uuid',
@@ -42,5 +45,11 @@ class Rfc extends Model
     public function getPriorityLabelAttribute(): string
     {
         return ucfirst($this->priority ?? '');
+    }
+
+    // Helper: check if RFC can send callback to Service Desk
+    public function canSendCallback(): bool
+    {
+        return !empty($this->rfc_service_id);
     }
 }
