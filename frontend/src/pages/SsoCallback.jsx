@@ -20,14 +20,72 @@ const SsoCallback = () => {
     // Simpan token ke localStorage
     localStorage.setItem('token', token);
     localStorage.setItem('isLoggedIn', 'true');
-    
-    setStatus('success');
 
-    // Redirect ke staff dashboard (default) - user akan di-fetch di dashboard
-    // atau bisa redirect ke halaman profile untuk lengkapi data
-    setTimeout(() => {
-      navigate('/staff/dashboardstaff');
-    }, 1500);
+    // Get user data dengan token untuk tahu role-nya
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.simantic.online';
+    
+    fetch(`${apiBaseUrl}/api/v1/me`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+    })
+      .then(res => {
+        if (!res.ok) {
+          // Jika gagal fetch user, redirect ke staff dashboard (fallback)
+          console.warn('Failed to fetch user, using default redirect');
+          return { role: 'staff' };
+        }
+        return res.json();
+      })
+      .then(data => {
+        const user = data.data || data;
+        if (user && user.id) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        setStatus('success');
+
+        // Redirect berdasarkan role dari user data atau roleObj
+        setTimeout(() => {
+          const roleSlug = user?.roleObj?.slug || user?.role || 'staff';
+          
+          switch(roleSlug) {
+            case 'admin_kota':
+              navigate('/Admin/dashboardadmin');
+              break;
+            case 'kepala_dinas':
+            case 'kadis':
+              navigate('/Kadis/dashboardkadis');
+              break;
+            case 'kepala_seksi':
+            case 'kasi':
+              navigate('/Kasi/dashboardkasi');
+              break;
+            case 'kabid':
+              navigate('/Kabid/dashboardkabid');
+              break;
+            case 'auditor':
+              navigate('/auditor/dashboardauditor');
+              break;
+            case 'admin_dinas':
+            case 'diskominfo':
+              navigate('/diskominfo/dashboarddiskominfo');
+              break;
+            case 'teknisi':
+            case 'staff':
+            default:
+              navigate('/staff/dashboardstaff');
+          }
+        }, 1500);
+      })
+      .catch(err => {
+        console.error('SSO callback error:', err);
+        // Fallback ke staff dashboard jika error
+        setStatus('success');
+        setTimeout(() => navigate('/staff/dashboardstaff'), 1500);
+      });
   }, [searchParams, navigate]);
 
   return (
