@@ -5,7 +5,7 @@ import Headeradmin from "../../components/Kasi/Headerdetper";
 // ICON / IMAGE SESUAI IMPORTMU
 import dokumen from "../../assets/dokumen.png";
 
-const DetailPengajuan = () => {
+const DetailPermohonan = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -59,11 +59,6 @@ const DetailPengajuan = () => {
                   value="Diperlukan pembaruan pada modul pelaporan kinerja agar sesuai dengan format terbaru dari BKN."
                 />
 
-                <DetailItem
-                  label="Catatan Teknisi"
-                  value="Format pelaporan yang lama sudah tidak sesuai pedoman nasional sehingga dapat menunda proses evaluasi."
-                />
-
                 <DetailItem label="Prioritas" value="Low" />
 
                 {/* FILE BUKTI */}
@@ -96,4 +91,4 @@ const DetailItem = ({ label, value }) => (
   </div>
 );
 
-export default DetailPengajuan;
+export default DetailPermohonan;

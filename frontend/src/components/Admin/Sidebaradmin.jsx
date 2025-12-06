@@ -69,7 +69,11 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
-    window.location.href = "/";
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // Redirect ke domain utama
+    window.location.href = "https://bispro.digitaltech.my.id/";
   };
 
   return (

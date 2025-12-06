@@ -17,6 +17,7 @@ export default function DetailAset() {
           <h2 className="text-lg font-semibold text-[#001729] mb-1">
             Laptop M-25-001
           </h2>
+          <h4 className="text-lg font-semibold text-[#001729] mb-1">0001</h4>
         </div>
 
         {/* Card Informasi Kiri */}

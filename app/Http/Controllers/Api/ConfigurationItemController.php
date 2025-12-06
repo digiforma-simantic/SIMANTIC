@@ -57,11 +57,11 @@ class ConfigurationItemController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ConfigurationItem::with('ownerOpd');
+        $query = ConfigurationItem::with('ownerDinas');
 
         $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
         if ($userDinasId) {
-            $query->where('owner_opd_id', $userDinasId);
+            $query->where('owner_dinas_id', $userDinasId);
         }
 
         if ($type = $request->query('type')) {
@@ -157,7 +157,7 @@ class ConfigurationItemController extends Controller
             return response()->json(['message' => 'User has no OPD assigned'], 422);
         }
 
-        $data['owner_opd_id'] = $request->user()->dinas_id ?? $request->user()->opd_id;
+        $data['owner_dinas_id'] = $request->user()->dinas_id;
         // default awal, nanti bisa di-update dari risk register
         $data['risk_level']   = $data['criticality'] ?? 'low';
 
@@ -196,7 +196,7 @@ class ConfigurationItemController extends Controller
     public function show(ConfigurationItem $config_item)
     {
         $config_item->load([
-            'ownerOpd',
+            'ownerDinas',
             'risks',
             'sourceRelations.target',
             'targetRelations.source',
@@ -258,6 +258,66 @@ class ConfigurationItemController extends Controller
         $config_item->update($data);
 
         return response()->json($config_item);
+    }
+
+    /**
+     * PATCH /api/v1/config-items/{config_item}/configuration
+     * 
+     * Update konfigurasi CI (CI Code, Version, OS, IP, Relation)
+     * Khusus untuk form admin yang mengisi detail konfigurasi
+     *
+     * @OA\Patch(
+     *   path="/api/v1/config-items/{id}/configuration",
+     *   tags={"CMDB"},
+     *   summary="Update konfigurasi CI (Admin Form)",
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     description="ID Configuration Item",
+     *     @OA\Schema(type="integer", example=245)
+     *   ),
+     *   @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
+     *       @OA\Property(property="version", type="string", example="v1.14.2"),
+     *       @OA\Property(property="os_name", type="string", example="Windows 11 Pro 64-bit"),
+     *       @OA\Property(property="ip_address", type="string", example="10.10.5.123"),
+     *       @OA\Property(property="relation_note", type="string", example="Terhubung ke Server AD dan Printer Lantai 5")
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Konfigurasi berhasil disimpan",
+     *     @OA\JsonContent(
+     *       @OA\Property(property="success", type="boolean", example=true),
+     *       @OA\Property(property="message", type="string", example="Konfigurasi berhasil disimpan"),
+     *       @OA\Property(property="data", type="object")
+     *     )
+     *   ),
+     *   @OA\Response(response=422, description="Validasi gagal"),
+     *   @OA\Response(response=404, description="CI tidak ditemukan")
+     * )
+     */
+    public function updateConfiguration(Request $request, ConfigurationItem $config_item)
+    {
+        $data = $request->validate([
+            'ci_code'       => 'required|string|max:50|unique:configuration_items,ci_code,' . $config_item->id,
+            'version'       => 'nullable|string|max:100',
+            'os_name'       => 'nullable|string|max:100',
+            'ip_address'    => 'nullable|ip',
+            'relation_note' => 'nullable|string',
+        ]);
+
+        $config_item->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Konfigurasi berhasil disimpan',
+            'data'    => $config_item->fresh(),
+        ]);
     }
 
     /**

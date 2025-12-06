@@ -4,11 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int|null $sso_dinas_id
+ * @property string $name
+ * @property string|null $type
+ * @property string|null $address
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class Dinas extends Model
 {
-    protected $table = 'opd';
+    protected $table = 'dinas';
 
     protected $fillable = [
+        'sso_dinas_id',
         'name',
         'type',
         'address',
@@ -21,7 +31,7 @@ class Dinas extends Model
 
     public function configurationItems()
     {
-        return $this->hasMany(ConfigurationItem::class, 'owner_opd_id');
+        return $this->hasMany(ConfigurationItem::class, 'owner_dinas_id');
     }
 
     // Legacy: RFCs requested by this OPD (RFC now from Service Desk only)

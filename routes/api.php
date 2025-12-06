@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\MaintenanceJobController;
 use App\Http\Controllers\Api\PatchCatalogController;
 use App\Http\Controllers\Api\PatchJobController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Auth\SsoCallbackController;
 
 /**
  * Public (tanpa token)
@@ -28,9 +29,17 @@ Route::post('/auth/dev/login', [DevLoginController::class, 'login'])
 Route::get('/ping', fn () => response()->json(['message' => 'pong 🏓']))
     ->name('ping');
 
-Route::get('sso/callback', [AuthController::class,'directLogin'])->name('sso.callback');
+// SSO Callback - receives token from SSO portal and redirects to frontend
+Route::get('sso/callback', [SsoCallbackController::class, 'callback'])->name('sso.callback');
+Route::post('sso/callback', [SsoCallbackController::class, 'callbackApi'])->name('sso.callback.api');
+
+// Legacy SSO routes (keep for backward compatibility)
 Route::get('sso/token-exchange', [AuthController::class,'SSOCallback'])->name('sso.token-exchange');
 Route::get('v1/auth/sso/direct-login', [AuthController::class, 'directLogin'])->name('sso.direct-login');
+
+// Initial setup: Import users without authentication (first time only)
+Route::post('v1/setup/import-users', [\App\Http\Controllers\Api\UserImportController::class, 'import'])
+    ->name('setup.import-users');
 
 Route::post('/v1/rfc',      [RfcController::class, 'store'])->name('rfc.store');
 
@@ -46,6 +55,25 @@ Route::post('v1/rfc/{change}/reject',  [ChangeApprovalController::class, 'reject
     ->name('rfc.reject');
 
 /**
+ * TEMPORARY: Config Items tanpa auth untuk development
+ * TODO: Kembalikan ke dalam auth:sanctum saat production
+ */
+Route::prefix('v1')->group(function () {
+    Route::apiResource('config-items', ConfigurationItemController::class)
+        ->parameters(['config-items' => 'config_item'])
+        ->names([
+            'index'   => 'config-items.index',
+            'store'   => 'config-items.store',
+            'show'    => 'config-items.show',
+            'update'  => 'config-items.update',
+            'destroy' => 'config-items.destroy',
+        ]);
+    
+    Route::patch('config-items/{config_item}/configuration', [ConfigurationItemController::class, 'updateConfiguration'])
+        ->name('config-items.update-configuration');
+});
+
+/**
  * Protected v1 (butuh Bearer token Sanctum)
  * Final path: /api/v1/...
  */
@@ -56,20 +84,18 @@ Route::prefix('v1')
         // Debug: cek siapa user yang login (hapus saat production)
         Route::get('me', fn (Request $r) => response()->json($r->user()))
             ->name('me');
-        /**
-         * CMDB (CRUD Configuration Item)
-         */
-        Route::apiResource('config-items', ConfigurationItemController::class)
-            ->parameters(['config-items' => 'config_item'])
-            ->names([
-                'index'   => 'config-items.index',
-                'store'   => 'config-items.store',
-                'show'    => 'config-items.show',
-                'update'  => 'config-items.update',
-                'destroy' => 'config-items.destroy',
-            ]);
 
-        // Graph/Dependency untuk CI tertentu
+        /**
+         * Master Data Import
+         */
+        Route::post('import/assets', [\App\Http\Controllers\Api\AssetImportController::class, 'import'])
+            ->name('import.assets');
+        Route::post('import/dinas', [\App\Http\Controllers\Api\DinasImportController::class, 'import'])
+            ->name('import.dinas');
+        Route::post('import/users', [\App\Http\Controllers\Api\UserImportController::class, 'import'])
+            ->name('import.users');
+
+        // Graph/Dependency untuk CI tertentu (masih butuh auth)
         Route::get('config-items/{config_item}/graph', [CmdbController::class, 'show'])
             ->name('config-items.graph');
 

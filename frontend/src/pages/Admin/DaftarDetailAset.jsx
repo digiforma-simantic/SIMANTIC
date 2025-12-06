@@ -22,8 +22,8 @@ export default function DetailAset() {
         {/* Card Informasi Kiri */}
         <div className="bg-[#F2FAFF] border border-gray-200 shadow rounded-xl p-6 space-y-6">
           <div>
-            <p className="font-semibold text-[#001729] mb-1">Tanggal Perubahan Terakhir</p>
-            <p className="text-gray-500 text-sm">17 Agustus 2025</p>
+            <p className="font-semibold text-[#001729] mb-1">Penanggung Jawab</p>
+            <p className="text-gray-500 text-sm">Suhandoyo</p>
           </div>
           <div>
             <p className="font-semibold text-[#001729] mb-1">Status Aset</p>

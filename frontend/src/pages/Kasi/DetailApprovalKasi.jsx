@@ -74,15 +74,6 @@ const DetailApprovalKasi = () => {
               </p>
             </div>
 
-            {/* Catatan Teknis */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Catatan Teknis</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Format pelaporan lama sudah tidak sesuai dengan pedoman nasional, sehingga 
-                pembaruan diperlukan agar pengiriman data ke pusat tidak terhambat.
-              </p>
-            </div>
-
             {/* Prioritas */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Prioritas</h3>

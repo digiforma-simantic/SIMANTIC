@@ -4,6 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $ci_code
+ * @property string $type
+ * @property int $owner_dinas_id
+ * @property string $environment
+ * @property string $criticality
+ * @property string $status
+ * @property string|null $version
+ * @property string|null $os_name
+ * @property string|null $ip_address
+ * @property string|null $relation_note
+ * @property string|null $patch_level
+ * @property int $risk_level
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class ConfigurationItem extends Model
 {
     // Kalau pakai timestamps (created_at / updated_at) biarkan true (default)
@@ -13,7 +31,7 @@ class ConfigurationItem extends Model
         'name',
         'ci_code',        // kode unik CI, misal: CI-000245
         'type',
-        'owner_opd_id',
+        'owner_dinas_id',
         'environment',
         'criticality',
         'status',
@@ -29,9 +47,9 @@ class ConfigurationItem extends Model
      *  RELATIONSHIPS
      * ========================== */
 
-    public function ownerOpd()
+    public function ownerDinas()
     {
-        return $this->belongsTo(Dinas::class, 'owner_opd_id');
+        return $this->belongsTo(Dinas::class, 'owner_dinas_id');
     }
 
     public function risks()

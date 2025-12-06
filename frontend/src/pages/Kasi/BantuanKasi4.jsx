@@ -14,22 +14,23 @@ export default function BantuanStaff() {
 
           {/* TITLE */}
           <h2 className="text-xl font-semibold text-[#002444] mb-3">
-            Bagaimana cara melihat detail aset saya?
+            Bagaimana cara memperbarui informasi profil saya?
           </h2>
 
           {/* DESCRIPTION */}
           <p className="text-gray-600 mb-10 ml-2">
-            Anda dapat melihat detail aset dengan beberapa langkah seperti berikut :
+            Anda dapat memperbarui informasi profil dengan beberapa langkah seperti berikut :
           </p>
 
           {/* STEPS */}
             <div className="space-y-4 ml-10">
             {[
-                "Pergi ke halaman Aset",
-                "Cari atau pilih aset yang Anda gunakan",
-                "Klik Lihat Detail",
-                "Periksa informasi spesifikasi dan status aset",
-                "Tutup halaman jika sudah selesai"
+                "Pergi ke halaman Profil",
+                "Klik Data User",
+                "Klik Edit",
+                "Perbarui data yang ingin diubah",
+                "Pastikan informasi sudah benar",
+                "Klik Simpan untuk menyelesaikan"
             ].map((text, idx) => (
                 <div key={idx}>
                 

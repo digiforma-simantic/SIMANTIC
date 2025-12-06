@@ -39,4 +39,9 @@ return [
         'callback_url' => env('SERVICE_DESK_CALLBACK_URL', 'https://api-sindra.okkyprojects.com/api/request-changes/callback'),
     ],
 
+    'asset_api' => [
+        'url' => env('ASSET_API_URL', 'https://api.siprima.digitaltech.my.id/api/assets'),
+        'token' => env('ASSET_API_TOKEN'),
+    ],
+
 ];

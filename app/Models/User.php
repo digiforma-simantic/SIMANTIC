@@ -9,6 +9,26 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Role;
 use App\Models\Dinas;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string|null $password
+ * @property string|null $nip
+ * @property string|null $jenis_kelamin
+ * @property int|null $role_id
+ * @property int|null $dinas_id
+ * @property string|null $unit_kerja
+ * @property int|null $unit_kerja_id
+ * @property int|null $sso_id
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * 
+ * @property-read Role|null $roleObj
+ * @property-read Dinas|null $dinas
+ * @property-read Dinas|null $opd
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -24,6 +44,7 @@ class User extends Authenticatable
         'jenis_kelamin',
         'role_id',
         'dinas_id',
+        'unit_kerja',
         'unit_kerja_id',
         'sso_id',
     ];

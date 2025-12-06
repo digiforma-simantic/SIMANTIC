@@ -4,6 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int|null $rfc_service_id
+ * @property string|null $ci_code
+ * @property string $title
+ * @property string|null $description
+ * @property string $priority
+ * @property string $status
+ * @property string|null $config_comment
+ * @property array|null $attachments
+ * @property \Illuminate\Support\Carbon|null $requested_at
+ * @property string|null $asset_uuid
+ * @property int|null $sso_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * 
+ * @property-read string $priority_label
+ */
 class Rfc extends Model
 {
     protected $table = 'rfc';
@@ -41,7 +59,10 @@ class Rfc extends Model
         return $this->hasMany(RfcAttachment::class);
     }
 
-    // "low" -> "Low", "medium" -> "Medium", dll
+    /**
+     * Get formatted priority label
+     * @return string
+     */
     public function getPriorityLabelAttribute(): string
     {
         return ucfirst($this->priority ?? '');

@@ -59,11 +59,6 @@ const DetailPengajuan = () => {
                   value="Diperlukan pembaruan pada modul pelaporan kinerja agar sesuai dengan format terbaru dari BKN."
                 />
 
-                <DetailItem
-                  label="Catatan Teknisi"
-                  value="Format pelaporan yang lama sudah tidak sesuai pedoman nasional sehingga dapat menunda proses evaluasi."
-                />
-
                 <DetailItem label="Prioritas" value="Low" />
 
                 {/* FILE BUKTI */}

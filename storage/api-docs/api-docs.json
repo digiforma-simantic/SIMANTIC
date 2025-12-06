@@ -12,6 +12,73 @@
         }
     ],
     "paths": {
+        "/api/v1/import/assets": {
+            "post": {
+                "tags": [
+                    "Asset Import"
+                ],
+                "summary": "Import assets from external API",
+                "description": "Import assets from external API",
+                "operationId": "3d57d74dd73e7fe3eac2a642d6a7ebed",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "token": {
+                                        "description": "Optional API token override",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Assets imported successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Assets imported successfully"
+                                        },
+                                        "imported": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "updated": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 15
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Import failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/sso/callback": {
             "get": {
                 "tags": [
@@ -68,6 +135,200 @@
                                 }
                             }
                         }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "SSO Authentication"
+                ],
+                "summary": "SSO Callback API - JSON Response",
+                "description": "Endpoint untuk testing SSO callback yang return JSON (tidak redirect). Berguna untuk testing API integration.",
+                "operationId": "ec3c43b14cf4b6e29466ab06d9f46507",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "description": "SSO Bearer token",
+                                        "type": "string",
+                                        "example": "7|wjIAUE9TaIAd8Tqvkq5tdFe69w0Y8Xcsmqeub9sp6fa2ab51"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login SSO berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login SSO berhasil"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "1|abc123def456..."
+                                                },
+                                                "user": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "Admin Kota"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "example": "admin.kota@example.com"
+                                                        },
+                                                        "nip": {
+                                                            "type": "string",
+                                                            "example": "198501012010011001"
+                                                        },
+                                                        "role": {
+                                                            "type": "string",
+                                                            "example": "admin_kota"
+                                                        },
+                                                        "dinas": {
+                                                            "type": "string",
+                                                            "example": "Dinas Komunikasi dan Informatika",
+                                                            "nullable": true
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Token tidak ditemukan atau data tidak lengkap",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token SSO tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token SSO tidak valid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token SSO tidak valid"
+                                        },
+                                        "sso_status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Terjadi kesalahan saat memproses login SSO"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "cURL error 28: Timeout",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/sso/direct-login": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Direct login from SSO portal",
+                "description": "SSO portal redirects user here with token, then redirect to frontend app",
+                "operationId": "4c441e38cb39255dca4e7e3d16d8655d",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "description": "Token from SSO provider",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "redirect",
+                        "in": "query",
+                        "description": "Frontend path to redirect after login",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "/dashboard"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect to frontend with token"
                     }
                 }
             }
@@ -450,6 +711,154 @@
                     },
                     "404": {
                         "description": "CI tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/config-items/{id}/configuration": {
+            "patch": {
+                "tags": [
+                    "CMDB"
+                ],
+                "summary": "Update konfigurasi CI (Admin Form)",
+                "description": "PATCH /api/v1/config-items/{config_item}/configuration\n\nUpdate konfigurasi CI (CI Code, Version, OS, IP, Relation)\nKhusus untuk form admin yang mengisi detail konfigurasi",
+                "operationId": "497983948b0ba1313067ace03cc3f409",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID Configuration Item",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 245
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ci_code": {
+                                        "type": "string",
+                                        "example": "CI-000245"
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "example": "v1.14.2"
+                                    },
+                                    "os_name": {
+                                        "type": "string",
+                                        "example": "Windows 11 Pro 64-bit"
+                                    },
+                                    "ip_address": {
+                                        "type": "string",
+                                        "example": "10.10.5.123"
+                                    },
+                                    "relation_note": {
+                                        "type": "string",
+                                        "example": "Terhubung ke Server AD dan Printer Lantai 5"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Konfigurasi berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Konfigurasi berhasil disimpan"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    },
+                    "404": {
+                        "description": "CI tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/import/dinas": {
+            "post": {
+                "tags": [
+                    "Master Data"
+                ],
+                "summary": "Import Dinas dari SSO API",
+                "description": "Sync data dinas/OPD dari SSO API ke database lokal SIMANTIC",
+                "operationId": "20da739c86461b1b175013bb29321a87",
+                "responses": {
+                    "200": {
+                        "description": "Import berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "imported": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "updated": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 8
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Import completed: 5 created, 3 updated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
                     }
                 },
                 "security": [
@@ -1886,6 +2295,80 @@
                 ]
             }
         },
+        "/api/v1/import/users": {
+            "post": {
+                "tags": [
+                    "Master Data"
+                ],
+                "summary": "Import Users dari SSO API",
+                "description": "Sync data users dari SSO API ke database lokal SIMANTIC",
+                "operationId": "ed80b1d65a3abb4352731834b954dcb0",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "sso_token": {
+                                        "description": "Bearer token untuk SSO API (optional, jika tidak diisi akan pakai dari .env)",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Import berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "imported": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "updated": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 8
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Import completed: 5 created, 3 updated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/dev/login": {
             "post": {
                 "tags": [
@@ -2045,11 +2528,11 @@
                                         "description": "Keputusan approval",
                                         "type": "string",
                                         "enum": [
-                                            "approve",
-                                            "reject",
+                                            "approved",
+                                            "rejected",
                                             "need_info"
                                         ],
-                                        "example": "approve"
+                                        "example": "approved"
                                     },
                                     "note": {
                                         "description": "Catatan tambahan (opsional)",
@@ -2292,6 +2775,10 @@
     },
     "tags": [
         {
+            "name": "Asset Import",
+            "description": "Import assets from external API to Configuration Items"
+        },
+        {
             "name": "Auth",
             "description": "Endpoints untuk autentikasi, SSO dan token"
         },
@@ -2330,6 +2817,14 @@
         {
             "name": "Change Management",
             "description": "Pengelolaan Request for Change (RFC) menjadi Change Request penuh, termasuk detail dan penilaian risiko"
+        },
+        {
+            "name": "Master Data",
+            "description": "Master Data"
+        },
+        {
+            "name": "SSO Authentication",
+            "description": "SSO Authentication"
         }
     ]
 }

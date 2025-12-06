@@ -14,22 +14,22 @@ export default function BantuanStaff() {
 
           {/* TITLE */}
           <h2 className="text-xl font-semibold text-[#002444] mb-3">
-            Bagaimana cara mengubah kata sandi akun?
+            Bagaimana cara melihat detail aset saya?
           </h2>
 
           {/* DESCRIPTION */}
           <p className="text-gray-600 mb-10 ml-2">
-            Anda dapat mengubah kata sandi akun dengan beberapa langkah seperti berikut :
+            Anda dapat melihat detail aset dengan beberapa langkah seperti berikut :
           </p>
 
           {/* STEPS */}
             <div className="space-y-4 ml-10">
             {[
-                "Pergi ke halaman Profil",
-                "Klik Ganti Password",
-                "Masukkan kata sandi lama",
-                "Masukkan kata sandi baru dan konfirmasi",
-                "Klik Simpan untuk memperbarui"
+                "Pergi ke halaman Aset",
+                "Cari atau pilih aset yang Anda gunakan",
+                "Klik Lihat Detail",
+                "Periksa informasi spesifikasi dan status aset",
+                "Tutup halaman jika sudah selesai"
             ].map((text, idx) => (
                 <div key={idx}>
                 
@@ -43,11 +43,11 @@ export default function BantuanStaff() {
                     {text.includes("Daftar Approval") ? (
                         <>
                         Pergi ke halaman{" "}
-                        <span className="font-semibold">Profil</span>
+                        <span className="font-semibold">Daftar Approval</span>
                         </>
                     ) : text.includes("Cek Detail") ? (
                         <>
-                        Klik <span className="font-semibold">Ganti Password</span>
+                        Klik <span className="font-semibold">Cek Detail</span>
                         </>
                     ) : (
                         text

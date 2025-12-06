@@ -18,10 +18,6 @@ export default function ProfileNavigation() {
             <Link to="/UserStaff" className="font-semibold underline hover:text-blue-700">
               Data user
             </Link>
-
-            <Link to="/GantiPasswordStaff" className="hover:text-blue-700">
-              Ganti password
-            </Link>
           </nav>
         </aside>
 

@@ -3,7 +3,7 @@ import Headeradmin from "../../components/Kasi/Headerkasi";
 import Sidebaradmin from "../../components/Kasi/Sidebarkasi";
 import { Link } from "react-router-dom";
 
-export default function AsetAdmin() {
+export default function AsetSayaKasi() {
   const items = Array(10).fill({
     name: "Laptop M-25-001",
   });

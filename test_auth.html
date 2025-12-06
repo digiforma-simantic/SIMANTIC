@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #FF7900;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #e76700;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Authentication & API</h1>
+        
+        <h2>1. Login (Dev)</h2>
+        <input type="email" id="email" placeholder="Email" value="admin@example.com">
+        <input type="password" id="password" placeholder="Password" value="password">
+        <button onclick="testLogin()">Test Login</button>
+        
+        <h2>2. Get Me (Check Token)</h2>
+        <button onclick="testMe()">Test /api/v1/me</button>
+        
+        <h2>3. Get Config Items</h2>
+        <button onclick="testGetConfigItems()">Test GET /api/v1/config-items</button>
+        
+        <h2>4. Get Config Item by ID</h2>
+        <input type="number" id="ciId" placeholder="CI ID" value="1">
+        <button onclick="testGetConfigItemById()">Test GET /api/v1/config-items/{id}</button>
+        
+        <h2>5. Update Configuration</h2>
+        <button onclick="testUpdateConfiguration()">Test PATCH /api/v1/config-items/1/configuration</button>
+        
+        <h2>6. Import Dinas dari SSO</h2>
+        <button onclick="testImportDinas()">Test POST /api/v1/import/dinas</button>
+        
+        <h2>7. Import Users dari SSO (Initial Setup)</h2>
+        <p style="color: #666; font-size: 14px;">⚠️ Gunakan ini untuk initial setup (tidak perlu login)</p>
+        <input type="text" id="ssoToken" placeholder="SSO Bearer Token" style="width: 100%; margin-bottom: 10px;">
+        <button onclick="testImportUsersSetup()">Test POST /api/v1/setup/import-users (NO AUTH)</button>
+        
+        <div id="result" class="result"></div>
+        
+        <h3>Stored Token:</h3>
+        <div id="tokenDisplay" class="result"></div>
+        <button onclick="clearToken()">Clear Token</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        
+        function displayResult(message, isSuccess = true) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result ' + (isSuccess ? 'success' : 'error');
+            resultDiv.textContent = message;
+            displayToken();
+        }
+        
+        function displayToken() {
+            const token = localStorage.getItem('token');
+            const tokenDiv = document.getElementById('tokenDisplay');
+            if (token) {
+                tokenDiv.textContent = `Token: ${token.substring(0, 50)}...`;
+            } else {
+                tokenDiv.textContent = 'No token stored';
+            }
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/dev/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.token) {
+                        localStorage.setItem('token', data.token);
+                        displayResult(`✅ Login Success!\n\nToken: ${data.token.substring(0, 50)}...\n\nUser: ${JSON.stringify(data.user, null, 2)}`, true);
+                    } else {
+                        displayResult(`⚠️ Login OK but no token in response:\n\n${JSON.stringify(data, null, 2)}`, false);
+                    }
+                } else {
+                    displayResult(`❌ Login Failed (${response.status}):\n\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                displayResult(`❌ Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testMe() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                displayResult('❌ No token found! Please login first.', false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult(`✅ Token Valid!\n\nUser: ${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    displayResult(`❌ Token Invalid (${response.status}):\n\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                displayResult(`❌ Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testGetConfigItems() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                displayResult('❌ No token found! Please login first.', false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/config-items`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult(`✅ Get Config Items Success!\n\nCount: ${data.data?.length || 0}\n\n${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    displayResult(`❌ Failed (${response.status}):\n\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                displayResult(`❌ Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testGetConfigItemById() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                displayResult('❌ No token found! Please login first.', false);
+                return;
+            }
+            
+            const id = document.getElementById('ciId').value;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/config-items/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult(`✅ Get Config Item Success!\n\n${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    displayResult(`❌ Failed (${response.status}):\n\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                displayResult(`❌ Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testUpdateConfiguration() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                displayResult('❌ No token found! Please login first.', false);
+                return;
+            }
+            
+            const payload = {
+                ci_code: 'CI-TEST-001',
+                version: 'v1.0.0',
+                os_name: 'Ubuntu 22.04 LTS',
+                ip_address: '192.168.1.100',
+                relation_note: 'Test relation note'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/config-items/1/configuration`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult(`✅ Update Configuration Success!\n\n${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    displayResult(`❌ Failed (${response.status}):\n\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                displayResult(`❌ Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testImportDinas() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                displayResult('❌ No token found! Please login first.', false);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/import/dinas`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult(
+                        `✅ Import Dinas Success!\n\n` +
+                        `Imported: ${data.imported}\n` +
+                        `Updated: ${data.updated}\n` +
+                        `Total: ${data.total}\n` +
+                        `Errors: ${data.errors?.length || 0}\n\n` +
+                        `${JSON.stringify(data, null, 2)}`,
+                        true
+                    );
+                } else {
+                    displayResult(`❌ Failed (${response.status}):\n\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                displayResult(`❌ Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testImportUsersSetup() {
+            const ssoToken = document.getElementById('ssoToken').value;
+            
+            if (!ssoToken) {
+                displayResult('❌ SSO Bearer Token is required! Masukkan token dari SSO API.', false);
+                return;
+            }
+            
+            try {
+                const payload = { sso_token: ssoToken };
+                
+                const response = await fetch(`${API_BASE_URL}/api/v1/setup/import-users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult(
+                        `✅ Import Users Success!\n\n` +
+                        `Imported: ${data.imported}\n` +
+                        `Updated: ${data.updated}\n` +
+                        `Total: ${data.total}\n` +
+                        `Errors: ${data.errors?.length || 0}\n\n` +
+                        `Sekarang Anda bisa login dengan user yang ter-import!\n\n` +
+                        `${JSON.stringify(data, null, 2)}`,
+                        true
+                    );
+                } else {
+                    displayResult(`❌ Failed (${response.status}):\n\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                displayResult(`❌ Error: ${error.message}`, false);
+            }
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('token');
+            displayResult('Token cleared!', true);
+        }
+        
+        // Display token on load
+        displayToken();
+    </script>
+</body>
+</html>

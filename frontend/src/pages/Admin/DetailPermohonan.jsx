@@ -50,11 +50,6 @@ const DetailPermohonan = () => {
                   value="Diperlukan pembaruan pada modul pelaporan kinerja agar sesuai dengan format terbaru dari BKN."
                 />
 
-                <DetailItem
-                  label="Catatan Teknisi"
-                  value="Format pelaporan yang lama sudah tidak sesuai dengan pedoman nasional, sehingga jika tidak segera diperbarui, pengiriman data dapat tertunda dan berdampak pada evaluasi."
-                />
-
                 <DetailItem label="Prioritas" value="Low" />
 
                 {/* FILE ITEM */}

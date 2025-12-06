@@ -13,7 +13,7 @@ class CmdbController extends Controller
     public function show(ConfigurationItem $config_item)
     {
         $config_item->load([
-            'ownerOpd',
+            'ownerDinas',
             'sourceRelations.target',
             'targetRelations.source',
         ]);

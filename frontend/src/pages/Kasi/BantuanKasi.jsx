@@ -11,9 +11,8 @@ import panahkanan from "../../assets/panahkanan.png";
 const questions = [
   { text: "Bagaimana cara melakukan penindakan pengajuan?", path: "/BantuanKasi1" },
   { text: "Bagaimana cara melihat riwayat yang telah saya tindak?", path: "/BantuanKasi2" },
-  { text: "Bagaimana cara mengubah kata sandi akun?", path: "/BantuanKasi3" },
-  { text: "Bagaimana cara melihat riwayat status perubahan sebelumnya?", path: "/BantuanKasi4" },
-  { text: "Bagaimana cara memperbarui informasi profil saya?", path: "/BantuanKasi5" },
+  { text: "Bagaimana cara melihat riwayat status perubahan sebelumnya?", path: "/BantuanKasi3" },
+  { text: "Bagaimana cara memperbarui informasi profil saya?", path: "/BantuanKasi4" },
 ];
 
 export default function Bantuan() {
