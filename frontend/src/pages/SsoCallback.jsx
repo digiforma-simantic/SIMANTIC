@@ -19,64 +19,15 @@ const SsoCallback = () => {
 
     // Simpan token ke localStorage
     localStorage.setItem('token', token);
+    localStorage.setItem('isLoggedIn', 'true');
+    
+    setStatus('success');
 
-    // Get user data dengan token
-    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/v1/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success || data.id) {
-          const user = data.data || data;
-          localStorage.setItem('user', JSON.stringify(user));
-          localStorage.setItem('isLoggedIn', 'true');
-
-          setStatus('success');
-
-          // Redirect berdasarkan role
-          setTimeout(() => {
-            const role = user.role || user.roleObj?.slug || 'staff';
-            
-            switch(role) {
-              case 'admin_kota':
-                navigate('/Admin/dashboardadmin');
-                break;
-              case 'kepala_dinas':
-              case 'kadis':
-                navigate('/Kadis/dashboardkadis');
-                break;
-              case 'kepala_seksi':
-              case 'kasi':
-                navigate('/Kasi/dashboardkasi');
-                break;
-              case 'kabid':
-                navigate('/Kabid/dashboardkabid');
-                break;
-              case 'auditor':
-                navigate('/auditor/dashboardauditor');
-                break;
-              case 'admin_dinas':
-              case 'diskominfo':
-                navigate('/diskominfo/dashboarddiskominfo');
-                break;
-              default:
-                navigate('/staff/dashboardstaff');
-            }
-          }, 1500);
-        } else {
-          throw new Error('Gagal mendapatkan data user');
-        }
-      })
-      .catch(err => {
-        console.error('SSO callback error:', err);
-        setStatus('error');
-        setError(err.message || 'Gagal memproses login SSO');
-        localStorage.removeItem('token');
-        setTimeout(() => navigate('/login'), 3000);
-      });
+    // Redirect ke staff dashboard (default) - user akan di-fetch di dashboard
+    // atau bisa redirect ke halaman profile untuk lengkapi data
+    setTimeout(() => {
+      navigate('/staff/dashboardstaff');
+    }, 1500);
   }, [searchParams, navigate]);
 
   return (
