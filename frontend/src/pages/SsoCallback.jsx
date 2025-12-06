@@ -51,6 +51,22 @@ const SsoCallback = () => {
         setTimeout(() => {
           const roleSlug = user?.roleObj?.slug || user?.role || 'staff';
           
+          console.log('SSO User Role:', roleSlug); // Debug log
+          
+          // Cek jika role adalah teknisi - reject akses
+          if (roleSlug === 'teknisi') {
+            setStatus('error');
+            setError('Role Teknisi tidak memiliki akses ke aplikasi Change & Configuration Management. Silakan gunakan aplikasi Service Desk.');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('isLoggedIn');
+            // Redirect ke SSO atau halaman error setelah 5 detik
+            setTimeout(() => {
+              window.location.href = 'https://api.bispro.digitaltech.my.id'; // Redirect ke SSO
+            }, 5000);
+            return;
+          }
+          
           switch(roleSlug) {
             case 'admin_kota':
               navigate('/Admin/dashboardadmin');
@@ -73,7 +89,6 @@ const SsoCallback = () => {
             case 'diskominfo':
               navigate('/diskominfo/dashboarddiskominfo');
               break;
-            case 'teknisi':
             case 'staff':
             default:
               navigate('/staff/dashboardstaff');
@@ -118,9 +133,9 @@ const SsoCallback = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Login Gagal</h2>
-            <p className="text-red-600 mb-4">{error}</p>
-            <p className="text-gray-600 text-sm">Mengalihkan ke halaman login...</p>
+            <h2 className="text-2xl font-bold text-red-700 mb-2">⚠️ Akses Ditolak</h2>
+            <p className="text-gray-700 mb-4 leading-relaxed">{error}</p>
+            <p className="text-gray-500 text-sm">Anda akan dialihkan dalam beberapa detik...</p>
           </>
         )}
       </div>
