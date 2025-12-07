@@ -59,7 +59,7 @@ class ConfigurationItemController extends Controller
     {
         $query = ConfigurationItem::with('ownerDinas');
 
-        $userDinasId = $request->user()->dinas_id ?? $request->user()->opd_id;
+        $userDinasId = $request->user()->dinas_id ?? null;
         if ($userDinasId) {
             $query->where('owner_dinas_id', $userDinasId);
         }

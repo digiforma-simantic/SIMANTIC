@@ -20,7 +20,7 @@ type Role =
   | "auditor"
   | "diskominfo";
 
-type TabName = "Dashboard" | "Aset" | "Riwayat" | "Profil" | "User";
+type TabName = "Dashboard" | "Aset" | "Riwayat" | "Profil" | "User" | "Laporan";
 
 type TabItem = {
   name: TabName;
@@ -41,6 +41,7 @@ export default function AnimatedBottomNav({ role }: { role: Role }) {
     Aset: useRef(new Animated.Value(0)).current,
     Riwayat: useRef(new Animated.Value(0)).current,
     Profil: useRef(new Animated.Value(0)).current,
+    Laporan: useRef(new Animated.Value(0)).current,
     User: useRef(new Animated.Value(0)).current,
   };
 
@@ -82,8 +83,20 @@ export default function AnimatedBottomNav({ role }: { role: Role }) {
         activeIcon: require("../assets/images/homebold.png"),
       },
       {
-        name: "User",
-        route: "/admin/user",
+        name: "Aset",
+        route: "/admin/aset",
+        inactiveIcon: require("../assets/images/aset.png"),
+        activeIcon: require("../assets/images/asetbold.png"),
+      },
+      {
+        name: "Riwayat",
+        route: "/admin/riwayat",
+        inactiveIcon: require("../assets/images/riwayat.png"),
+        activeIcon: require("../assets/images/riwayatbold.png"),
+      },
+      {
+        name: "Profil",
+        route: "/admin/profil",
         inactiveIcon: require("../assets/images/profil.png"),
         activeIcon: require("../assets/images/profilbold.png"),
       },
@@ -116,10 +129,104 @@ export default function AnimatedBottomNav({ role }: { role: Role }) {
       },
     ],
 
-    kabid: [],
-    kadis: [],
-    auditor: [],
-    diskominfo: [],
+    kabid: [
+      {
+        name: "Dashboard",
+        route: "/kabid/dashboard",
+        inactiveIcon: require("../assets/images/home.png"),
+        activeIcon: require("../assets/images/homebold.png"),
+      },
+      {
+        name: "Aset",
+        route: "/kabid/aset",
+        inactiveIcon: require("../assets/images/aset.png"),
+        activeIcon: require("../assets/images/asetbold.png"),
+      },
+      {
+        name: "Riwayat",
+        route: "/kabid/riwayat",
+        inactiveIcon: require("../assets/images/riwayat.png"),
+        activeIcon: require("../assets/images/riwayatbold.png"),
+      },
+      {
+        name: "Profil",
+        route: "/kabid/profil",
+        inactiveIcon: require("../assets/images/profil.png"),
+        activeIcon: require("../assets/images/profilbold.png"),
+      },
+    ],
+    kadis: [
+      {
+        name: "Dashboard",
+        route: "/kadis/dashboard",
+        inactiveIcon: require("../assets/images/home.png"),
+        activeIcon: require("../assets/images/homebold.png"),
+      },
+      {
+        name: "Aset",
+        route: "/kadis/aset",
+        inactiveIcon: require("../assets/images/aset.png"),
+        activeIcon: require("../assets/images/asetbold.png"),
+      },
+      {
+        name: "Riwayat",
+        route: "/kadis/riwayat",
+        inactiveIcon: require("../assets/images/riwayat.png"),
+        activeIcon: require("../assets/images/riwayatbold.png"),
+      },
+      {
+        name: "Profil",
+        route: "/kadis/profil",
+        inactiveIcon: require("../assets/images/profil.png"),
+        activeIcon: require("../assets/images/profilbold.png"),
+      },
+    ],
+    auditor: [
+      {
+        name: "Dashboard",
+        route: "/auditor/dashboard",
+        inactiveIcon: require("../assets/images/home.png"),
+        activeIcon: require("../assets/images/homebold.png"),
+      },
+      {
+        name: "Laporan",
+        route: "/auditor/laporan",
+        inactiveIcon: require("../assets/images/laporan.png"),
+        activeIcon: require("../assets/images/laporanbold.png"),
+      },
+      {
+        name: "Profil",
+        route: "/auditor/profil",
+        inactiveIcon: require("../assets/images/profil.png"),
+        activeIcon: require("../assets/images/profilbold.png"),
+      },
+    ],
+    diskominfo: [
+      {
+        name: "Dashboard",
+        route: "/diskominfo/dashboard",
+        inactiveIcon: require("../assets/images/home.png"),
+        activeIcon: require("../assets/images/homebold.png"),
+      },
+      {
+        name: "Aset",
+        route: "/diskominfo/aset",
+        inactiveIcon: require("../assets/images/aset.png"),
+        activeIcon: require("../assets/images/asetbold.png"),
+      },
+      {
+        name: "Riwayat",
+        route: "/diskominfo/riwayat",
+        inactiveIcon: require("../assets/images/riwayat.png"),
+        activeIcon: require("../assets/images/riwayatbold.png"),
+      },
+      {
+        name: "Profil",
+        route: "/diskominfo/profil",
+        inactiveIcon: require("../assets/images/profil.png"),
+        activeIcon: require("../assets/images/profilbold.png"),
+      },
+    ],
   };
 
   const tabs = menuByRole[role].map((tab) => ({

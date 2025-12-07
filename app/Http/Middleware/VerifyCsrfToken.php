@@ -13,7 +13,9 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'api/*',          // ← penting: semua endpoint /api bebas CSRF
+        '/api/*',         // Tambahan untuk memastikan semua API route
         '/api/sso/callback',
         'api/sso/callback',
+        '/api/auth/dev/login',  // Explicit untuk dev login
     ];
 }

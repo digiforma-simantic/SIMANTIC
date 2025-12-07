@@ -112,7 +112,7 @@ export default function LoginScreen() {
           {/* BUTTON */}
           <TouchableOpacity
             disabled={!isFormValid}
-            onPress={() => router.push("/kasi/dashboard")}
+            onPress={() => router.push("/auditor/dashboard")}
             style={[
               styles.button,
               isFormValid ? styles.btnActive : styles.btnInactive,

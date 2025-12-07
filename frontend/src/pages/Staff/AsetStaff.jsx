@@ -1,23 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
+import { useAuth } from "../../contexts/AuthContext";
+import { configItemsAPI } from "../../services/api";
 
-const assets = [
-  { id: 1, name: "Laptop M-25-001" },
-  { id: 2, name: "Laptop M-25-002" },
-  { id: 3, name: "Laptop M-25-003" },
-  { id: 4, name: "Laptop M-25-004" },
-  { id: 5, name: "Laptop M-25-005" },
-  { id: 6, name: "Laptop M-25-006" },
-  { id: 7, name: "Laptop M-25-007" },
-  { id: 8, name: "Laptop M-25-008" },
-];
-
-const AssetCard = ({ id, name}) => (
+const AssetCard = ({ id, name, ciCode }) => (
   <div className="bg-[#F7FBFF] rounded-xl border border-[#E6EEF7] p-4 flex justify-between items-center">
     <div>
       <h3 className="font-semibold text-[#0E2C4F]">{name}</h3>
+      {ciCode && <p className="text-xs text-gray-500 mt-1">{ciCode}</p>}
     </div>
 
     <Link
@@ -30,7 +22,40 @@ const AssetCard = ({ id, name}) => (
 );
 
 export default function AsetStaff() {
+  const { user, loading: authLoading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAssets() {
+      try {
+        const response = await configItemsAPI.getAll();
+        const data = response.data || [];
+        // Filter berdasarkan dinas user (opsional)
+        const filteredAssets = user?.dinasId 
+          ? data.filter(item => item.owner_dinas_id === user.dinasId)
+          : data;
+        setAssets(filteredAssets);
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (user) {
+      fetchAssets();
+    }
+  }, [user]);
+
+  if (authLoading || loading) {
+    return (
+      <div className="flex min-h-screen bg-[#F4FAFF] items-center justify-center">
+        <p className="text-gray-500">Memuat data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F4FAFF] font-geologica">
@@ -59,11 +84,22 @@ export default function AsetStaff() {
               Cek Aset
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {assets.map((item) => (
-                <AssetCard key={item.id} id={item.id} name={item.name} />
-              ))}
-            </div>
+            {loading ? (
+              <p className="text-center text-gray-500 py-8">Memuat data aset...</p>
+            ) : assets.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">Tidak ada aset tersedia</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {assets.map((item) => (
+                  <AssetCard 
+                    key={item.id} 
+                    id={item.id} 
+                    name={item.name || `${item.type} - ${item.ci_code}`}
+                    ciCode={item.ci_code}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </main>

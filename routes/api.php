@@ -55,25 +55,6 @@ Route::post('v1/rfc/{change}/reject',  [ChangeApprovalController::class, 'reject
     ->name('rfc.reject');
 
 /**
- * TEMPORARY: Config Items tanpa auth untuk development
- * TODO: Kembalikan ke dalam auth:sanctum saat production
- */
-Route::prefix('v1')->group(function () {
-    Route::apiResource('config-items', ConfigurationItemController::class)
-        ->parameters(['config-items' => 'config_item'])
-        ->names([
-            'index'   => 'config-items.index',
-            'store'   => 'config-items.store',
-            'show'    => 'config-items.show',
-            'update'  => 'config-items.update',
-            'destroy' => 'config-items.destroy',
-        ]);
-    
-    Route::patch('config-items/{config_item}/configuration', [ConfigurationItemController::class, 'updateConfiguration'])
-        ->name('config-items.update-configuration');
-});
-
-/**
  * Protected v1 (butuh Bearer token Sanctum)
  * Final path: /api/v1/...
  */
@@ -87,6 +68,20 @@ Route::prefix('v1')
             $user->load(['roleObj', 'dinas']);
             return response()->json($user);
         })->name('me');
+
+        // Configuration Items
+        Route::apiResource('config-items', ConfigurationItemController::class)
+            ->parameters(['config-items' => 'config_item'])
+            ->names([
+                'index'   => 'config-items.index',
+                'store'   => 'config-items.store',
+                'show'    => 'config-items.show',
+                'update'  => 'config-items.update',
+                'destroy' => 'config-items.destroy',
+            ]);
+        
+        Route::patch('config-items/{config_item}/configuration', [ConfigurationItemController::class, 'updateConfiguration'])
+            ->name('config-items.update-configuration');
 
         /**
          * Master Data Import
