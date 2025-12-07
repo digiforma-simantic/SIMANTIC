@@ -182,6 +182,22 @@ export const rfcAPI = {
     const response = await api.get("/api/v1/rfc/history");
     return response.data;
   },
+
+  /**
+   * Get all RFCs (filtered by user)
+   */
+  async getAll() {
+    const response = await api.get("/api/v1/rfc");
+    return response.data;
+  },
+
+  /**
+   * Create new RFC
+   */
+  async create(data) {
+    const response = await api.post("/api/v1/rfc", data);
+    return response.data;
+  },
 };
 
 export default {

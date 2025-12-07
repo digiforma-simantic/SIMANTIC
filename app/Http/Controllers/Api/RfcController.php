@@ -71,18 +71,35 @@ class RfcController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Rfc::orderBy('created_at', 'desc');
-
-        // Keep the query simple: return RFC records without OPD/requester filtering.
+        $user = $request->user();
+        
+        // Filter RFC berdasarkan sso_id user yang login (untuk staff)
+        $query = Rfc::where('sso_id', $user->sso_id)
+            ->orderBy('created_at', 'desc');
 
         // Optional filter status
+        if ($status = $request->query('status')) {
+            $query->where('status', $status);
+        }
+
         if ($priority = $request->query('priority')) {
             $query->where('priority', $priority);
         }
 
-        $perPage = (int) $request->query('per_page', 15);
+        $perPage = (int) $request->query('per_page', 100);
 
-        return $query->paginate($perPage);
+        $result = $query->paginate($perPage);
+
+        return response()->json([
+            'status' => true,
+            'data' => $result->items(),
+            'meta' => [
+                'current_page' => $result->currentPage(),
+                'last_page' => $result->lastPage(),
+                'per_page' => $result->perPage(),
+                'total' => $result->total(),
+            ]
+        ]);
     }
 
     /**
