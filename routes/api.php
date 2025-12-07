@@ -44,6 +44,12 @@ Route::post('v1/setup/import-users', [\App\Http\Controllers\Api\UserImportContro
 Route::post('/v1/rfc',      [RfcController::class, 'store'])->name('rfc.store');
 
 /**
+ * Implementation Report (no auth - called by Service Desk after completion)
+ */
+Route::post('v1/implementation-reports', [\App\Http\Controllers\Api\ImplementationReportController::class, 'store'])
+    ->name('implementation-reports.submit');
+
+/**
  * Approval flow (no auth required - called by Service Desk)
  * Body JSON: { "stage":"kasi|kabid|diskominfo", "decision":"approve|reject|need_info", "note":"..." }
  */
@@ -53,6 +59,12 @@ Route::post('v1/rfc/{change}/approve', [ChangeApprovalController::class, 'approv
     ->name('rfc.approve');
 Route::post('v1/rfc/{change}/reject',  [ChangeApprovalController::class, 'reject'])
     ->name('rfc.reject');
+
+/**
+ * Implementation Report (no auth required - called by Service Desk after completion)
+ */
+Route::post('v1/implementation-reports', [\App\Http\Controllers\Api\ImplementationReportController::class, 'store'])
+    ->name('implementation-reports.store');
 
 /**
  * Protected v1 (butuh Bearer token Sanctum)
@@ -112,6 +124,14 @@ Route::prefix('v1')
          */
         Route::get('rfc',       [RfcController::class, 'index'])->name('rfc.index');
         Route::get('rfc/{rfc}', [RfcController::class, 'show' ])->name('rfc.show');
+
+        /**
+         * Implementation Reports (internal access)
+         */
+        Route::get('implementation-reports', [\App\Http\Controllers\Api\ImplementationReportController::class, 'index'])
+            ->name('implementation-reports.index');
+        Route::get('implementation-reports/{implementationReport}', [\App\Http\Controllers\Api\ImplementationReportController::class, 'show'])
+            ->name('implementation-reports.show');
 
         /**
          * Notifications - staff specific endpoint

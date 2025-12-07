@@ -868,6 +868,289 @@
                 ]
             }
         },
+        "/api/v1/implementation-reports": {
+            "get": {
+                "tags": [
+                    "Implementation Report"
+                ],
+                "summary": "List semua implementation reports",
+                "operationId": "38b9e74cb101e47f08f0435e26e59c3d",
+                "parameters": [
+                    {
+                        "name": "rfc_id",
+                        "in": "query",
+                        "description": "Filter by RFC ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status (success, failed, partial)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List implementation reports with pagination",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 100
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Implementation Report"
+                ],
+                "summary": "Submit laporan implementasi dari Service Desk - No Authentication Required",
+                "operationId": "88344dbdb3f8d45cb9c177618b75d1c9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "rfc_service_id",
+                                    "status",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "rfc_service_id": {
+                                        "type": "string",
+                                        "example": "SD-2025-001"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "success",
+                                            "failed",
+                                            "partial"
+                                        ],
+                                        "example": "success"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Perbaikan server berhasil. RAM upgrade 16GB."
+                                    },
+                                    "attachments": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "https://example.com/report.pdf"
+                                        ]
+                                    },
+                                    "completed_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-12-07 15:30:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Laporan berhasil diterima",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Implementation report received successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "rfc_service_id": {
+                                                    "type": "string",
+                                                    "example": "SD-2025-001"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "success"
+                                                },
+                                                "synced": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "rfc_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The rfc service id field is required."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/implementation-reports/{id}": {
+            "get": {
+                "tags": [
+                    "Implementation Report"
+                ],
+                "summary": "Detail implementation report",
+                "operationId": "a47cee27104875f6c90df520ba151993",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Implementation Report ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail report",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "rfc_service_id": {
+                                                    "type": "string",
+                                                    "example": "SD-2025-001"
+                                                },
+                                                "rfc_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "success"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Perbaikan berhasil"
+                                                },
+                                                "attachments": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "completed_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "rfc": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/maintenance-jobs": {
             "get": {
                 "tags": [
@@ -2295,6 +2578,99 @@
                 ]
             }
         },
+        "/api/v1/rfc/pending-approval": {
+            "get": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Get pending RFCs for current user to approve",
+                "description": "GET /api/v1/rfc/pending-approval\nGet pending RFCs for approval based on user role",
+                "operationId": "7ba21bd3c3b164e9c41c09b21e431b78",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/rfc/{id}/approve": {
+            "post": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Approve or reject RFC",
+                "description": "POST /api/v1/rfc/{id}/approve\nApprove or reject RFC",
+                "operationId": "c3cc1399701735c429b9c6ed9f5edf2a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "decision": {
+                                        "type": "string",
+                                        "enum": [
+                                            "approved",
+                                            "rejected"
+                                        ]
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/rfc/history": {
+            "get": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Get RFC approval history for current user",
+                "description": "GET /api/v1/rfc/history\nGet RFC approval history for current user",
+                "operationId": "476d585f4a8954d8a642bba03f3646bc",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/import/users": {
             "post": {
                 "tags": [
@@ -2785,6 +3161,10 @@
         {
             "name": "CMDB",
             "description": "Manajemen Configuration Item (CI) dan relasinya dalam CMDB"
+        },
+        {
+            "name": "Implementation Report",
+            "description": "API untuk laporan implementasi dari Service Desk setelah perbaikan selesai"
         },
         {
             "name": "Maintenance Management",
