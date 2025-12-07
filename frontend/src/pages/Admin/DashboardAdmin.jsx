@@ -1,12 +1,50 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Sidebaradmin from "../../components/Admin/Sidebaradmin";
 import Headeradmin from "../../components/Admin/Headeradmin";
+import { useAuth } from "../../contexts/AuthContext";
 
 import tandaminus from "../../assets/tandaminusadmin.png";
 import tandaseru from "../../assets/tandaseruadmin.png";
 
 const DashboardAdmin = () => {
+  const { user, loading } = useAuth();
+  const [approvals, setApprovals] = useState([]);
+  const [loadingApprovals, setLoadingApprovals] = useState(true);
+
+  useEffect(() => {
+    // Fetch approvals berdasarkan role user
+    async function fetchApprovals() {
+      try {
+        // TODO: Implementasi fetch dari API
+        // const response = await axios.get('/api/v1/rfcs/pending-approval');
+        // setApprovals(response.data);
+        
+        // Sementara pakai dummy data
+        setApprovals([
+          { id: 1, title: "Install Aplikasi Kerja", date: "17 Agustus 2025", priority: "high" },
+          { id: 2, title: "Update Server", date: "18 Agustus 2025", priority: "medium" },
+        ]);
+        setLoadingApprovals(false);
+      } catch (error) {
+        console.error("Error fetching approvals:", error);
+        setLoadingApprovals(false);
+      }
+    }
+
+    if (user) {
+      fetchApprovals();
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F7FCFF]">
+        <p className="text-gray-500">Memuat...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-[#F7FCFF] font-geologica text-[#001B33]">
 
@@ -20,7 +58,8 @@ const DashboardAdmin = () => {
 
           <div className="mb-8">
             <p className="text-sm text-gray-600">Selamat datang,</p>
-            <h1 className="text-3xl font-semibold text-gray-900">Joko Gemilang</h1>
+            <h1 className="text-3xl font-semibold text-gray-900">{user?.name || 'User'}</h1>
+            <p className="text-sm text-gray-500 mt-1">{user?.roleName || user?.role} - {user?.dinas || 'N/A'}</p>
           </div>
 
           <div className="bg-[#F2FAFF] rounded-2xl shadow-sm border border-[#E2EDF5] p-6">
@@ -36,25 +75,31 @@ const DashboardAdmin = () => {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[1,2,3,4,5,6,7,8].map((item) => (
-                <div key={item} className="flex items-center justify-between bg-[#F9FCFF] border border-[#E6EEF7] rounded-xl p-4">
+            {loadingApprovals ? (
+              <p className="text-center text-gray-500 py-4">Memuat data approval...</p>
+            ) : approvals.length === 0 ? (
+              <p className="text-center text-gray-500 py-4">Tidak ada approval pending</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {approvals.slice(0, 8).map((item) => (
+                  <div key={item.id} className="flex items-center justify-between bg-[#F9FCFF] border border-[#E6EEF7] rounded-xl p-4">
 
-                  <div className="flex items-start gap-3">
-                    <img src={item % 2 === 0 ? tandaminus : tandaseru} className="w-5" />
-                    <div>
-                      <p className="font-medium text-sm">Install Aplikasi Kerja</p>
-                      <p className="text-[10px] text-gray-500">17 Agustus 2025</p>
+                    <div className="flex items-start gap-3">
+                      <img src={item.priority === 'high' ? tandaseru : tandaminus} className="w-5" />
+                      <div>
+                        <p className="font-medium text-sm">{item.title}</p>
+                        <p className="text-[10px] text-gray-500">{item.date}</p>
+                      </div>
                     </div>
+
+                    <Link to={`/Admin/DetailPermohonan/${item.id}`} className="text-xs text-[#005BBB] hover:underline">
+                      Cek Detail
+                    </Link>
+
                   </div>
-
-                  <Link to={`/Admin/DetailPermohonan/${item}`} className="text-xs text-[#005BBB] hover:underline">
-                    Cek Detail
-                  </Link>
-
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
           </div>
         </div>

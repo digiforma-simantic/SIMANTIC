@@ -48,6 +48,14 @@ class Rfc extends Model
     // Legacy relationships - kept for backward compatibility with Change Management features
     // Note: RFC is now Service Desk only and does not store requester_id or requester_opd_id
     
+    /**
+     * Get requester user based on sso_id
+     */
+    public function requester()
+    {
+        return $this->belongsTo(User::class, 'sso_id', 'sso_id');
+    }
+    
     public function approvals()
     {
         return $this->hasMany(RfcApproval::class);

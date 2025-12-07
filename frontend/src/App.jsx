@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-
+import { AuthProvider } from "./contexts/AuthContext";
 
 import DashboardStaff from "./pages/Staff/DashboardStaff";
 import AsetStaff from "./pages/Staff/AsetStaff";
@@ -108,10 +108,14 @@ import DaftarRiwayatDiskominfo from "./pages/Diskominfo/DaftarRiwayatDiskominfo"
 import DetailApprovalDiskominfo from "./pages/Diskominfo/DetailApprovalDiskominfo";
 import RiwayatApprovalDiskominfo from "./pages/Diskominfo/RiwayatApprovalDiskominfo";
 import SsoCallback from "./pages/SsoCallback";
+import DevLogin from "./pages/DevLogin";
 
-export default function App() {
+function App() {
   return (
     <Routes>
+      {/* DEV LOGIN - Development Only */}
+      <Route path="/dev-login" element={<DevLogin />} />
+      
       {/* SSO CALLBACK */}
       <Route path="/api/sso/callback" element={<SsoCallback />} />
       <Route path="/sso/callback" element={<SsoCallback />} />
@@ -275,5 +279,13 @@ export default function App() {
       <Route path="/BantuanKasi4" element={<BantuanKasi4 />} />
 
     </Routes>
+  );
+}
+
+export default function AppWithAuth() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   );
 }

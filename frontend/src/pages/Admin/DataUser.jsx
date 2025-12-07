@@ -1,7 +1,18 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import Headeruser from "../../components/Admin/Headeruser";
 
 export default function ProfileNavigation() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F7FCFF] flex items-center justify-center">
+        <p className="text-gray-500">Memuat data user...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F7FCFF] font-geologica">
 
@@ -24,7 +35,7 @@ export default function ProfileNavigation() {
         {/* Profile Form */}
         <section className="bg-[#F2FAFF] p-8 rounded-lg shadow-md flex-1">
           <h2 className="text-center font-bold text-[#001729] text-lg mb-6">
-            Selamat datang, Joko Gemilang!
+            Selamat datang, {user?.name || 'User'}!
           </h2>
 
           <form className="space-y-6">
@@ -36,9 +47,9 @@ export default function ProfileNavigation() {
               </label>
               <input
                 type="text"
-                defaultValue="Joko Gemilang"
+                value={user?.name || '-'}
                 readOnly
-                className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
               />
             </div>
 
@@ -51,9 +62,9 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Laki - Laki"
+                  value={user?.jenisKelamin || '-'}
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
 
@@ -63,9 +74,9 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="110920471983"
+                  value={user?.nip || '-'}
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
 
@@ -80,9 +91,9 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Staff"
+                  value={user?.jabatan || user?.roleName || '-'}
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
 
@@ -92,9 +103,9 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Bidang Pencegahan Penyakit"
+                  value={user?.unitKerja || '-'}
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
 
@@ -109,9 +120,9 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Dinas Kesehatan Prov. Jawa Timur"
+                  value={user?.dinas || '-'}
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
 
@@ -121,9 +132,9 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="email"
-                  defaultValue="slametbudi@gmail.com"
+                  value={user?.email || '-'}
                   readOnly
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
             </div>

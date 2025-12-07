@@ -41,6 +41,11 @@ class ConfigurationItem extends Model
         'relation_note',  // deskripsi relasi antar aset
         'patch_level',
         'risk_level',
+        'asset_id',       // ID dari API Aset
+        'subkategori',    // Subkategori aset (Hardware, Software, dll)
+        'lokasi',         // Lokasi fisik aset
+        'penanggung_jawab', // Nama penanggung jawab aset
+        'is_usage',       // Status penggunaan aset
     ];
 
     /* ==========================

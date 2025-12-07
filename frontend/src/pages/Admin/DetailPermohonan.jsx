@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { rfcAPI } from "../../services/api";
 import Headeradmin from "../../components/Admin/Headerdetper";
 
 // ICON / IMAGE SESUAI IMPORTMU
@@ -8,6 +9,58 @@ import dokumen from "../../assets/dokumen.png";
 const DetailPermohonan = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [rfc, setRfc] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    async function fetchRFC() {
+      try {
+        const response = await rfcAPI.getById(id);
+        setRfc(response.data);
+      } catch (error) {
+        console.error("Error fetching RFC:", error);
+        alert("Gagal memuat data RFC");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRFC();
+  }, [id]);
+
+  const handleApprove = async (decision) => {
+    if (!confirm(`Yakin ingin ${decision === 'approved' ? 'menyetujui' : 'menolak'} RFC ini?`)) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await rfcAPI.approve(id, decision);
+      alert(response.message || `RFC berhasil ${decision === 'approved' ? 'disetujui' : 'ditolak'}`);
+      navigate('/Admin/DaftarApproval');
+    } catch (error) {
+      console.error("Error approving RFC:", error);
+      alert(error.message || "Gagal memproses approval");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-[#F7FCFF] items-center justify-center">
+        <p className="text-gray-500">Memuat data...</p>
+      </div>
+    );
+  }
+
+  if (!rfc) {
+    return (
+      <div className="flex min-h-screen bg-[#F7FCFF] items-center justify-center">
+        <p className="text-red-500">RFC tidak ditemukan</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F7FCFF]">
@@ -35,42 +88,74 @@ const DetailPermohonan = () => {
 
               {/* USER CARD */}
               <div className="w-full md:w-1/4 bg-[#F8FBFF] border border-[#E3ECF5] rounded-xl p-5 h-fit">
-                <p className="font-bold text-lg text-[#001B33]">Slamet Budianto</p>
-                <p className="text-sm text-gray-500">Staff Dinas Kesehatan</p>
+                <p className="font-bold text-lg text-[#001B33]">
+                  {rfc.requester?.name || 'Unknown'}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {rfc.requester?.role_name || 'Staff'}
+                  {rfc.requester?.dinas_name && ` - ${rfc.requester.dinas_name}`}
+                </p>
               </div>
 
               {/* DETAILS CARD */}
               <div className="w-full md:w-3/4 bg-[#F8FBFF] border border-[#E3ECF5] rounded-xl p-6 space-y-5">
 
-                <DetailItem label="Judul RFC" value="Staff Dinas Kesehatan" />
-                <DetailItem label="Aset Terdampak" value="Komputer" />
+                <DetailItem 
+                  label="Judul RFC" 
+                  value={rfc.title || 'null'} 
+                />
+                
+                <DetailItem 
+                  label="Aset Terdampak" 
+                  value={rfc.ci_code || 'null'} 
+                />
 
                 <DetailItem
                   label="Deskripsi Permintaan"
-                  value="Diperlukan pembaruan pada modul pelaporan kinerja agar sesuai dengan format terbaru dari BKN."
+                  value={rfc.description || 'null'}
                 />
 
-                <DetailItem label="Prioritas" value="Low" />
+                <DetailItem
+                  label="Catatan Teknisi"
+                  value={rfc.config_comment || 'null'}
+                />
+
+                <DetailItem 
+                  label="Prioritas" 
+                  value={rfc.priority ? rfc.priority.charAt(0).toUpperCase() + rfc.priority.slice(1) : 'null'} 
+                />
 
                 {/* FILE ITEM */}
                 <div>
                   <p className="font-semibold text-sm text-[#001B33]">
                     File Bukti
                   </p>
-                  <div className="flex items-center gap-2 cursor-pointer w-fit hover:underline mt-1">
-                    <img src={dokumen} alt="dokumen" className="w-5 h-5" />
-                    <span className="text-sm text-[#005BBB] font-medium">
-                      Dokumen.Pdf.File
-                    </span>
-                  </div>
+                  {rfc.attachment_path || rfc.attachments ? (
+                    <div className="flex items-center gap-2 cursor-pointer w-fit hover:underline mt-1">
+                      <img src={dokumen} alt="dokumen" className="w-5 h-5" />
+                      <span className="text-sm text-[#005BBB] font-medium">
+                        {rfc.attachment_path ? rfc.attachment_path.split('/').pop() : 'Dokumen.Pdf.File'}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 mt-1">null</p>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* BUTTON */}
+            {/* BUTTON - Admin hanya submit RFC ke Kasi, bukan approve */}
             <div className="flex justify-end mt-6">
-              <button className="bg-[#FF7900] text-white px-8 py-2 rounded-lg hover:bg-[#e56b00] text-sm font-semibold">
-                Kirim
+              <button
+                onClick={() => {
+                  // TODO: Implement submit RFC to Kasi
+                  alert('Fitur submit ke Kasi belum diimplementasi');
+                  navigate('/Admin/DaftarApproval');
+                }}
+                disabled={submitting}
+                className="bg-[#FF7900] text-white px-8 py-2 rounded-lg hover:bg-[#e56b00] text-sm font-semibold disabled:opacity-50"
+              >
+                {submitting ? 'Mengirim...' : 'Kirim'}
               </button>
             </div>
           </div>

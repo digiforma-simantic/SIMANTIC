@@ -106,37 +106,52 @@ class RfcController extends Controller
      *   @OA\Response(response=404, description="RFC tidak ditemukan")
      * )
      */
-    public function show(Request $request, Rfc $rfc)
+    public function show(Request $request, $id)
     {
-        // No OPD/requester access control required for simplified RFC model.
-        // Load minimal relations if available.
-        $rfc->load(['rfcAttachments']);
+        try {
+            $rfc = Rfc::with(['requester.roleObj', 'requester.dinas', 'approvals.approver.roleObj'])
+                ->findOrFail($id);
 
-        return response()->json([
-            'data' => [
-                'id'          => $rfc->id,
-                'rfc_service_id' => $rfc->rfc_service_id,
-
-                // Detail RFC: untuk isi card di UI mobile
-                'rfc_detail' => [
-                    'title'           => $rfc->title,
-                    'affected_asset'  => null, // nanti bisa diisi dari relasi CI
-                    'description'     => $rfc->description,
-                    'technician_note' => null,
-                    'priority_label'  => $rfc->priority_label, // Low / Medium / High
-                    'priority_code'   => $rfc->priority,       // low / medium / high
-                    'asset_uuid'      => $rfc->asset_uuid,
-                    'sso_id'          => $rfc->sso_id,
-                    'requested_at'    => optional($rfc->requested_at)->toDateTimeString(),
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'id' => $rfc->id,
+                    'title' => $rfc->title,
+                    'description' => $rfc->description,
+                    'priority' => $rfc->priority,
+                    'status' => $rfc->status,
+                    'ci_code' => $rfc->ci_code,
+                    'attachment_path' => $rfc->attachment_path,
+                    'created_at' => $rfc->created_at,
+                    'requester' => $rfc->requester ? [
+                        'id' => $rfc->requester->id,
+                        'name' => $rfc->requester->name,
+                        'email' => $rfc->requester->email,
+                        'nip' => $rfc->requester->nip,
+                        'role_name' => $rfc->requester->roleObj->name ?? 'Staff',
+                        'dinas_name' => $rfc->requester->dinas->name ?? null,
+                    ] : null,
+                    'approvals' => $rfc->approvals->map(function ($approval) {
+                        return [
+                            'level' => $approval->level,
+                            'decision' => $approval->decision,
+                            'reason' => $approval->reason,
+                            'approved_at' => $approval->approved_at,
+                            'approver' => [
+                                'name' => $approval->approver->name ?? 'Unknown',
+                                'role_name' => $approval->approver->roleObj->name ?? 'Unknown',
+                            ],
+                        ];
+                    }),
                 ],
-
-                // File bukti
-                'attachments' => $rfc->attachments ?? [],
-
-                // Informasi approval berjenjang
-                // Removed approval-related details in simplified RFC model
-            ],
-        ]);
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'RFC not found',
+                'error' => $e->getMessage()
+            ], 404);
+        }
     }
 
         /**
@@ -308,5 +323,286 @@ class RfcController extends Controller
                 'updated_at'      => $rfc->updated_at->toDateTimeString(),
             ],
         ], 201);
+    }
+
+    /**
+     * GET /api/v1/rfc/pending-approval
+     * Get pending RFCs for approval based on user role
+     * 
+     * @OA\Get(
+     *     path="/api/v1/rfc/pending-approval",
+     *     tags={"RFC"},
+     *     summary="Get pending RFCs for current user to approve",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Success")
+     * )
+     */
+    public function getPendingApprovals(Request $request)
+    {
+        $user = $request->user();
+        $role = $user->roleObj->slug ?? $user->role;
+
+        $query = Rfc::with(['requester', 'requester.dinas', 'approvals']);
+
+        // Filter berdasarkan role dan status approval
+        switch ($role) {
+            case 'kepala_seksi':
+            case 'kasi':
+                // Kasi approve RFC dari staff di OPD yang sama
+                $query->where('status', 'pending')
+                    ->whereHas('requester', function ($q) use ($user) {
+                        $q->where('dinas_id', $user->dinas_id)
+                          ->whereHas('roleObj', function ($roleQuery) {
+                              $roleQuery->where('slug', 'staff');
+                          });
+                    })
+                    ->whereDoesntHave('approvals', function ($q) {
+                        $q->where('level', 'kasi');
+                    });
+                break;
+
+            case 'kabid':
+                // Kabid approve RFC yang sudah di-approve Kasi
+                $query->where('status', 'pending')
+                    ->whereHas('requester', function ($q) use ($user) {
+                        $q->where('dinas_id', $user->dinas_id);
+                    })
+                    ->whereHas('approvals', function ($q) {
+                        $q->where('level', 'kasi')->where('decision', 'approved');
+                    })
+                    ->whereDoesntHave('approvals', function ($q) {
+                        $q->where('level', 'kabid');
+                    });
+                break;
+
+            case 'kepala_dinas':
+            case 'kadis':
+                // Kadis approve RFC yang sudah di-approve Kabid
+                $query->where('status', 'pending')
+                    ->whereHas('requester', function ($q) use ($user) {
+                        $q->where('dinas_id', $user->dinas_id);
+                    })
+                    ->whereHas('approvals', function ($q) {
+                        $q->where('level', 'kabid')->where('decision', 'approved');
+                    })
+                    ->whereDoesntHave('approvals', function ($q) {
+                        $q->where('level', 'kadis');
+                    });
+                break;
+
+            case 'admin_dinas':
+                // Admin Dinas (final approver) - approve RFC yang sudah di-approve Kadis
+                $query->where('status', 'pending')
+                    ->whereHas('approvals', function ($q) {
+                        $q->where('level', 'kadis')->where('decision', 'approved');
+                    })
+                    ->whereDoesntHave('approvals', function ($q) {
+                        $q->where('level', 'diskominfo');
+                    });
+                break;
+
+            case 'admin_kota':
+                // Admin Kota tidak approve, hanya monitor
+                return response()->json([
+                    'status' => true,
+                    'data' => [],
+                    'message' => 'Admin Kota can only monitor, not approve'
+                ]);
+
+            default:
+                // Role lain tidak bisa approve
+                return response()->json([
+                    'status' => true,
+                    'data' => [],
+                    'message' => 'No approval permission for this role'
+                ]);
+        }
+
+        $rfcs = $query->orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $rfcs->map(function ($rfc) {
+                return [
+                    'id' => $rfc->id,
+                    'title' => $rfc->title,
+                    'description' => $rfc->description,
+                    'priority' => $rfc->priority,
+                    'status' => $rfc->status,
+                    'created_at' => $rfc->created_at->format('d F Y'),
+                    'requester' => [
+                        'id' => $rfc->requester->id ?? null,
+                        'name' => $rfc->requester->name ?? 'Unknown',
+                        'email' => $rfc->requester->email ?? null,
+                        'dinas' => $rfc->requester->dinas->name ?? 'Unknown',
+                        'role' => $rfc->requester->roleObj->name ?? 'Unknown',
+                    ],
+                    'approvals_count' => $rfc->approvals->count(),
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * POST /api/v1/rfc/{id}/approve
+     * Approve or reject RFC
+     * 
+     * @OA\Post(
+     *     path="/api/v1/rfc/{id}/approve",
+     *     tags={"RFC"},
+     *     summary="Approve or reject RFC",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="decision", type="string", enum={"approved", "rejected"}),
+     *             @OA\Property(property="reason", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Success")
+     * )
+     */
+    public function approve(Request $request, $id)
+    {
+        $request->validate([
+            'decision' => 'required|in:approved,rejected',
+            'reason' => 'nullable|string',
+        ]);
+
+        $user = $request->user();
+        $role = $user->roleObj->slug ?? $user->role;
+
+        // Mapping role ke approval level
+        $levelMap = [
+            'kepala_seksi' => 'kasi',
+            'kasi' => 'kasi',
+            'kabid' => 'kabid',
+            'kepala_dinas' => 'kadis',
+            'kadis' => 'kadis',
+            'admin_dinas' => 'diskominfo',
+            'diskominfo' => 'diskominfo',
+        ];
+
+        $level = $levelMap[$role] ?? null;
+
+        if (!$level) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You do not have permission to approve RFC'
+            ], 403);
+        }
+
+        DB::beginTransaction();
+        try {
+            $rfc = Rfc::findOrFail($id);
+
+            // Cek apakah sudah pernah approve di level ini
+            $existingApproval = \App\Models\RfcApproval::where('rfc_id', $id)
+                ->where('level', $level)
+                ->first();
+
+            if ($existingApproval) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'RFC already processed at this level'
+                ], 400);
+            }
+
+            // Simpan approval
+            \App\Models\RfcApproval::create([
+                'rfc_id' => $id,
+                'approver_id' => $user->id,
+                'level' => $level,
+                'decision' => $request->decision,
+                'reason' => $request->reason,
+                'approved_at' => now(),
+            ]);
+
+            // Jika rejected, update status RFC
+            if ($request->decision === 'rejected') {
+                $rfc->update(['status' => 'rejected']);
+            } else {
+                // Jika approved di level diskominfo (level terakhir), ubah status jadi approved
+                if ($level === 'diskominfo') {
+                    $rfc->update(['status' => 'approved']);
+                }
+            }
+
+            DB::commit();
+
+            $nextLevel = $this->getNextLevel($level);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'RFC ' . $request->decision . ' successfully',
+                'data' => [
+                    'rfc_id' => $rfc->id,
+                    'status' => $rfc->status,
+                    'next_level' => $nextLevel,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to process approval: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * GET /api/v1/rfc/history
+     * Get RFC approval history for current user
+     * 
+     * @OA\Get(
+     *     path="/api/v1/rfc/history",
+     *     tags={"RFC"},
+     *     summary="Get RFC approval history for current user",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Success")
+     * )
+     */
+    public function getHistory(Request $request)
+    {
+        $user = $request->user();
+
+        // Get RFCs yang sudah pernah di-approve/reject oleh user ini
+        $rfcs = Rfc::with(['requester', 'requester.dinas', 'approvals'])
+            ->whereHas('approvals', function ($q) use ($user) {
+                $q->where('approver_id', $user->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $rfcs->map(function ($rfc) use ($user) {
+                $myApproval = $rfc->approvals->firstWhere('approver_id', $user->id);
+                
+                return [
+                    'id' => $rfc->id,
+                    'title' => $rfc->title,
+                    'priority' => $rfc->priority,
+                    'status' => $rfc->status,
+                    'created_at' => $rfc->created_at->format('d F Y'),
+                    'requester' => [
+                        'name' => $rfc->requester->name ?? 'Unknown',
+                        'dinas' => $rfc->requester->dinas->name ?? 'Unknown',
+                    ],
+                    'my_decision' => $myApproval->decision ?? null,
+                    'my_decision_at' => $myApproval->approved_at ? $myApproval->approved_at->format('d F Y H:i') : null,
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * Helper: Get next approval level
+     */
+    private function getNextLevel($currentLevel)
+    {
+        $flow = ['kasi' => 'kabid', 'kabid' => 'kadis', 'kadis' => 'diskominfo', 'diskominfo' => 'completed'];
+        return $flow[$currentLevel] ?? null;
     }
 }

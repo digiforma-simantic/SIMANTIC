@@ -87,8 +87,17 @@ class DevLoginController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Cari user berdasarkan email
-        $user = User::where('email', $data['email'])->first();
+        // Cari user berdasarkan email dengan relasi
+        $user = User::with(['roleObj', 'dinas'])->where('email', $data['email'])->first();
+
+        // Debug: log user data
+        \Log::info('Dev Login Debug', [
+            'email' => $data['email'],
+            'user_found' => $user ? true : false,
+            'role_id' => $user?->role_id,
+            'roleObj_loaded' => $user?->roleObj ? true : false,
+            'roleObj_slug' => $user?->roleObj?->slug,
+        ]);
 
         // Cek password
         if (!$user || ! Hash::check($data['password'], $user->password)) {
@@ -103,16 +112,26 @@ class DevLoginController extends Controller
         // Generate token Sanctum baru
         $token = $user->createToken('dev-token')->plainTextToken;
 
-        // Kembalikan response sukses
+        // Kembalikan response sukses dengan relasi lengkap
         return response()->json([
             'token' => $token,
             'user'  => [
-                'id'    => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email,
-                'role'  => $user->roleObj?->slug ?? $user->role,
-                'dinas_id'=> $user->dinas_id ?? $user->opd_id,
-                'sso_id'  => $user->sso_id ?? null,
+                'id'       => $user->id,
+                'name'     => $user->name,
+                'email'    => $user->email,
+                'nip'      => $user->nip,
+                'role'     => $user->roleObj?->slug ?? $user->role,
+                'roleObj'  => $user->roleObj ? [
+                    'id'   => $user->roleObj->id,
+                    'slug' => $user->roleObj->slug,
+                    'name' => $user->roleObj->name,
+                ] : null,
+                'dinas'    => $user->dinas ? [
+                    'id'   => $user->dinas->id,
+                    'name' => $user->dinas->name,
+                ] : null,
+                'dinas_id' => $user->dinas_id,
+                'sso_id'   => $user->sso_id,
             ],
         ], 200);
     }

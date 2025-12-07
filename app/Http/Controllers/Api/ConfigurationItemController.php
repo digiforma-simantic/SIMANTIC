@@ -309,6 +309,11 @@ class ConfigurationItemController extends Controller
             'os_name'       => 'nullable|string|max:100',
             'ip_address'    => 'nullable|ip',
             'relation_note' => 'nullable|string',
+            'penanggung_jawab' => 'nullable|string|max:255',
+            'lokasi'        => 'nullable|string|max:255',
+            'status'        => 'nullable|string|in:active,inactive,maintenance,retired',
+            'subkategori'   => 'nullable|string|max:100',
+            'risk_level'    => 'nullable|integer|min:1|max:5',
         ]);
 
         $config_item->update($data);

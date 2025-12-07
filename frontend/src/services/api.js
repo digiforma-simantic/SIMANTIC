@@ -18,7 +18,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log("API Request:", config.method.toUpperCase(), config.url);
+    // console.log("API Request:", config.method.toUpperCase(), config.url);
     return config;
   },
   (error) => {
@@ -29,11 +29,11 @@ api.interceptors.request.use(
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    console.log("API Response:", response.status, response.config.url);
+    // console.log("API Response:", response.status, response.config.url);
     return response;
   },
   (error) => {
-    console.error("API Error:", error.response?.data || error.message);
+    console.error("❌ API Error:", error.config?.url, error.response?.status, error.response?.data);
     const message = error.response?.data?.message || error.message || "Request failed";
     return Promise.reject(new Error(message));
   }
@@ -139,7 +139,47 @@ export const authAPI = {
    * Get current user
    */
   async me() {
-    const response = await api.get("/api/v1/auth/me");
+    const response = await api.get("/api/v1/me");
+    return response.data;
+  },
+};
+
+/**
+ * RFC API
+ */
+export const rfcAPI = {
+  /**
+   * Get pending RFCs for approval
+   */
+  async getPendingApprovals() {
+    const response = await api.get("/api/v1/rfc/pending-approval");
+    return response.data;
+  },
+
+  /**
+   * Get RFC detail by ID
+   */
+  async getById(id) {
+    const response = await api.get(`/api/v1/rfc/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Approve or reject RFC
+   */
+  async approve(id, decision, reason = null) {
+    const response = await api.post(`/api/v1/rfc/${id}/approve`, {
+      decision,
+      reason,
+    });
+    return response.data;
+  },
+
+  /**
+   * Get approval history
+   */
+  async getHistory() {
+    const response = await api.get("/api/v1/rfc/history");
     return response.data;
   },
 };
@@ -148,4 +188,5 @@ export default {
   configItemsAPI,
   assetImportAPI,
   authAPI,
+  rfcAPI,
 };

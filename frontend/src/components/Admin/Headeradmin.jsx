@@ -1,11 +1,25 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 import searchIcon from "../../assets/search-normal.png";
 import bellIcon from "../../assets/notification.png";
 import userIcon from "../../assets/user.png";
 
 const Header = () => {
+  const { user } = useAuth();
+
+  // Format nama: nama depan lengkap + inisial nama belakang
+  // Contoh: "Admin Dinas Kominfo" → "Admin D. K."
+  const getShortName = (fullName) => {
+    if (!fullName) return "User";
+    const words = fullName.trim().split(" ");
+    if (words.length === 1) return words[0];
+    
+    const firstName = words[0];
+    const initials = words.slice(1).map(word => word.charAt(0) + ".").join(" ");
+    return `${firstName} ${initials}`;
+  };
   return (
     <header className="w-full bg-[#F4FAFF] border-b border-[#E2EDF5] shadow-sm">
       <div
@@ -46,7 +60,7 @@ const Header = () => {
           </Link>
 
           <span className="ml-1 text-sm font-semibold text-[#002444]">
-            Joko G.
+            {getShortName(user?.name)}
           </span>
         </div>
       </div>

@@ -86,7 +86,7 @@ class DevelopmentSeeder extends Seeder
         ];
 
         // Data users sesuai struktur SSO
-        $users = [
+        $usersData = [
             [
                 'name' => 'Admin Kota',
                 'email' => 'admin.kota@example.com',
@@ -156,6 +156,7 @@ class DevelopmentSeeder extends Seeder
                 'role_id' => $roles['staff']->id,
                 'dinas_id' => $dinasMap['Dinas Komunikasi dan Informatika']->id,
                 'unit_kerja' => 'Bidang Administrasi',
+                'sso_id' => 'SSO-STAFF-001',
             ],
             [
                 'name' => 'Dawwas Ulhaq',
@@ -179,14 +180,14 @@ class DevelopmentSeeder extends Seeder
             ],
         ];
 
-        foreach ($users as $userData) {
+        foreach ($usersData as $userData) {
             User::firstOrCreate(
                 ['email' => $userData['email']],
                 $userData
             );
         }
 
-        $this->command->info('✅ Users created: ' . count($users));
+        $this->command->info('✅ Users created: ' . count($usersData));
         $this->command->line('');
         $this->command->line('   📧 Login credentials:');
         $this->command->line('   - admin.kota@example.com');
@@ -267,7 +268,60 @@ class DevelopmentSeeder extends Seeder
         }
 
         $this->command->info('✅ Configuration Items created: ' . count($items));
+        
+        // 5. Create Sample RFCs
+        $this->createSampleRfcs();
+        
         $this->command->line('');
         $this->command->info('✅ Development data seeded successfully!');
+    }
+
+    private function createSampleRfcs(): void
+    {
+        $staffUser = User::where('email', 'staff@example.com')->first();
+        
+        if (!$staffUser) {
+            $this->command->warn('⚠️ Staff user not found, skipping RFC creation');
+            return;
+        }
+
+        $rfcs = [
+            [
+                'rfc_service_id' => 'RFC-2025-001',
+                'title' => 'Permohonan Update Sistem Pelaporan',
+                'description' => 'Diperlukan pembaruan pada modul pelaporan kinerja agar sesuai dengan format terbaru dari BKN.',
+                'priority' => 'low',
+                'status' => 'pending',
+                'sso_id' => 'SSO-STAFF-001',
+                'ci_code' => 'APP-SIM-001',
+                'requested_at' => now()->subDays(2),
+            ],
+            [
+                'rfc_service_id' => 'RFC-2025-002',
+                'title' => 'Perbaikan Server Database',
+                'description' => 'Server database mengalami lag saat jam sibuk, perlu dilakukan optimasi.',
+                'priority' => 'high',
+                'status' => 'pending',
+                'sso_id' => 'SSO-STAFF-001',
+                'ci_code' => 'SRV-DB-001',
+                'requested_at' => now()->subDays(1),
+            ],
+            [
+                'rfc_service_id' => 'RFC-2025-003',
+                'title' => 'Instalasi Software Baru',
+                'description' => 'Membutuhkan instalasi software untuk keperluan desain grafis.',
+                'priority' => 'medium',
+                'status' => 'pending',
+                'sso_id' => 'SSO-STAFF-001',
+                'ci_code' => 'LPT-ADM-001',
+                'requested_at' => now(),
+            ],
+        ];
+
+        foreach ($rfcs as $rfcData) {
+            \App\Models\Rfc::create($rfcData);
+        }
+
+        $this->command->info('✅ Sample RFCs created: ' . count($rfcs));
     }
 }

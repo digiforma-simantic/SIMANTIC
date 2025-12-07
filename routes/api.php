@@ -82,8 +82,11 @@ Route::prefix('v1')
     ->group(function () {
 
         // Debug: cek siapa user yang login (hapus saat production)
-        Route::get('me', fn (Request $r) => response()->json($r->user()))
-            ->name('me');
+        Route::get('me', function (Request $r) {
+            $user = $r->user();
+            $user->load(['roleObj', 'dinas']);
+            return response()->json($user);
+        })->name('me');
 
         /**
          * Master Data Import
@@ -98,6 +101,16 @@ Route::prefix('v1')
         // Graph/Dependency untuk CI tertentu (masih butuh auth)
         Route::get('config-items/{config_item}/graph', [CmdbController::class, 'show'])
             ->name('config-items.graph');
+
+        // RFC Approval Workflow
+        Route::get('rfc/pending-approval', [RfcController::class, 'getPendingApprovals'])
+            ->name('rfc.pending-approval');
+        Route::post('rfc/{id}/approve', [RfcController::class, 'approve'])
+            ->name('rfc.approve');
+        Route::get('rfc/history', [RfcController::class, 'getHistory'])
+            ->name('rfc.history');
+        Route::get('rfc/{id}', [RfcController::class, 'show'])
+            ->name('rfc.show');
 
         /**
          * RFC (Request for Change)
