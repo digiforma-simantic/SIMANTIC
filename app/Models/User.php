@@ -114,38 +114,48 @@ class User extends Authenticatable
      |--------------------------------------------------------------------
      */
 
+    protected function roleSlug(): ?string
+    {
+        return $this->roleObj?->slug ?? $this->role ?? null;
+    }
+
     public function isStaff()
     {
-        return ($this->roleObj?->slug ?? $this->role ?? null) === 'staff';
+        return $this->roleSlug() === 'staff';
     }
 
-    public function isAdminOpd()
+    public function isAdminKota()
     {
-        return ($this->roleObj?->slug ?? $this->role ?? null) === 'admin_opd';
+        return $this->roleSlug() === 'admin_kota';
     }
 
-    public function isKasi()
+    public function isAdminDinas()
     {
-        return ($this->roleObj?->slug ?? $this->role ?? null) === 'kepala_seksi';
+        return $this->roleSlug() === 'admin_dinas';
     }
 
-    public function isKabid()
+    public function isKepalaSeksi()
     {
-        return ($this->roleObj?->slug ?? $this->role ?? null) === 'kepala_bidang';
+        return $this->roleSlug() === 'kepala_seksi';
     }
 
-    public function isKadis()
+    public function isKepalaBidang()
     {
-        return ($this->roleObj?->slug ?? $this->role ?? null) === 'kepala_dinas';
+        return $this->roleSlug() === 'kepala_bidang';
+    }
+
+    public function isKepalaDinas()
+    {
+        return $this->roleSlug() === 'kepala_dinas';
     }
 
     public function isAuditor()
     {
-        return ($this->roleObj?->slug ?? $this->role ?? null) === 'auditor';
+        return $this->roleSlug() === 'auditor';
     }
 
-    public function isDiskominfo()
+    public function isTeknisi()
     {
-        return ($this->roleObj?->slug ?? $this->role ?? null) === 'diskominfo';
+        return $this->roleSlug() === 'teknisi';
     }
 }

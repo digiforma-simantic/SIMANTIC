@@ -2,8 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Sidebaradmin from "../../components/Kabid/Sidebarkabid";
 import Headeradmin from "../../components/Kabid/Headerkabid";
+import { useAuth } from "../../contexts/AuthContext";
 
 const DashboardKabid = () => {
+  const { user } = useAuth();
+
+  const displayName = user?.name || user?.userName || "Pengguna Kabid";
+
   // Data untuk Daftar Approval
   const daftarApprovals = [
     { id: 1, status: 'approved'},
@@ -29,7 +34,7 @@ const DashboardKabid = () => {
           {/* Welcome Section */}
           <div className="mb-8">
             <p className="text-sm text-gray-600">Selamat datang,</p>
-            <h1 className="text-3xl font-semibold text-gray-900">Sri Permatasari</h1>
+            <h1 className="text-3xl font-semibold text-gray-900">{displayName}</h1>
           </div>
 
           {/* Status Approval Cards */}

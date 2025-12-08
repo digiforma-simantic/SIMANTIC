@@ -1,128 +1,115 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 export default function DevLogin() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('password');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const quickLogins = [
-    { email: 'admin.kota@example.com', role: 'Admin Kota', path: '/Admin/dashboardadmin' },
-    { email: 'kepala.dinas@example.com', role: 'Kepala Dinas', path: '/Kadis/dashboardkadis' },
-    { email: 'kepala.seksi@example.com', role: 'Kepala Seksi', path: '/Kasi/dashboardkasi' },
-    { email: 'admin.dinas@example.com', role: 'Admin Dinas', path: '/diskominfo/dashboarddiskominfo' },
-    { email: 'staff@example.com', role: 'Staff', path: '/staff/dashboardstaff' },
-    { email: 'auditor@example.com', role: 'Auditor', path: '/auditor/dashboardauditor' },
-  ];
+  // Role to dashboard mapping
+  const roleToDashboard = {
+    'admin_kota': '/diskominfo/dashboarddiskominfo',
+    'kepala_seksi': '/Kasi/dashboardkasi',
+    'staff': '/staff/dashboardstaff',
+    'admin_dinas': '/Admin/dashboardadmin',
+    'kepala_dinas': '/Kadis/dashboardkadis',
+    'auditor': '/auditor/dashboardauditor',
+    'kepala_bidang': '/Kabid/dashboardkabid',
+    'approver_kabid': '/Kabid/dashboardkabid',
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Validasi frontend
-    if (!email || !password) {
-      setError('Email dan password harus diisi');
-      return;
-    }
-    
     setLoading(true);
     setError('');
 
-    console.log('🔐 Attempting login with:', { email, hasPassword: !!password });
-
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/dev/login`, {
-        email,
-        password,
+      // Login via backend API
+      const response = await fetch('http://127.0.0.1:8000/api/auth/dev/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
-      
-      console.log('✅ Login response:', response.data);
 
-      if (response.data.token) {
-        // Save token
-        localStorage.setItem('token', response.data.token);
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        // Success - save ALL user data to localStorage
+        localStorage.setItem('authToken', data.token);
         localStorage.setItem('isLoggedIn', 'true');
-
-        // Fetch user data
-        const userResponse = await axios.get(`${API_BASE_URL}/api/v1/me`, {
-          headers: { Authorization: `Bearer ${response.data.token}` }
-        });
-
-        const userData = userResponse.data;
+        localStorage.setItem('userEmail', data.user.email);
+        localStorage.setItem('userName', data.user.name);
+        localStorage.setItem('userRole', data.user.role);
+        localStorage.setItem('userRoleName', data.user.roleObj?.name || data.user.role);
+        localStorage.setItem('userNip', data.user.nip || '');
+        localStorage.setItem('userJenisKelamin', data.user.jenis_kelamin || '');
+        localStorage.setItem('userUnitKerja', data.user.unit_kerja || '');
+        localStorage.setItem('userDinasId', data.user.dinas_id || '');
+        localStorage.setItem('userDinasName', data.user.dinas?.name || '');
         
-        // Debug: cek data dari API
-        console.log('User data from API:', userData);
-        console.log('Role object (camelCase):', userData.roleObj);
-        console.log('Role object (snake_case):', userData.role_obj);
-        console.log('Role slug:', userData.roleObj?.slug || userData.role_obj?.slug);
-        
-        const normalizedUser = {
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          nip: userData.nip,
-          role: userData.roleObj?.slug || userData.role_obj?.slug || userData.role || 'staff',
-          roleName: userData.roleObj?.name || userData.role_obj?.name || userData.role_name,
-          dinas: userData.dinas?.name || userData.dinas_name,
-          dinasId: userData.dinas?.id || userData.dinas_id,
-        };
-
-        console.log('Normalized user:', normalizedUser);
-        console.log('Role slug for redirect:', normalizedUser.role);
-
-        login(response.data.token, normalizedUser);
-
-        // Redirect based on role
-        const roleSlug = normalizedUser.role;
-        switch(roleSlug) {
-          case 'admin_kota':
-            navigate('/diskominfo/dashboarddiskominfo');
-            break;
-          case 'admin_dinas':
-            navigate('/Admin/dashboardadmin');
-            break;
-          case 'kepala_dinas':
-          case 'kadis':
-            navigate('/Kadis/dashboardkadis');
-            break;
-          case 'kepala_seksi':
-          case 'kasi':
-            navigate('/Kasi/dashboardkasi');
-            break;
-          case 'kabid':
-            navigate('/Kabid/dashboardkabid');
-            break;
-          case 'auditor':
-            navigate('/auditor/dashboardauditor');
-            break;
-          case 'staff':
-          default:
-            navigate('/staff/dashboardstaff');
-        }
+        // Navigate based on user role from database
+        const dashboardPath = roleToDashboard[data.user.role] || '/dashboard';
+        navigate(dashboardPath);
+      } else {
+        setError(data.message || 'Email atau password salah');
+        setLoading(false);
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Login gagal. Cek email/password.');
-    } finally {
+      setError('Gagal terhubung ke server. Pastikan Laravel berjalan di http://127.0.0.1:8000');
       setLoading(false);
+      console.error('Login error:', err);
     }
   };
 
   const handleQuickLogin = async (quickEmail) => {
     setEmail(quickEmail);
     setPassword('password');
+    setLoading(true);
+    setError('');
     
-    // Auto submit
-    setTimeout(async () => {
-      const fakeEvent = { preventDefault: () => {} };
-      await handleLogin(fakeEvent);
-    }, 100);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/auth/dev/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email: quickEmail, password: 'password' }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        // Save ALL user data to localStorage
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userEmail', data.user.email);
+        localStorage.setItem('userName', data.user.name);
+        localStorage.setItem('userRole', data.user.role);
+        localStorage.setItem('userRoleName', data.user.roleObj?.name || data.user.role);
+        localStorage.setItem('userNip', data.user.nip || '');
+        localStorage.setItem('userJenisKelamin', data.user.jenis_kelamin || '');
+        localStorage.setItem('userUnitKerja', data.user.unit_kerja || '');
+        localStorage.setItem('userDinasId', data.user.dinas_id || '');
+        localStorage.setItem('userDinasName', data.user.dinas?.name || '');
+        
+        const dashboardPath = roleToDashboard[data.user.role] || '/dashboard';
+        navigate(dashboardPath);
+      } else {
+        setError(data.message || 'Quick login gagal. User mungkin belum ada di database.');
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('Gagal terhubung ke server');
+      setLoading(false);
+      console.error('Quick login error:', err);
+    }
   };
 
   return (
@@ -162,14 +149,23 @@ export default function DevLogin() {
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Password
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="password"
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="password"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           <button
@@ -193,32 +189,24 @@ export default function DevLogin() {
 
         {/* Quick Login Buttons */}
         <div className="space-y-2">
-          {quickLogins.map((user) => (
-            <button
-              key={user.email}
-              onClick={() => handleQuickLogin(user.email)}
-              disabled={loading}
-              className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors disabled:opacity-50"
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-900">{user.role}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                </div>
-                <span className="text-blue-600 text-sm">→</span>
-              </div>
-            </button>
-          ))}
+          <button onClick={() => handleQuickLogin('admin.kota@example.com')} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg">
+            <p className="font-medium text-gray-900">Admin Kota</p>
+            <p className="text-xs text-gray-500">admin.kota@example.com</p>
+          </button>
+          <button onClick={() => handleQuickLogin('kepala.seksi@example.com')} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg">
+            <p className="font-medium text-gray-900">Kepala Seksi</p>
+            <p className="text-xs text-gray-500">kepala.seksi@example.com</p>
+          </button>
+          <button onClick={() => handleQuickLogin('staff@example.com')} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg">
+            <p className="font-medium text-gray-900">Staff</p>
+            <p className="text-xs text-gray-500">staff@example.com</p>
+          </button>
         </div>
 
         {/* Footer Note */}
         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-xs text-yellow-800">
-            <strong>⚠️ Development Only:</strong> Halaman ini hanya untuk testing. 
-            Production menggunakan SSO login.
-          </p>
-          <p className="text-xs text-yellow-700 mt-1">
-            Default password semua user: <code className="bg-yellow-100 px-1 rounded">password</code>
+            Password semua user: <code className="bg-yellow-100 px-1 rounded font-bold">password</code>
           </p>
         </div>
       </div>

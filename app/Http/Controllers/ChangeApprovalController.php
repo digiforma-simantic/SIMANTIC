@@ -37,11 +37,11 @@ class ChangeApprovalController extends Controller
      *     @OA\JsonContent(
      *       required={"stage","decision"},
      *       @OA\Property(
-     *         property="stage",
-     *         type="string",
-     *         description="Level approval yang sedang memutuskan",
-     *         example="kabid",
-     *         enum={"kasi","kabid","kadis","diskominfo"}
+    *         property="stage",
+    *         type="string",
+    *         description="Level approval yang sedang memutuskan",
+    *         example="kepala_bidang",
+    *         enum={"kepala_seksi","kepala_bidang","kepala_dinas","admin_dinas"}
      *       ),
      *       @OA\Property(
      *         property="decision",
@@ -68,7 +68,7 @@ class ChangeApprovalController extends Controller
      *         type="object",
      *         @OA\Property(property="id", type="integer", example=5),
      *         @OA\Property(property="rfc_id", type="integer", example=101),
-     *         @OA\Property(property="level", type="string", example="kabid"),
+    *         @OA\Property(property="level", type="string", example="kepala_bidang"),
      *         @OA\Property(property="decision", type="string", example="approve"),
      *         @OA\Property(property="reason", type="string", example="Setuju, risiko sudah diterima."),
      *         @OA\Property(property="decided_at", type="string", example="2025-11-15 10:30:00")
@@ -82,13 +82,12 @@ class ChangeApprovalController extends Controller
     public function decide(Request $request, Rfc $change)
     {
         $data = $request->validate([
-            'stage'    => 'required|string|in:kasi,kabid,kadis,diskominfo',
+            'stage'    => 'required|string|in:kepala_seksi,kepala_bidang,kepala_dinas,admin_dinas',
             'decision' => 'required|string|in:approved,rejected,need_info',
             'note'     => 'nullable|string',
         ]);
 
-        // map "diskominfo" ke "kadis" (sesuai enum di migration)
-        $level = $data['stage'] === 'diskominfo' ? 'kadis' : $data['stage'];
+        $level = $data['stage'];
 
         $approval = RfcApproval::firstOrNew([
             'rfc_id' => $change->id,

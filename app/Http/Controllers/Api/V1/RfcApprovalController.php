@@ -50,7 +50,7 @@ class RfcApprovalController extends Controller
         $nextLevel = $this->getNextLevel($approval->level);
 
         if ($nextLevel) {
-            // Buat approval berikutnya (misal dari Kasi -> Kabid)
+            // Buat approval berikutnya (misal dari Kepala Seksi -> Kepala Bidang)
             RfcApproval::create([
                 'rfc_id'      => $rfc->id,
                 'approver_id' => $this->getApproverIdByLevel($rfc, $nextLevel),
@@ -62,7 +62,7 @@ class RfcApprovalController extends Controller
                 'status' => 'approval_pending',
             ]);
         } else {
-            // Kalau sudah level terakhir (misal Kadis), set RFC jadi approved
+            // Kalau sudah level terakhir (misal Kepala Dinas), set RFC jadi approved
             $rfc->update([
                 'status' => 'approved',
             ]);
@@ -199,10 +199,10 @@ class RfcApprovalController extends Controller
     protected function getNextLevel(string $currentLevel): ?string
     {
         $map = [
-            'admin_opd' => 'kasi',
-            'kasi'      => 'kabid',
-            'kabid'     => 'kadis',
-            'kadis'     => null, // terakhir
+            'kepala_seksi'  => 'kepala_bidang',
+            'kepala_bidang' => 'kepala_dinas',
+            'kepala_dinas'  => 'admin_dinas',
+            'admin_dinas'   => null, // terakhir
         ];
 
         return $map[$currentLevel] ?? null;

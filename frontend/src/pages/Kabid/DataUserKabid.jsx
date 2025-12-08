@@ -1,7 +1,20 @@
 import { Link } from "react-router-dom";
 import Headeruser from "../../components/Kabid/Headeruserkabid";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function ProfileNavigation() {
+  const { user, loading } = useAuth();
+
+  const profile = {
+    name: user?.name || "-",
+    gender: user?.jenisKelamin || user?.gender || "-",
+    nip: user?.nip || "-",
+    jobTitle: user?.jabatan || user?.roleName || "-",
+    unitKerja: user?.unitKerja || "-",
+    dinas: user?.dinas || user?.dinasName || "-",
+    email: user?.email || "-",
+  };
+
   return (
     <div className="min-h-screen bg-[#F7FCFF] font-geologica">
 
@@ -24,7 +37,7 @@ export default function ProfileNavigation() {
         {/* Profile Form */}
         <section className="bg-[#F2FAFF] p-8 rounded-lg shadow-md flex-1">
           <h2 className="text-center font-bold text-[#001729] text-lg mb-6">
-            Selamat datang, Sri Permatasari!
+            {loading ? 'Memuat data user...' : `Selamat datang, ${profile.name}!`}
           </h2>
 
           <form className="space-y-6">
@@ -36,7 +49,7 @@ export default function ProfileNavigation() {
               </label>
               <input
                 type="text"
-                defaultValue="Sri Permatasari"
+                value={profile.name}
                 readOnly
                 className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
               />
@@ -51,7 +64,7 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Perempuan"
+                  value={profile.gender}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
@@ -63,7 +76,7 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="1120913458124"
+                  value={profile.nip}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
@@ -80,7 +93,7 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Kepala Seksi"
+                  value={profile.jobTitle}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
@@ -92,7 +105,7 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Bidang Pencegahan Penebangan Liar"
+                  value={profile.unitKerja}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
@@ -109,7 +122,7 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Dinas Kehutanan Prov. Jawa Timur"
+                  value={profile.dinas}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
@@ -121,7 +134,7 @@ export default function ProfileNavigation() {
                 </label>
                 <input
                   type="email"
-                  defaultValue="sripermata@gmail.com"
+                  value={profile.email}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />

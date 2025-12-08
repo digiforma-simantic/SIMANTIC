@@ -24,13 +24,14 @@ return new class extends Migration
 
             // ROLE SIMANTIC (RBAC)
             $table->enum('role', [
-                'staff',
-                'admin_opd',
-                'kepala_seksi',
-                'kepala_bidang',
+                'admin_kota',
+                'admin_dinas',
                 'kepala_dinas',
+                'kepala_bidang',
+                'kepala_seksi',
+                'staff',
                 'auditor',
-                'diskominfo',
+                'teknisi',
             ])->default('staff');
 
             // STATUS & AUDIT

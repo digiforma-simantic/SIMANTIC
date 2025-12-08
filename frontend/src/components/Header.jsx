@@ -4,7 +4,6 @@ import { useAuth } from "../contexts/AuthContext";
 
 import searchIcon from "../assets/search-normal.png";
 import bellIcon from "../assets/notification.png";
-import calendarIcon from "../assets/calendar.png";
 import userIcon from "../assets/user.png";
 
 const Header = () => {

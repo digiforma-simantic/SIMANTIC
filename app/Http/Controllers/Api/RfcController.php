@@ -104,7 +104,7 @@ class RfcController extends Controller
 
     /**
      * GET /api/v1/rfc/{rfc}
-     * Detail RFC untuk layar approval (Kasi/Kabid/Kadis).
+    * Detail RFC untuk layar approval (Kepala Seksi/Kepala Bidang/Kepala Dinas).
      *
      * @OA\Get(
      *   path="/api/v1/rfc/{id}",
@@ -364,8 +364,7 @@ class RfcController extends Controller
         // Filter berdasarkan role dan status approval
         switch ($role) {
             case 'kepala_seksi':
-            case 'kasi':
-                // Kasi approve RFC dari staff di OPD yang sama
+                // Kepala Seksi approve RFC dari staff di OPD yang sama
                 $query->where('status', 'pending')
                     ->whereHas('requester', function ($q) use ($user) {
                         $q->where('dinas_id', $user->dinas_id)
@@ -374,47 +373,46 @@ class RfcController extends Controller
                           });
                     })
                     ->whereDoesntHave('approvals', function ($q) {
-                        $q->where('level', 'kasi');
+                        $q->where('level', 'kepala_seksi');
                     });
                 break;
 
-            case 'kabid':
-                // Kabid approve RFC yang sudah di-approve Kasi
+            case 'kepala_bidang':
+                // Kepala Bidang approve RFC yang sudah di-approve Kepala Seksi
                 $query->where('status', 'pending')
                     ->whereHas('requester', function ($q) use ($user) {
                         $q->where('dinas_id', $user->dinas_id);
                     })
                     ->whereHas('approvals', function ($q) {
-                        $q->where('level', 'kasi')->where('decision', 'approved');
+                        $q->where('level', 'kepala_seksi')->where('decision', 'approved');
                     })
                     ->whereDoesntHave('approvals', function ($q) {
-                        $q->where('level', 'kabid');
+                        $q->where('level', 'kepala_bidang');
                     });
                 break;
 
             case 'kepala_dinas':
-            case 'kadis':
-                // Kadis approve RFC yang sudah di-approve Kabid
+                // Kepala Dinas approve RFC yang sudah di-approve Kepala Bidang
                 $query->where('status', 'pending')
                     ->whereHas('requester', function ($q) use ($user) {
                         $q->where('dinas_id', $user->dinas_id);
                     })
                     ->whereHas('approvals', function ($q) {
-                        $q->where('level', 'kabid')->where('decision', 'approved');
+                        $q->where('level', 'kepala_bidang')->where('decision', 'approved');
                     })
                     ->whereDoesntHave('approvals', function ($q) {
-                        $q->where('level', 'kadis');
+                        $q->where('level', 'kepala_dinas');
                     });
                 break;
 
             case 'admin_dinas':
-                // Admin Dinas (final approver) - approve RFC yang sudah di-approve Kadis
+                // Admin Dinas (final approver) - approve RFC yang sudah di-approve Kepala Dinas
                 $query->where('status', 'pending')
                     ->whereHas('approvals', function ($q) {
-                        $q->where('level', 'kadis')->where('decision', 'approved');
+                        $q->where('level', 'kepala_dinas')->where('decision', 'approved');
                     })
                     ->whereDoesntHave('approvals', function ($q) {
-                        $q->where('level', 'diskominfo');
+                        $q->where('level', 'admin_dinas');
                     });
                 break;
 
@@ -492,13 +490,10 @@ class RfcController extends Controller
 
         // Mapping role ke approval level
         $levelMap = [
-            'kepala_seksi' => 'kasi',
-            'kasi' => 'kasi',
-            'kabid' => 'kabid',
-            'kepala_dinas' => 'kadis',
-            'kadis' => 'kadis',
-            'admin_dinas' => 'diskominfo',
-            'diskominfo' => 'diskominfo',
+            'kepala_seksi' => 'kepala_seksi',
+            'kepala_bidang' => 'kepala_bidang',
+            'kepala_dinas' => 'kepala_dinas',
+            'admin_dinas' => 'admin_dinas',
         ];
 
         $level = $levelMap[$role] ?? null;
@@ -540,8 +535,8 @@ class RfcController extends Controller
             if ($request->decision === 'rejected') {
                 $rfc->update(['status' => 'rejected']);
             } else {
-                // Jika approved di level diskominfo (level terakhir), ubah status jadi approved
-                if ($level === 'diskominfo') {
+                // Jika approved di level admin_dinas (level terakhir), ubah status jadi approved
+                if ($level === 'admin_dinas') {
                     $rfc->update(['status' => 'approved']);
                 }
             }
@@ -619,7 +614,12 @@ class RfcController extends Controller
      */
     private function getNextLevel($currentLevel)
     {
-        $flow = ['kasi' => 'kabid', 'kabid' => 'kadis', 'kadis' => 'diskominfo', 'diskominfo' => 'completed'];
+        $flow = [
+            'kepala_seksi' => 'kepala_bidang',
+            'kepala_bidang' => 'kepala_dinas',
+            'kepala_dinas' => 'admin_dinas',
+            'admin_dinas' => 'completed',
+        ];
         return $flow[$currentLevel] ?? null;
     }
 }

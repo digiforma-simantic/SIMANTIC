@@ -116,12 +116,14 @@ class DevLoginController extends Controller
         return response()->json([
             'token' => $token,
             'user'  => [
-                'id'       => $user->id,
-                'name'     => $user->name,
-                'email'    => $user->email,
-                'nip'      => $user->nip,
-                'role'     => $user->roleObj?->slug ?? $user->role,
-                'roleObj'  => $user->roleObj ? [
+                'id'            => $user->id,
+                'name'          => $user->name,
+                'email'         => $user->email,
+                'nip'           => $user->nip,
+                'jenis_kelamin' => $user->jenis_kelamin,
+                'unit_kerja'    => $user->unit_kerja,
+                'role'          => $user->roleObj?->slug ?? $user->role,
+                'roleObj'       => $user->roleObj ? [
                     'id'   => $user->roleObj->id,
                     'slug' => $user->roleObj->slug,
                     'name' => $user->roleObj->name,

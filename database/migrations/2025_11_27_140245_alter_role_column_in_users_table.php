@@ -22,13 +22,14 @@ return new class extends Migration
         // Jika rollback diperlukan, bisa kembalikan ke enum lama
         Schema::table('users', function (Blueprint $table) {
             $table->enum('role', [
-                'admin_change',
-                'approver_kasi',
-                'approver_kabid',
-                'approver_kadis',
-                'technician',
-                'user_opd',
-                'auditor_change',
+                'admin_kota',
+                'admin_dinas',
+                'kepala_dinas',
+                'kepala_bidang',
+                'kepala_seksi',
+                'staff',
+                'auditor',
+                'teknisi',
             ])->change();
         });
     }

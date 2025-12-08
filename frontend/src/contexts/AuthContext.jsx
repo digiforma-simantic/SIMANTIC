@@ -19,14 +19,40 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch user data from SSO on mount
+    // Fetch user data from SSO or dev login
     const fetchUser = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const isLoggedIn = localStorage.getItem('isLoggedIn');
+      
+      if (!token && !isLoggedIn) {
         setLoading(false);
         return;
       }
 
+      // Try to get user from localStorage first (dev login)
+      const storedUserName = localStorage.getItem('userName');
+      if (storedUserName && isLoggedIn) {
+        const normalizedUser = {
+          id: localStorage.getItem('userId') || null,
+          name: storedUserName,
+          email: localStorage.getItem('userEmail') || '',
+          nip: localStorage.getItem('userNip') || '',
+          role: localStorage.getItem('userRole') || 'staff',
+          roleName: localStorage.getItem('userRoleName') || localStorage.getItem('userRole') || '',
+          dinas: localStorage.getItem('userDinasName') || '',
+          dinasId: localStorage.getItem('userDinasId') || null,
+          ssoId: localStorage.getItem('userSsoId') || null,
+          jenisKelamin: localStorage.getItem('userJenisKelamin') || '',
+          jabatan: localStorage.getItem('userJabatan') || localStorage.getItem('userRoleName') || '',
+          unitKerja: localStorage.getItem('userUnitKerja') || '',
+        };
+        
+        setUser(normalizedUser);
+        setLoading(false);
+        return;
+      }
+
+      // Otherwise, fetch from API (SSO login)
       try {
         const response = await authAPI.me();
         const userData = response.data || response;

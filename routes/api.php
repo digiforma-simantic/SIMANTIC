@@ -21,10 +21,8 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Auth\SsoCallbackController;
 
 /**
- * Public (tanpa token)
+ * Dev login moved to routes/dev.php (no CSRF)
  */
-Route::post('/auth/dev/login', [DevLoginController::class, 'login'])
-    ->name('auth.dev.login');
 
 Route::get('/ping', fn () => response()->json(['message' => 'pong 🏓']))
     ->name('ping');

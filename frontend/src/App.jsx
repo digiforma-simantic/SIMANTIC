@@ -109,10 +109,14 @@ import DetailApprovalDiskominfo from "./pages/Diskominfo/DetailApprovalDiskominf
 import RiwayatApprovalDiskominfo from "./pages/Diskominfo/RiwayatApprovalDiskominfo";
 import SsoCallback from "./pages/SsoCallback";
 import DevLogin from "./pages/DevLogin";
+import DevBypass from "./pages/DevBypass";
 
 function App() {
   return (
     <Routes>
+      {/* DEV BYPASS - Skip login, langsung masuk dashboard */}
+      <Route path="/dev-bypass" element={<DevBypass />} />
+      
       {/* DEV LOGIN - Development Only */}
       <Route path="/dev-login" element={<DevLogin />} />
       

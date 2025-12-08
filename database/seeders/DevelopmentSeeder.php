@@ -37,6 +37,7 @@ class DevelopmentSeeder extends Seeder
             ['name' => 'Kepala Dinas', 'slug' => 'kepala_dinas', 'description' => 'Kepala Dinas/OPD'],
             ['name' => 'Admin Dinas', 'slug' => 'admin_dinas', 'description' => 'Administrator tingkat dinas/OPD'],
             ['name' => 'Kepala Seksi', 'slug' => 'kepala_seksi', 'description' => 'Kepala Seksi di dinas/OPD'],
+            ['name' => 'Kepala Bidang', 'slug' => 'kepala_bidang', 'description' => 'Kepala Bidang di dinas/OPD'],
             ['name' => 'Auditor', 'slug' => 'auditor', 'description' => 'Auditor internal'],
             ['name' => 'Teknisi', 'slug' => 'teknisi', 'description' => 'Teknisi IT'],
             ['name' => 'Staff', 'slug' => 'staff', 'description' => 'Staff biasa'],
@@ -128,6 +129,17 @@ class DevelopmentSeeder extends Seeder
                 'unit_kerja' => 'Seksi Pengembangan Sistem',
             ],
             [
+                'name' => 'Kepala Bidang Infrastruktur',
+                'email' => 'kepala.bidang@example.com',
+                'password' => Hash::make('password'),
+                'nip' => '198309152010011007',
+                'jenis_kelamin' => 'laki-laki',
+                'role_id' => $roles['kepala_bidang']->id,
+                'dinas_id' => $dinasMap['Dinas Komunikasi dan Informatika']->id,
+                'unit_kerja' => 'Bidang Infrastruktur TIK',
+                'sso_id' => 'SSO-KABID-001',
+            ],
+            [
                 'name' => 'Auditor Internal',
                 'email' => 'auditor@example.com',
                 'password' => Hash::make('password'),
@@ -194,6 +206,7 @@ class DevelopmentSeeder extends Seeder
         $this->command->line('   - kepala.dinas@example.com');
         $this->command->line('   - admin.dinas@example.com');
         $this->command->line('   - kepala.seksi@example.com');
+        $this->command->line('   - kepala.bidang@example.com');
         $this->command->line('   - auditor@example.com');
         $this->command->line('   - teknisi@example.com');
         $this->command->line('   - staff@example.com');
