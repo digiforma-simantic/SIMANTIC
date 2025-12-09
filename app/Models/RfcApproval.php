@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $approver_id
  * @property string|null $decision
  * @property string|null $reason
- * @property \Illuminate\Support\Carbon|null $decided_at
+ * @property \Illuminate\Support\Carbon|null $approved_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -28,11 +28,11 @@ class RfcApproval extends Model
         'approver_id',
         'decision',     // null (pending) | approve | reject | need_info | forward
         'reason',
-        'decided_at',
+        'approved_at',
     ];
 
     protected $casts = [
-        'decided_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     /*

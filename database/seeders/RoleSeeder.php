@@ -20,6 +20,10 @@ class RoleSeeder extends Seeder
             ['name' => 'Teknisi', 'slug' => 'teknisi'],
         ];
 
+        $allowedSlugs = collect($roles)->pluck('slug')->all();
+
+        Role::whereNotIn('slug', $allowedSlugs)->delete();
+
         foreach ($roles as $r) {
             Role::updateOrCreate(['slug' => $r['slug']], $r);
         }

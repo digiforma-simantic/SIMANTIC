@@ -20,25 +20,6 @@ export default function DashboardScreen() {
     { id: 3, title: "Install Aplikasi Kerja", code: "#0001", date: "17 Agustus 2025" },
   ];
 
-  const submissionData = [
-    { id: 1, title: "Install Aplikasi Kerja", code: "#0001", date: "17 Agustus 2025", status: "success" },
-    { id: 2, title: "Install Aplikasi Kerja", code: "#0001", date: "17 Agustus 2025", status: "failed" },
-    { id: 3, title: "Install Aplikasi Kerja", code: "#0001", date: "17 Agustus 2025", status: "progress" },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "success":
-        return "#00C853";
-      case "failed":
-        return "#D50000";
-      case "progress":
-        return "#2979FF";
-      default:
-        return "#9E9E9E";
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#002543" />
@@ -142,41 +123,6 @@ export default function DashboardScreen() {
                 onPress={() => router.push("/kasi/detailapproval")}
                 >
                 <Text style={styles.linkText}>Cek Detail</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-
-          {/* DAFTAR PENGAJUAN */}
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Daftar Pengajuan</Text>
-              <TouchableOpacity onPress={() => router.push("/kasi/daftarpengajuan")}>
-                <Text style={styles.seeAllText}>Lihat Semua</Text>
-              </TouchableOpacity>
-            </View>
-
-            {submissionData.map((item) => (
-              <View key={item.id} style={styles.listItem}>
-                <View style={styles.itemLeft}>
-                  <View
-                    style={[
-                      styles.statusDot,
-                      { backgroundColor: getStatusColor(item.status) },
-                    ]}
-                  />
-                  <View>
-                    <Text style={styles.itemTitle}>{item.title}</Text>
-                    <Text style={styles.itemSubText}>
-                      {item.code} · {item.date}
-                    </Text>
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                onPress={() => router.push("/kasi/status")}
-                >
-                <Text style={styles.linkText}>Cek Status</Text>
                 </TouchableOpacity>
               </View>
             ))}

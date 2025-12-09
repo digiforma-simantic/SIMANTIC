@@ -8,6 +8,8 @@ use App\Models\Role;
 use App\Models\Dinas;
 use App\Models\User;
 use App\Models\ConfigurationItem;
+use App\Models\Rfc;
+use App\Models\RfcApproval;
 
 class DevelopmentSeeder extends Seeder
 {
@@ -58,9 +60,9 @@ class DevelopmentSeeder extends Seeder
     private function createDinas(): array
     {
         $dinasData = [
-            ['name' => 'Dinas Komunikasi dan Informatika', 'type' => 'dinas', 'address' => 'Jl. Protokol No. 1'],
+            ['name' => 'Dinas Komunikasi dan Informatika Surabaya', 'type' => 'diskominfo', 'address' => 'Jl. Protokol No. 1, Surabaya'],
             ['name' => 'Inspektorat Kota', 'type' => 'dinas', 'address' => 'Jl. Protokol No. 2'],
-            ['name' => 'Dinas Pendidikan', 'type' => 'dinas', 'address' => 'Jl. Pendidikan No. 5'],
+            ['name' => 'Dinas Pendidikan Surabaya', 'type' => 'dinas', 'address' => 'Jl. Pendidikan No. 5, Surabaya'],
             ['name' => 'Dinas Perhubungan', 'type' => 'dinas', 'address' => 'Jl. Raya No. 10'],
         ];
 
@@ -80,11 +82,14 @@ class DevelopmentSeeder extends Seeder
     {
         // Mapping dinas name to dinas object
         $dinasMap = [
-            'Dinas Komunikasi dan Informatika' => $dinas[0],
+            'Dinas Komunikasi dan Informatika Surabaya' => $dinas[0],
             'Inspektorat Kota' => $dinas[1],
-            'Dinas Pendidikan' => $dinas[2],
+            'Dinas Pendidikan Surabaya' => $dinas[2],
             'Dinas Perhubungan' => $dinas[3],
         ];
+
+        $educationDinas = $dinasMap['Dinas Pendidikan Surabaya'];
+        $diskominfoDinas = $dinasMap['Dinas Komunikasi dan Informatika Surabaya'];
 
         // Data users sesuai struktur SSO
         $usersData = [
@@ -95,7 +100,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '198501012010011001',
                 'jenis_kelamin' => 'laki-laki',
                 'role_id' => $roles['admin_kota']->id,
-                'dinas_id' => null,
+                'dinas_id' => $diskominfoDinas->id,
                 'unit_kerja' => 'Sekretariat Kota',
             ],
             [
@@ -105,7 +110,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '197503152000031001',
                 'jenis_kelamin' => 'laki-laki',
                 'role_id' => $roles['kepala_dinas']->id,
-                'dinas_id' => $dinasMap['Dinas Komunikasi dan Informatika']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Kepala Dinas',
             ],
             [
@@ -115,7 +120,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '199001012015041001',
                 'jenis_kelamin' => 'perempuan',
                 'role_id' => $roles['admin_dinas']->id,
-                'dinas_id' => $dinasMap['Dinas Komunikasi dan Informatika']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Sekretariat Dinas',
             ],
             [
@@ -125,7 +130,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '198803072010012001',
                 'jenis_kelamin' => 'perempuan',
                 'role_id' => $roles['kepala_seksi']->id,
-                'dinas_id' => $dinasMap['Dinas Komunikasi dan Informatika']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Seksi Pengembangan Sistem',
             ],
             [
@@ -135,7 +140,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '198309152010011007',
                 'jenis_kelamin' => 'laki-laki',
                 'role_id' => $roles['kepala_bidang']->id,
-                'dinas_id' => $dinasMap['Dinas Komunikasi dan Informatika']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Bidang Infrastruktur TIK',
                 'sso_id' => 'SSO-KABID-001',
             ],
@@ -146,7 +151,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '198206102008011002',
                 'jenis_kelamin' => 'laki-laki',
                 'role_id' => $roles['auditor']->id,
-                'dinas_id' => $dinasMap['Inspektorat Kota']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Unit Audit dan Pengawasan',
             ],
             [
@@ -156,7 +161,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '199205152018011001',
                 'jenis_kelamin' => 'laki-laki',
                 'role_id' => $roles['teknisi']->id,
-                'dinas_id' => $dinasMap['Dinas Komunikasi dan Informatika']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Unit Dukungan Teknis',
             ],
             [
@@ -166,7 +171,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '199508202019032001',
                 'jenis_kelamin' => 'perempuan',
                 'role_id' => $roles['staff']->id,
-                'dinas_id' => $dinasMap['Dinas Komunikasi dan Informatika']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Bidang Administrasi',
                 'sso_id' => 'SSO-STAFF-001',
             ],
@@ -177,7 +182,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => '992729729727297',
                 'jenis_kelamin' => 'laki-laki',
                 'role_id' => $roles['staff']->id,
-                'dinas_id' => $dinasMap['Dinas Perhubungan']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Sekretariat Kota',
             ],
             [
@@ -187,7 +192,7 @@ class DevelopmentSeeder extends Seeder
                 'nip' => null,
                 'jenis_kelamin' => 'laki-laki',
                 'role_id' => $roles['staff']->id,
-                'dinas_id' => $dinasMap['Dinas Pendidikan']->id,
+                'dinas_id' => $educationDinas->id,
                 'unit_kerja' => 'Bidang Keuangan',
             ],
         ];
@@ -282,20 +287,21 @@ class DevelopmentSeeder extends Seeder
 
         $this->command->info('✅ Configuration Items created: ' . count($items));
         
-        // 5. Create Sample RFCs
-        $this->createSampleRfcs();
+        // 5. Create Sample RFCs + approval flow data
+        $rfcs = $this->createSampleRfcs();
+        $this->seedRfcApprovalFlow($rfcs);
         
         $this->command->line('');
         $this->command->info('✅ Development data seeded successfully!');
     }
 
-    private function createSampleRfcs(): void
+    private function createSampleRfcs(): array
     {
         $staffUser = User::where('email', 'staff@example.com')->first();
         
         if (!$staffUser) {
             $this->command->warn('⚠️ Staff user not found, skipping RFC creation');
-            return;
+            return [];
         }
 
         $rfcs = [
@@ -331,10 +337,99 @@ class DevelopmentSeeder extends Seeder
             ],
         ];
 
+        $created = [];
         foreach ($rfcs as $rfcData) {
-            \App\Models\Rfc::create($rfcData);
+            $created[] = Rfc::updateOrCreate(
+                ['rfc_service_id' => $rfcData['rfc_service_id']],
+                $rfcData
+            );
         }
 
-        $this->command->info('✅ Sample RFCs created: ' . count($rfcs));
+        $this->command->info('✅ Sample RFCs created: ' . count($created));
+
+        return $created;
+    }
+
+    private function seedRfcApprovalFlow(array $rfcs): void
+    {
+        if (empty($rfcs)) {
+            $this->command->warn('⚠️ No RFC data available for approval seeding');
+            return;
+        }
+
+        $kasi = User::where('email', 'kepala.seksi@example.com')->first();
+        $kabid = User::where('email', 'kepala.bidang@example.com')->first();
+        $kadis = User::where('email', 'kepala.dinas@example.com')->first();
+
+        if (!$kasi || !$kabid || !$kadis) {
+            $this->command->warn('⚠️ Approver accounts missing, skipping approval flow seeding');
+            return;
+        }
+
+        $rfcMap = [];
+        foreach ($rfcs as $rfc) {
+            $rfcMap[$rfc->rfc_service_id] = $rfc;
+        }
+
+        $flows = [
+            'RFC-2025-001' => [], // menunggu aksi Kepala Seksi
+            'RFC-2025-002' => [
+                [
+                    'level' => 'kepala_seksi',
+                    'approver' => $kasi,
+                    'decision' => 'approved',
+                    'reason' => 'Analisis selesai, siap diteruskan ke Kabid.',
+                    'approved_at' => now()->subDay(),
+                ],
+            ],
+            'RFC-2025-003' => [
+                [
+                    'level' => 'kepala_seksi',
+                    'approver' => $kasi,
+                    'decision' => 'approved',
+                    'reason' => 'Perubahan sejalan dengan roadmap seksi.',
+                    'approved_at' => now()->subDays(3),
+                ],
+                [
+                    'level' => 'kepala_bidang',
+                    'approver' => $kabid,
+                    'decision' => 'approved',
+                    'reason' => 'Dampak ke operasional dapat diterima.',
+                    'approved_at' => now()->subDays(2),
+                ],
+                [
+                    'level' => 'kepala_dinas',
+                    'approver' => $kadis,
+                    'decision' => 'approved',
+                    'reason' => 'Setujui dan teruskan ke Admin Dinas.',
+                    'approved_at' => now()->subDay(),
+                ],
+            ],
+        ];
+
+        $totalApprovals = 0;
+        foreach ($flows as $serviceId => $approvals) {
+            if (!isset($rfcMap[$serviceId])) {
+                continue;
+            }
+
+            foreach ($approvals as $approvalData) {
+                RfcApproval::updateOrCreate(
+                    [
+                        'rfc_id' => $rfcMap[$serviceId]->id,
+                        'level' => $approvalData['level'],
+                    ],
+                    [
+                        'approver_id' => $approvalData['approver']->id,
+                        'decision' => $approvalData['decision'],
+                        'reason' => $approvalData['reason'],
+                        'approved_at' => $approvalData['approved_at'],
+                    ]
+                );
+                $totalApprovals++;
+            }
+        }
+
+        $this->command->info('✅ RFC approval flow entries created: ' . $totalApprovals);
     }
 }

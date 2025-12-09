@@ -34,12 +34,13 @@ const DetailAsetScreen = () => {
   const [os, setOs] = useState("");
   const [ip, setIp] = useState("");
   const [relationship, setRelationship] = useState("");
+  const [owner, setOwner] = useState(""); // <-- added new state
 
   // ============================
   //   HANDLE SUBMIT
   // ============================
   const handleSubmit = () => {
-    if (!ciCode || !version || !os || !ip || !relationship) {
+    if (!ciCode || !version || !os || !ip || !relationship || !owner) {
       Alert.alert("Gagal", "Semua field wajib diisi!");
       return;
     }
@@ -136,6 +137,16 @@ const DetailAsetScreen = () => {
             onChangeText={setRelationship}
             multiline
           />
+
+          {/* Pemilik Aset */}
+          <Text style={styles.inputLabel}>Pemilik Aset</Text>
+          <TextInput
+            style={styles.inputBox}
+            placeholder="Masukkan Pemilik Aset"
+            value={owner}
+            onChangeText={setOwner}
+          />
+
         </View>
 
         {/* SPACER */}

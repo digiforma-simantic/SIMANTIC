@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Dinas;
 use Illuminate\Support\Facades\Hash;
 
 class DevUserSeeder extends Seeder
@@ -25,9 +26,15 @@ class DevUserSeeder extends Seeder
             'auditor' => Role::where('slug', 'auditor')->first(),
         ];
 
-        // Get first dinas for reference
-        $firstDinas = \App\Models\Dinas::first();
-        $dinasId = $firstDinas ? $firstDinas->id : null;
+        $diskominfo = Dinas::firstOrCreate(
+            ['name' => 'Dinas Komunikasi dan Informatika Surabaya'],
+            ['type' => 'diskominfo', 'address' => 'Jl. Protokol No. 1, Surabaya']
+        );
+
+        $dinasPendidikan = Dinas::firstOrCreate(
+            ['name' => 'Dinas Pendidikan Surabaya'],
+            ['type' => 'dinas', 'address' => 'Jl. Pendidikan No. 5, Surabaya']
+        );
 
         // Create dev users with complete data
         $users = [
@@ -37,7 +44,7 @@ class DevUserSeeder extends Seeder
                 'nip' => '198501012010011001',
                 'jenis_kelamin' => 'L',
                 'role' => 'admin_kota',
-                'dinas_id' => $dinasId,
+                'dinas_id' => $diskominfo?->id,
                 'unit_kerja' => 'Diskominfo Kota Manado',
                 'password' => Hash::make('password'),
             ],
@@ -47,7 +54,7 @@ class DevUserSeeder extends Seeder
                 'nip' => '198502012010011002',
                 'jenis_kelamin' => 'L',
                 'role' => 'admin_dinas',
-                'dinas_id' => $dinasId,
+                'dinas_id' => $dinasPendidikan?->id,
                 'unit_kerja' => 'Sekretariat Dinas Kominfo',
                 'password' => Hash::make('password'),
             ],
@@ -57,7 +64,7 @@ class DevUserSeeder extends Seeder
                 'nip' => '198503012010011003',
                 'jenis_kelamin' => 'P',
                 'role' => 'kepala_dinas',
-                'dinas_id' => $dinasId,
+                'dinas_id' => $dinasPendidikan?->id,
                 'unit_kerja' => 'Dinas Komunikasi dan Informatika',
                 'password' => Hash::make('password'),
             ],
@@ -67,7 +74,7 @@ class DevUserSeeder extends Seeder
                 'nip' => '198504012010011004',
                 'jenis_kelamin' => 'L',
                 'role' => 'kepala_seksi',
-                'dinas_id' => $dinasId,
+                'dinas_id' => $dinasPendidikan?->id,
                 'unit_kerja' => 'Seksi Infrastruktur TIK',
                 'password' => Hash::make('password'),
             ],
@@ -77,7 +84,7 @@ class DevUserSeeder extends Seeder
                 'nip' => '198507252010011007',
                 'jenis_kelamin' => 'L',
                 'role' => 'kepala_bidang',
-                'dinas_id' => $dinasId,
+                'dinas_id' => $dinasPendidikan?->id,
                 'unit_kerja' => 'Bidang Infrastruktur dan Operasional',
                 'password' => Hash::make('password'),
             ],
@@ -87,7 +94,7 @@ class DevUserSeeder extends Seeder
                 'nip' => '198505012010011005',
                 'jenis_kelamin' => 'P',
                 'role' => 'staff',
-                'dinas_id' => $dinasId,
+                'dinas_id' => $dinasPendidikan?->id,
                 'unit_kerja' => 'Sub Bagian Umum',
                 'password' => Hash::make('password'),
             ],
@@ -97,7 +104,7 @@ class DevUserSeeder extends Seeder
                 'nip' => '198506012010011006',
                 'jenis_kelamin' => 'L',
                 'role' => 'auditor',
-                'dinas_id' => $dinasId,
+                'dinas_id' => $dinasPendidikan?->id,
                 'unit_kerja' => 'Inspektorat Kota',
                 'password' => Hash::make('password'),
             ],

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function DevLogin() {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +21,42 @@ export default function DevLogin() {
     'auditor': '/auditor/dashboardauditor',
     'kepala_bidang': '/Kabid/dashboardkabid',
     'approver_kabid': '/Kabid/dashboardkabid',
+  };
+
+  const persistSession = (token, apiUser) => {
+    const normalizedUser = {
+      id: apiUser.id ?? null,
+      name: apiUser.name ?? '',
+      email: apiUser.email ?? '',
+      nip: apiUser.nip ?? '',
+      role: apiUser.roleObj?.slug ?? apiUser.role ?? 'staff',
+      roleName: apiUser.roleObj?.name ?? apiUser.role ?? '',
+      dinas: apiUser.dinas?.name ?? '',
+      dinasId: apiUser.dinas?.id ?? apiUser.dinas_id ?? null,
+      ssoId: apiUser.sso_id ?? apiUser.ssoId ?? '',
+      jenisKelamin: apiUser.jenis_kelamin ?? apiUser.jenisKelamin ?? '',
+      jabatan: apiUser.jabatan ?? apiUser.roleObj?.name ?? apiUser.role ?? '',
+      unitKerja: apiUser.unit_kerja ?? apiUser.unitKerja ?? '',
+    };
+
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('token', token);
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userId', normalizedUser.id ?? '');
+    localStorage.setItem('userEmail', normalizedUser.email);
+    localStorage.setItem('userName', normalizedUser.name);
+    localStorage.setItem('userRole', normalizedUser.role);
+    localStorage.setItem('userRoleName', normalizedUser.roleName);
+    localStorage.setItem('userNip', normalizedUser.nip ?? '');
+    localStorage.setItem('userJenisKelamin', normalizedUser.jenisKelamin ?? '');
+    localStorage.setItem('userUnitKerja', normalizedUser.unitKerja ?? '');
+    localStorage.setItem('userDinasId', normalizedUser.dinasId ?? '');
+    localStorage.setItem('userDinasName', normalizedUser.dinas ?? '');
+    localStorage.setItem('userSsoId', normalizedUser.ssoId ?? '');
+    localStorage.setItem('userJabatan', normalizedUser.jabatan ?? '');
+
+    authLogin(token, normalizedUser);
+    return normalizedUser;
   };
 
   const handleLogin = async (e) => {
@@ -40,21 +78,8 @@ export default function DevLogin() {
       const data = await response.json();
 
       if (response.ok && data.token) {
-        // Success - save ALL user data to localStorage
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userEmail', data.user.email);
-        localStorage.setItem('userName', data.user.name);
-        localStorage.setItem('userRole', data.user.role);
-        localStorage.setItem('userRoleName', data.user.roleObj?.name || data.user.role);
-        localStorage.setItem('userNip', data.user.nip || '');
-        localStorage.setItem('userJenisKelamin', data.user.jenis_kelamin || '');
-        localStorage.setItem('userUnitKerja', data.user.unit_kerja || '');
-        localStorage.setItem('userDinasId', data.user.dinas_id || '');
-        localStorage.setItem('userDinasName', data.user.dinas?.name || '');
-        
-        // Navigate based on user role from database
-        const dashboardPath = roleToDashboard[data.user.role] || '/dashboard';
+        const normalizedUser = persistSession(data.token, data.user);
+        const dashboardPath = roleToDashboard[normalizedUser.role] || '/dashboard';
         navigate(dashboardPath);
       } else {
         setError(data.message || 'Email atau password salah');
@@ -86,20 +111,8 @@ export default function DevLogin() {
       const data = await response.json();
 
       if (response.ok && data.token) {
-        // Save ALL user data to localStorage
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userEmail', data.user.email);
-        localStorage.setItem('userName', data.user.name);
-        localStorage.setItem('userRole', data.user.role);
-        localStorage.setItem('userRoleName', data.user.roleObj?.name || data.user.role);
-        localStorage.setItem('userNip', data.user.nip || '');
-        localStorage.setItem('userJenisKelamin', data.user.jenis_kelamin || '');
-        localStorage.setItem('userUnitKerja', data.user.unit_kerja || '');
-        localStorage.setItem('userDinasId', data.user.dinas_id || '');
-        localStorage.setItem('userDinasName', data.user.dinas?.name || '');
-        
-        const dashboardPath = roleToDashboard[data.user.role] || '/dashboard';
+        const normalizedUser = persistSession(data.token, data.user);
+        const dashboardPath = roleToDashboard[normalizedUser.role] || '/dashboard';
         navigate(dashboardPath);
       } else {
         setError(data.message || 'Quick login gagal. User mungkin belum ada di database.');

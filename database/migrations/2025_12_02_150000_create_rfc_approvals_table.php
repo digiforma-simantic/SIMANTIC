@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('rfc_id')->constrained('rfc')->onDelete('cascade');
             $table->foreignId('approver_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->enum('level', ['kasi', 'kabid', 'kadis'])->comment('Level approval: kasi, kabid, kadis');
-            $table->enum('decision', ['approved', 'rejected', 'revise'])->comment('Keputusan: approved, rejected, revise (need_info)');
+            $table->enum('level', ['kepala_seksi', 'kepala_bidang', 'kepala_dinas', 'admin_dinas'])->comment('Level approval sesuai alur berjenjang OPD');
+            $table->enum('decision', ['approved', 'rejected', 'revise'])->nullable()->comment('Keputusan: approved, rejected, revise (null jika masih pending)');
             $table->text('reason')->nullable()->comment('Catatan/alasan keputusan');
-            $table->timestamp('decided_at')->nullable()->comment('Waktu keputusan dibuat');
+            $table->timestamp('approved_at')->nullable()->comment('Waktu keputusan dibuat');
             $table->timestamps();
 
             // Index untuk query performa

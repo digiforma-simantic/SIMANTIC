@@ -1,13 +1,16 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 import notificationIcon from "../../assets/notification.png";
-import calendarIcon from "../../assets/calendar.png";
 import userIcon from "../../assets/user.png";
 import panahkembali from "../../assets/panahkembali.png"
 
 export default function Headeruserkasi() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const headerName = user?.name || "User";
+  const shortName = headerName.split(" ")[0];
 
   return (
     <header className="bg-[#F4FAFF] w-full px-6 py-5 flex items-center justify-between border-b border-[#E2EDF5] shadow-sm">
@@ -47,7 +50,9 @@ export default function Headeruserkasi() {
         </Link>
 
         {/* Username berdiri sendiri */}
-        <span className="text-[#002444] font-medium">Sri P.</span>
+        <span className="text-[#002444] font-medium" title={headerName}>
+          {shortName}
+        </span>
       </div>
     </header>
   );

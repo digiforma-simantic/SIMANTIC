@@ -18,7 +18,7 @@ class ConfigurationItemSeeder extends Seeder
             [
                 'name'         => 'Server Aplikasi SIMANTIC',
                 'type'         => 'server',
-                'owner_opd_id' => $diskominfo?->id,
+            'owner_dinas_id' => $diskominfo?->id,
                 'environment'  => 'production',
                 'criticality'  => 'high',
                 'status'       => 'active',
@@ -31,7 +31,7 @@ class ConfigurationItemSeeder extends Seeder
             [
                 'name'         => 'Database SIMANTIC',
                 'type'         => 'database',
-                'owner_opd_id' => $diskominfo?->id,
+                'owner_dinas_id' => $diskominfo?->id,
                 'environment'  => 'production',
                 'criticality'  => 'critical',
                 'status'       => 'active',
@@ -44,7 +44,7 @@ class ConfigurationItemSeeder extends Seeder
             [
                 'name'         => 'Aplikasi Layanan Kesehatan',
                 'type'         => 'application',
-                'owner_opd_id' => $dinkes?->id,
+                'owner_dinas_id' => $dinkes?->id,
                 'environment'  => 'production',
                 'criticality'  => 'high',
                 'status'       => 'active',

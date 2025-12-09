@@ -44,7 +44,6 @@ import BantuanKasi4 from "./pages/Kasi/BantuanKasi4";
 import DetailAsetKasi from "./pages/Kasi/DetailAsetKasi";
 import DaftarApprovalKasi from "./pages/Kasi/DaftarApprovalKasi";
 import DetailApprovalKasi from "./pages/Kasi/DetailApprovalKasi";
-import StatusPengajuanKasi from "./pages/Kasi/StatusPengajuanKasi";
 import DetailPermohonanKasi from "./pages/Kasi/DetailPermohonanKasi";
 
 import DashboardKabid from "./pages/Kabid/DashboardKabid";
@@ -60,7 +59,6 @@ import BantuanKabid4 from "./pages/Kabid/BantuanKabid4";
 import DetailAsetKabid from "./pages/Kabid/DetailAsetKabid";
 import DaftarApprovalKabid from "./pages/Kabid/DaftarApprovalKabid";
 import DetailApprovalKabid from "./pages/Kabid/DetailApprovalKabid";
-import StatusPengajuanKabid from "./pages/Kabid/StatusPengajuanKabid";
 import DetailPermohonanKabid from "./pages/Kabid/DetailPermohonanKabid";
 
 import DashboardKadis from "./pages/Kadis/DashboardKadis";
@@ -76,8 +74,8 @@ import BantuanKadis4 from "./pages/Kadis/BantuanKadis4";
 import DetailAsetKadis from "./pages/Kadis/DetailAsetKadis";
 import DaftarApprovalKadis from "./pages/Kadis/DaftarApprovalKadis";
 import DetailApprovalKadis from "./pages/Kadis/DetailApprovalKadis";
-import StatusPengajuanKadis from "./pages/Kadis/StatusPengajuanKadis";
 import DetailPermohonanKadis from "./pages/Kadis/DetailPermohonanKadis";
+import StatusPengajuanAdmin from "./pages/Admin/StatusPengajuanAdmin";
 
 import DashboardAuditor from "./pages/Auditor/DashboardAuditor";
 import NotifikasiAuditor from "./pages/Auditor/NotifikasiAuditor";
@@ -144,6 +142,7 @@ function App() {
       <Route path="/DaftarApproval" element={<DaftarApproval />} />
       <Route path="/Admin/daftarapproval" element={<DaftarApproval />} />
       <Route path="/Admin/DetailPermohonan/:id" element={<DetailPermohonan />} />
+      <Route path="/Admin/StatusPengajuan/:id" element={<StatusPengajuanAdmin />} />
       <Route path="/Admin/RiwayatApproval" element={<RiwayatApproval />} />
       <Route path="/DetailPengajuan/:id" element={<DetailPengajuan />} />
       <Route path="/Admin/DetailAsetSaya/:id" element={<DetailAsetSaya />} />
@@ -167,7 +166,6 @@ function App() {
       <Route path="/Kasi/DetailAsetKasi/:id" element={<DetailAsetKasi />} />
       <Route path="/Kasi/DaftarApprovalKasi" element={<DaftarApprovalKasi />} />
       <Route path="/Kasi/DetailApprovalKasi/:id" element={<DetailApprovalKasi />} />
-      <Route path="/Kasi/StatusPengajuanKasi/:id" element={<StatusPengajuanKasi />} />
       <Route path="/Kasi/DetailPermohonanKasi/:id" element={<DetailPermohonanKasi />} />
       <Route path="/BantuanKasi1" element={<BantuanKasi1 />} />
       <Route path="/BantuanKasi2" element={<BantuanKasi2 />} />
@@ -184,7 +182,6 @@ function App() {
       <Route path="/Kabid/DetailAsetKabid/:id" element={<DetailAsetKabid />} />
       <Route path="/Kabid/DaftarApprovalKabid" element={<DaftarApprovalKabid />} />
       <Route path="/Kabid/DetailApprovalKabid/:id" element={<DetailApprovalKabid />} />
-      <Route path="/Kabid/StatusPengajuanKabid/:id" element={<StatusPengajuanKabid />} />
       <Route path="/Kabid/DetailPermohonanKabid/:id" element={<DetailPermohonanKabid />} />
       <Route path="/BantuanKabid1" element={<BantuanKabid1 />} />
       <Route path="/BantuanKabid2" element={<BantuanKabid2 />} />
@@ -201,7 +198,6 @@ function App() {
       <Route path="/Kadis/DetailAsetKadis/:id" element={<DetailAsetKadis />} />
       <Route path="/Kadis/DaftarApprovalKadis" element={<DaftarApprovalKadis />} />
       <Route path="/Kadis/DetailApprovalKadis/:id" element={<DetailApprovalKadis />} />
-      <Route path="/Kadis/StatusPengajuanKadis/:id" element={<StatusPengajuanKadis />} />
       <Route path="/Kadis/DetailPermohonanKadis/:id" element={<DetailPermohonanKadis />} />
       <Route path="/BantuanKadis1" element={<BantuanKadis1 />} />
       <Route path="/BantuanKadis2" element={<BantuanKadis2 />} />
