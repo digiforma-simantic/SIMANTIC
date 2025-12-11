@@ -28,24 +28,6 @@ const DetailPermohonan = () => {
     fetchRFC();
   }, [id]);
 
-  const handleApprove = async (decision) => {
-    if (!confirm(`Yakin ingin ${decision === 'approved' ? 'menyetujui' : 'menolak'} RFC ini?`)) {
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const response = await rfcAPI.approve(id, decision);
-      alert(response.message || `RFC berhasil ${decision === 'approved' ? 'disetujui' : 'ditolak'}`);
-      navigate('/Admin/DaftarApproval');
-    } catch (error) {
-      console.error("Error approving RFC:", error);
-      alert(error.message || "Gagal memproses approval");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex min-h-screen bg-[#F7FCFF] items-center justify-center">
@@ -144,19 +126,44 @@ const DetailPermohonan = () => {
               </div>
             </div>
 
-            {/* BUTTON - Admin hanya submit RFC ke Kasi, bukan approve */}
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={() => {
-                  // TODO: Implement submit RFC to Kasi
-                  alert('Fitur submit ke Kasi belum diimplementasi');
-                  navigate('/Admin/DaftarApproval');
-                }}
-                disabled={submitting}
-                className="bg-[#FF7900] text-white px-8 py-2 rounded-lg hover:bg-[#e56b00] text-sm font-semibold disabled:opacity-50"
-              >
-                {submitting ? 'Mengirim...' : 'Kirim'}
-              </button>
+            {/* BUTTONS - Admin submit RFC ke 4 tujuan */}
+            <div className="flex flex-wrap gap-4 justify-end mt-6">
+              <SendButton
+                label="Kirim Kasi"
+                tujuan="Kepala Seksi"
+                note="Forward ke Kasi sesuai dinas"
+                submitting={submitting}
+                setSubmitting={setSubmitting}
+                id={id}
+                navigate={navigate}
+              />
+              <SendButton
+                label="Kirim Kabid"
+                tujuan="Kepala Bidang"
+                note="Forward ke Kabid sesuai dinas"
+                submitting={submitting}
+                setSubmitting={setSubmitting}
+                id={id}
+                navigate={navigate}
+              />
+              <SendButton
+                label="Kirim Kadis"
+                tujuan="Kepala Dinas"
+                note="Forward ke Kadis sesuai dinas"
+                submitting={submitting}
+                setSubmitting={setSubmitting}
+                id={id}
+                navigate={navigate}
+              />
+              <SendButton
+                label="Kirim Diskominfo"
+                tujuan="Admin Kota"
+                note="Forward ke Admin Kota"
+                submitting={submitting}
+                setSubmitting={setSubmitting}
+                id={id}
+                navigate={navigate}
+              />
             </div>
           </div>
         </div>
@@ -172,5 +179,32 @@ const DetailItem = ({ label, value }) => (
     <p className="text-sm text-gray-600">{value}</p>
   </div>
 );
+
+
+// BUTTON COMPONENT UNTUK KIRIM RFC SESUAI TUJUAN (harus di luar komponen utama)
+function SendButton({ label, tujuan, note, submitting, setSubmitting, id, navigate }) {
+  async function handleClick() {
+    if (!window.confirm(`Yakin ingin mengirim permohonan ke ${tujuan}?`)) return;
+    setSubmitting(true);
+    try {
+      await rfcAPI.forward(id, note);
+      alert(`Permohonan berhasil dikirim ke ${tujuan}.`);
+      navigate('/Admin/DaftarApproval');
+    } catch (error) {
+      alert(error.message || `Gagal mengirim permohonan ke ${tujuan}`);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+  return (
+    <button
+      onClick={handleClick}
+      disabled={submitting}
+      className="bg-[#FF7900] text-white px-8 py-2 rounded-lg hover:bg-[#e56b00] text-sm font-semibold disabled:opacity-50"
+    >
+      {submitting ? 'Mengirim...' : label}
+    </button>
+  );
+}
 
 export default DetailPermohonan;

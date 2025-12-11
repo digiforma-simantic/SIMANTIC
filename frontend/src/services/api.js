@@ -178,6 +178,14 @@ export const rfcAPI = {
   },
 
   /**
+   * Forward RFC ke level berikutnya sesuai priority
+   */
+  async forward(id, note = null) {
+    const response = await api.post(`/api/v1/rfc/${id}/forward`, { note });
+    return response.data;
+  },
+
+  /**
    * Get approval history
    */
   async getHistory() {

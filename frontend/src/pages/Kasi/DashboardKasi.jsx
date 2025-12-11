@@ -5,8 +5,20 @@ import Headeradmin from "../../components/Kasi/Headerkasi";
 import { useAuth } from "../../contexts/AuthContext";
 
 const DashboardKasi = () => {
-  const { user, loading } = useAuth();
-  const displayName = !loading && user?.name ? user.name : "Pengguna Kasi";
+  // Ambil user dari localStorage hasil login SSO
+  const [user, setUser] = React.useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  React.useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+  const displayName = user?.name || "Pengguna Kasi";
 
   // Data untuk Daftar Approval
   const daftarApprovals = [

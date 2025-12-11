@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
@@ -8,7 +7,7 @@ const AuthContext = createContext(null);
 function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }
@@ -19,86 +18,60 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch user data from SSO or dev login
-    const fetchUser = async () => {
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-      const isLoggedIn = localStorage.getItem('isLoggedIn');
-      
-      if (!token && !isLoggedIn) {
-        setLoading(false);
-        return;
-      }
-
-      // Try to get user from localStorage first (dev login)
-      const storedUserName = localStorage.getItem('userName');
-      if (storedUserName && isLoggedIn) {
-        const normalizedUser = {
-          id: localStorage.getItem('userId') || null,
-          name: storedUserName,
-          email: localStorage.getItem('userEmail') || '',
-          nip: localStorage.getItem('userNip') || '',
-          role: localStorage.getItem('userRole') || 'staff',
-          roleName: localStorage.getItem('userRoleName') || localStorage.getItem('userRole') || '',
-          dinas: localStorage.getItem('userDinasName') || '',
-          dinasId: localStorage.getItem('userDinasId') || null,
-          ssoId: localStorage.getItem('userSsoId') || null,
-          jenisKelamin: localStorage.getItem('userJenisKelamin') || '',
-          jabatan: localStorage.getItem('userJabatan') || localStorage.getItem('userRoleName') || '',
-          unitKerja: localStorage.getItem('userUnitKerja') || '',
-        };
-        
-        setUser(normalizedUser);
-        setLoading(false);
-        return;
-      }
-
-      // Otherwise, fetch from API (SSO login)
-      try {
-        const response = await authAPI.me();
-        const userData = response.data || response;
-        
-        // Normalize user data from SSO
-        const normalizedUser = {
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          nip: userData.nip,
-          role: userData.roleObj?.slug || userData.role_obj?.slug || userData.role || 'staff',
-          roleName: userData.roleObj?.name || userData.role_obj?.name || userData.role_name,
-          dinas: userData.dinas?.name || userData.dinas_name,
-          dinasId: userData.dinas?.id || userData.dinas_id,
-          ssoId: userData.sso_id,
-          jenisKelamin: userData.jenis_kelamin,
-          jabatan: userData.jabatan,
-          unitKerja: userData.unit_kerja,
-        };
-
-        setUser(normalizedUser);
-        localStorage.setItem('user', JSON.stringify(normalizedUser));
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-        // If token invalid, clear it
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
+    // Ambil user dari localStorage jika sudah ada (SSO login)
+    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    const storedUser = localStorage.getItem("user");
+    if (!token && !isLoggedIn) {
+      setLoading(false);
+      return;
+    }
+    if (storedUser && isLoggedIn) {
+      setUser(JSON.parse(storedUser));
+      setLoading(false);
+      return;
+    }
+    // Jika tidak ada user di localStorage, bisa tambahkan fallback fetch ke API jika memang dibutuhkan
+    setLoading(false);
   }, []);
 
   const login = (token, userData) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('isLoggedIn', 'true');
+    // Simpan token & flag login
+    localStorage.setItem("token", token);
+    localStorage.setItem("isLoggedIn", "true");
+
+    // Opsional: simpan user ter-normalisasi juga kalau mau dipakai lagi
+    localStorage.setItem("user", JSON.stringify(userData));
+
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('isLoggedIn');
+    try {
+      // 💣 Bersihkan semua localStorage & sessionStorage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // (opsional) bersihkan cookie auth kalau ada
+      document.cookie
+        .split(";")
+        .forEach((c) => {
+          document.cookie =
+            c.replace(/^ +/, "").replace(
+              /=.*/,
+              "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/"
+            );
+        });
+    } catch (e) {
+      console.error("Failed to clear storage on logout:", e);
+    }
+
+    // Reset state user di React
     setUser(null);
+
+    // Redirect ke domain utama setelah benar-benar bersih
+    window.location.href = "https://bispro.digitaltech.my.id/";
+    // atau kalau mau pakai relative: window.location.replace("https://bispro.digitaltech.my.id/");
   };
 
   return (

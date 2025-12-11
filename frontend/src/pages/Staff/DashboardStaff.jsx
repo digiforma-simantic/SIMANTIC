@@ -8,10 +8,23 @@ import axios from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 const DashboardStaff = () => {
-  const { user, loading } = useAuth();
+  // Ambil user dari localStorage hasil login SSO
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [rfcs, setRfcs] = useState([]);
   const [stats, setStats] = useState({ total: 0, gagal: 0, proses: 0, berhasil: 0 });
   const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
 
   useEffect(() => {
     async function fetchStaffData() {
@@ -46,7 +59,7 @@ const DashboardStaff = () => {
     }
   }, [user]);
 
-  if (loading) {
+  if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F4FAFF]">
         <p className="text-gray-500">Memuat...</p>
@@ -73,9 +86,9 @@ const DashboardStaff = () => {
           <div className="mb-6">
             <p className="text-sm text-gray-600">Selamat datang,</p>
             <h1 className="text-2xl font-semibold text-gray-900">
-              {user?.name || 'Staff'}
+              {user?.name || "-"}
             </h1>
-            <p className="text-sm text-gray-500 mt-1">{user?.roleName || user?.role} - {user?.dinas || 'N/A'}</p>
+            <p className="text-sm text-gray-500 mt-1">{user?.roleName || user?.role} - {user?.dinas || "N/A"}</p>
           </div>
 
           {/* STATUS PERUBAHAN */}

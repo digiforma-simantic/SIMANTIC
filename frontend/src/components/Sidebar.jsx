@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext"; // ⬅️ tambahkan ini
 
 import simantic from "../assets/logosimantic.png";
 import homeIcon from "../assets/home-outline.png";
@@ -10,6 +11,7 @@ import logoutIcon from "../assets/Logout_Icon_UIA.png";
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth(); // ⬅️ ambil logout dari context
 
   const SidebarItem = ({ icon, label, onClick, children, open, active }) => (
     <div className="w-full">
@@ -46,13 +48,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     </div>
   );
 
+  // Pakai logout dari AuthContext
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    // kalau mau sidebar nutup dulu di mobile
+    if (onClose) onClose();
 
-    // Redirect ke domain utama
-    window.location.href = "https://bispro.digitaltech.my.id/";
+    // ini akan clear localStorage + sessionStorage + cookie + redirect
+    logout();
   };
 
   return (
@@ -94,17 +96,17 @@ const Sidebar = ({ isOpen, onClose }) => {
 
         <div className="h-[3px] bg-white mx-6 mb-4 rounded-full" />
 
-        <SidebarItem 
-          icon={helpIcon} 
-          label="Bantuan" 
+        <SidebarItem
+          icon={helpIcon}
+          label="Bantuan"
           onClick={() => navigate("/staff/bantuanstaff")}
-          active={location.pathname === "/staff/bantuanstaff"} 
+          active={location.pathname === "/staff/bantuanstaff"}
         />
 
-        <SidebarItem 
-          icon={logoutIcon} 
-          label="Logout" 
-          onClick={handleLogout} 
+        <SidebarItem
+          icon={logoutIcon}
+          label="Logout"
+          onClick={handleLogout} // ⬅️ cukup ini
         />
       </aside>
     </>

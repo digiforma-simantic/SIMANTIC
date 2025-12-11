@@ -112,6 +112,31 @@ class DevLoginController extends Controller
         // Generate token Sanctum baru
         $token = $user->createToken('dev-token')->plainTextToken;
 
+        // Log detail data user yang dikirim ke frontend
+        \Log::info('Dev Login Response', [
+            'token' => $token,
+            'user'  => [
+                'id'            => $user->id,
+                'name'          => $user->name,
+                'email'         => $user->email,
+                'nip'           => $user->nip,
+                'jenis_kelamin' => $user->jenis_kelamin,
+                'unit_kerja'    => $user->unit_kerja,
+                'role'          => $user->roleObj?->slug ?? $user->role,
+                'roleObj'       => $user->roleObj ? [
+                    'id'   => $user->roleObj->id,
+                    'slug' => $user->roleObj->slug,
+                    'name' => $user->roleObj->name,
+                ] : null,
+                'dinas'    => $user->dinas ? [
+                    'id'   => $user->dinas->id,
+                    'name' => $user->dinas->name,
+                ] : null,
+                'dinas_id' => $user->dinas_id,
+                'sso_id'   => $user->sso_id,
+            ],
+        ]);
+
         // Kembalikan response sukses dengan relasi lengkap
         return response()->json([
             'token' => $token,
@@ -136,5 +161,38 @@ class DevLoginController extends Controller
                 'sso_id'   => $user->sso_id,
             ],
         ], 200);
+    }
+
+    /**
+     * Ambil daftar user dev (untuk quick login di frontend)
+     * GET /auth/dev/users
+     */
+    public function devUsers(Request $request)
+    {
+        // Pilih user dengan role dev tertentu (admin_kota, admin_dinas, staff, kepala_seksi, dst)
+        $roles = ['admin_kota', 'admin_dinas', 'staff', 'kepala_seksi', 'auditor', 'kepala_bidang', 'kepala_dinas'];
+        $users = User::with(['roleObj', 'dinas'])
+            ->whereHas('roleObj', function($q) use ($roles) {
+                $q->whereIn('slug', $roles);
+            })
+            ->get()
+            ->map(function($user) {
+                return [
+                    'id'    => $user->id,
+                    'name'  => $user->name,
+                    'email' => $user->email,
+                    'role'  => $user->roleObj?->slug ?? $user->role,
+                    'roleObj' => $user->roleObj ? [
+                        'id'   => $user->roleObj->id,
+                        'slug' => $user->roleObj->slug,
+                        'name' => $user->roleObj->name,
+                    ] : null,
+                    'dinas' => $user->dinas ? [
+                        'id'   => $user->dinas->id,
+                        'name' => $user->dinas->name,
+                    ] : null,
+                ];
+            });
+        return response()->json(['users' => $users], 200);
     }
 }

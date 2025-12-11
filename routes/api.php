@@ -1,4 +1,8 @@
+
 <?php
+use App\Http\Controllers\Api\SsoDinasController;
+// Endpoint ambil data dinas dari SSO eksternal
+Route::get('/sso/dinas', [SsoDinasController::class, 'index']);
 
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
@@ -12,6 +16,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\CmdbController;
 use App\Http\Controllers\ChangeController;
 use App\Http\Controllers\ChangeApprovalController;
+use App\Http\Controllers\Api\LoginController;
 
 // Tambahan modul baru
 use App\Http\Controllers\Api\MaintenanceJobController;
@@ -112,6 +117,7 @@ Route::prefix('v1')
             ->name('rfc.pending-approval');
         Route::post('rfc/{id}/approve', [RfcController::class, 'approve'])
             ->name('rfc.approve');
+    Route::post('api/v1/rfc/{id}/forward', [\App\Http\Controllers\Api\V1\RfcApprovalController::class, 'forward'])->name('rfc.forward');
         Route::get('rfc/history', [RfcController::class, 'getHistory'])
             ->name('rfc.history');
         Route::get('rfc/{id}', [RfcController::class, 'show'])
@@ -205,6 +211,9 @@ Route::prefix('v1')
                 Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         });
 
+// Login user aplikasi (email & password)
+Route::post('auth/login', [LoginController::class, 'login'])->name('auth.login');
+Route::post('auth/dev/login', [DevLoginController::class, 'login']);
 
 /**
  * Fallback JSON (API-friendly)

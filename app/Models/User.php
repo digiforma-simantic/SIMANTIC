@@ -98,16 +98,8 @@ class User extends Authenticatable
     }
 
     // User sebagai teknisi untuk Maintenance
-    public function maintenanceLogs()
-    {
-        return $this->hasMany(MaintenanceLog::class, 'technician_id');
-    }
 
-    // User sebagai teknisi Patch Deployment
-    public function patchDeployments()
-    {
-        return $this->hasMany(PatchDeployment::class, 'technician_id');
-    }
+  
 
     /* -------------------------------------------------------------------
      |  HELPER ROLE (BIAR MUDAH DIPAKAI DIMANA-MANA)
@@ -157,5 +149,25 @@ class User extends Authenticatable
     public function isTeknisi()
     {
         return $this->roleSlug() === 'teknisi';
+    }
+
+    protected static function booted()
+    {
+        parent::booted();
+        static::created(function ($user) {
+            $roleSlug = null;
+            if ($user->role_id) {
+                $role = Role::find($user->role_id);
+                $roleSlug = $role?->slug;
+            }
+            \DB::table('dinas_users')->insert([
+                'name'      => $user->name,
+                'role'      => $roleSlug,
+                'dinas_id'  => $user->dinas_id,
+                'sso_id'    => $user->sso_id,
+                'created_at'=> now(),
+                'updated_at'=> now(),
+            ]);
+        });
     }
 }

@@ -1,17 +1,30 @@
 import { Link } from "react-router-dom";
 import Headeruser from "../../components/Kasi/Headeruserkasi";
-import { useAuth } from "../../contexts/AuthContext";
+import React, { useEffect, useState } from "react";
 
 export default function ProfileNavigation() {
-  const { user, loading } = useAuth();
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
 
   const profile = {
     name: user?.name || "-",
-    gender: user?.jenisKelamin || user?.jenis_kelamin || "-",
+    gender: user?.jenisKelamin || user?.jenis_kelamin || user?.gender || "-",
     nip: user?.nip || "-",
-    jobTitle: user?.jabatan || user?.roleName || "-",
+    jobTitle: user?.jabatan || user?.roleName || user?.role || "-",
     unitKerja: user?.unitKerja || user?.unit_kerja || "-",
-    dinas: user?.dinas || user?.dinasName || "-",
+    dinas: user?.dinas || user?.dinasName || (user?.dinas && user?.dinas.name) || "-",
     email: user?.email || "-",
   };
 

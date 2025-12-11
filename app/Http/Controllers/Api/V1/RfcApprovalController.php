@@ -43,7 +43,7 @@ class RfcApprovalController extends Controller
             'status'     => 'done',
             'decision'   => 'approve',
             'reason'     => $request->note,
-            'decided_at' => now(),
+            'approved_at' => now(),
         ]);
 
         // Tentukan next level
@@ -95,7 +95,7 @@ class RfcApprovalController extends Controller
             'status'     => 'done',
             'decision'   => 'reject',
             'reason'     => $request->note,
-            'decided_at' => now(),
+            'approved_at' => now(),
         ]);
 
         // Kalau di-reject, RFC jadi failed
@@ -130,7 +130,7 @@ class RfcApprovalController extends Controller
             'status'     => 'done',
             'decision'   => 'need_info',
             'reason'     => $request->note,
-            'decided_at' => now(),
+            'approved_at' => now(),
         ]);
 
         // RFC bisa kamu set ke under_review supaya kelihatan butuh info
@@ -166,14 +166,22 @@ class RfcApprovalController extends Controller
             'status'     => 'done',
             'decision'   => 'forward',
             'reason'     => $request->note,
-            'decided_at' => now(),
+            'approved_at' => now(),
         ]);
 
-        $nextLevel = $this->getNextLevel($approval->level);
-
-        if (!$nextLevel) {
+        // Tentukan level tujuan sesuai priority RFC
+        $priority = strtolower($rfc->priority);
+        if ($priority === 'low') {
+            $nextLevel = 'kepala_seksi';
+        } elseif ($priority === 'medium') {
+            $nextLevel = 'kepala_bidang';
+        } elseif ($priority === 'high') {
+            $nextLevel = 'kepala_dinas';
+        } elseif ($priority === 'kritikal' || $priority === 'critical') {
+            $nextLevel = 'admin_kota';
+        } else {
             return response()->json([
-                'message' => 'Tidak ada level berikutnya untuk forward',
+                'message' => 'Priority tidak valid',
             ], 400);
         }
 

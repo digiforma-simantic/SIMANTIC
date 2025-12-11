@@ -7,25 +7,30 @@ import bellIcon from "../assets/notification.png";
 import userIcon from "../assets/user.png";
 
 const Header = () => {
-  const { user } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   // Format nama: nama depan lengkap + inisial nama belakang
   const getShortName = (fullName) => {
     if (!fullName) return "User";
     const words = fullName.trim().split(" ");
     if (words.length === 1) return words[0];
-    
+
     const firstName = words[0];
-    const initials = words.slice(1).map(word => word.charAt(0) + ".").join(" ");
+    const initials = words
+      .slice(1)
+      .map((word) => word.charAt(0) + ".")
+      .join(" ");
     return `${firstName} ${initials}`;
+  };
+
+  const handleLogout = () => {
+    // ini akan clear localStorage + sessionStorage + redirect
+    logout();
   };
 
   return (
     <header className="w-full bg-[#F4FAFF] border-b border-[#E2EDF5] shadow-sm">
-      <div
-        className="px-6 py-4 flex items-center justify-between
-        gap-6"
-      >
+      <div className="px-6 py-4 flex items-center justify-between gap-6">
         {/* SEARCH BAR */}
         <div className="flex-1">
           <div className="w-full bg-white rounded-xl border border-[#DCE6EE] px-4 py-3 flex items-center gap-3 shadow-sm">
@@ -44,7 +49,6 @@ const Header = () => {
 
         {/* ICONS & USER */}
         <div className="flex items-center gap-4">
-
           <Link
             to="/NotifikasiStaff"
             className="w-11 h-11 bg-white border border-[#DCE6EE] rounded-lg flex items-center justify-center shadow-sm"
@@ -59,9 +63,18 @@ const Header = () => {
             <img src={userIcon} alt="User" className="w-5 h-5" />
           </Link>
 
+          {/* NAMA USER */}
           <span className="ml-1 text-sm font-semibold text-[#002444]">
-            {getShortName(user?.name)}
+            {loading ? "Memuat..." : getShortName(user?.name)}
           </span>
+
+          {/* BUTTON LOGOUT */}
+          <button
+            onClick={handleLogout}
+            className="ml-2 px-3 py-2 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </header>

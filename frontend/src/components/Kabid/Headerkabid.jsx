@@ -6,6 +6,36 @@ import bellIcon from "../../assets/notification.png";
 import userIcon from "../../assets/user.png";
 
 const Header = () => {
+  const [userName, setUserName] = React.useState(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        return user?.name || "-";
+      } catch {
+        return "-";
+      }
+    }
+    return "-";
+  });
+  React.useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          setUserName(user?.name || "-");
+        } catch {
+          setUserName("-");
+        }
+      } else {
+        setUserName("-");
+      }
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
   return (
     <header className="w-full bg-[#F4FAFF] border-b border-[#E2EDF5] shadow-sm">
       <div
@@ -46,7 +76,7 @@ const Header = () => {
           </Link>
 
           <span className="ml-1 text-sm font-semibold text-[#002444]">
-            Sri P.
+            {userName}
           </span>
         </div>
       </div>

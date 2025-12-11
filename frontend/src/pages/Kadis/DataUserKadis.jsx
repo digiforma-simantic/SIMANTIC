@@ -1,16 +1,24 @@
 import { Link } from "react-router-dom";
 import Headeruser from "../../components/Kadis/Headeruserkadis";
-
+import { useAuth } from "../../contexts/AuthContext";
 export default function ProfileNavigation() {
+  const { user, loading } = useAuth();
+  const profile = {
+    name: user?.name || "-",
+    gender: user?.jenisKelamin || user?.jenis_kelamin || user?.gender || "-",
+    nip: user?.nip || "-",
+    jobTitle: user?.jabatan || user?.roleName || user?.role || "-",
+    unitKerja: user?.unitKerja || user?.unit_kerja || "-",
+    dinas: user?.dinas || user?.dinasName || (user?.dinas && user?.dinas.name) || "-",
+    email: user?.email || "-",
+  };
+
   return (
     <div className="min-h-screen bg-[#F7FCFF] font-geologica">
-
       {/* Header dari components */}
       <Headeruser />
-
       {/* Main content */}
       <main className="flex mt-8 max-w-[1400px] mx-auto space-x-6">
-        
         {/* Sidebar */}
         <aside className="bg-[#F2FAFF] p-6 rounded-lg shadow-md w-64 h-42">
           <h2 className="font-bold text-[#001729] mb-4">Navigasi Profil</h2>
@@ -20,15 +28,12 @@ export default function ProfileNavigation() {
             </Link>
           </nav>
         </aside>
-
         {/* Profile Form */}
         <section className="bg-[#F2FAFF] p-8 rounded-lg shadow-md flex-1">
           <h2 className="text-center font-bold text-[#001729] text-lg mb-6">
-            Selamat datang, Sri Permatasari!
+            {loading ? "Memuat data user..." : `Selamat datang, ${profile.name}!`}
           </h2>
-
           <form className="space-y-6">
-
             {/* Nama lengkap */}
             <div>
               <label className="block mb-1 font-semibold text-[#001729]">
@@ -36,98 +41,86 @@ export default function ProfileNavigation() {
               </label>
               <input
                 type="text"
-                defaultValue="Sri Permatasari"
+                value={profile.name}
                 readOnly
                 className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
               />
             </div>
-
             {/* Jenis Kelamin & NIP */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Jenis kelamin
                 </label>
                 <input
                   type="text"
-                  defaultValue="Perempuan"
+                  value={profile.gender}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   NIP
                 </label>
                 <input
                   type="text"
-                  defaultValue="1120913458124"
+                  value={profile.nip}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
             </div>
-
             {/* Jabatan & Unit Kerja */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Jabatan
                 </label>
                 <input
                   type="text"
-                  defaultValue="Kepala Seksi"
+                  value={profile.jobTitle}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Unit Kerja
                 </label>
                 <input
                   type="text"
-                  defaultValue="Bidang Pencegahan Penebangan Liar"
+                  value={profile.unitKerja}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
             </div>
-
             {/* Asal Dinas & Email */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Asal Dinas
                 </label>
                 <input
                   type="text"
-                  defaultValue="Dinas Kehutanan Prov. Jawa Timur"
+                  value={profile.dinas}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Email
                 </label>
                 <input
                   type="email"
-                  defaultValue="sripermata@gmail.com"
+                  value={profile.email}
                   readOnly
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] focus:ring-2 focus:ring-blue-400"
                 />
               </div>
             </div>
-
           </form>
         </section>
       </main>

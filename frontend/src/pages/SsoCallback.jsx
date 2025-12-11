@@ -9,6 +9,7 @@ const SsoCallback = () => {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    console.log('SSO Token:', token); // Debug log
 
     if (!token) {
       setStatus('error');
@@ -17,14 +18,15 @@ const SsoCallback = () => {
       return;
     }
 
-    // Simpan token ke localStorage
+    // Simpan token SSO ke localStorage, hapus semua token lain
+    localStorage.clear();
     localStorage.setItem('token', token);
     localStorage.setItem('isLoggedIn', 'true');
 
     // Get user data dengan token untuk tahu role-nya
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.simantic.online';
+    const apiBaseUrl = import.meta.env.VITE_API_SSO_BASE_URL || 'http://127.0.0.1:8000';
     
-    fetch(`${apiBaseUrl}/api/v1/me`, {
+    fetch(`${apiBaseUrl}/api/v2/auth/me`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -40,35 +42,52 @@ const SsoCallback = () => {
         return res.json();
       })
       .then(data => {
-        const user = data.data || data;
-        if (user && user.id) {
-          localStorage.setItem('user', JSON.stringify(user));
+        console.log('SSO User Data:', data); // Debug log
+        const rawUser = data.data?.user || data.data || data.user || data;
+        let normalizedUser = null;
+        if (rawUser && rawUser.id) {
+          // Normalisasi field user agar frontend tidak kosong
+          normalizedUser = {
+            id: rawUser.id,
+            name: rawUser.name || '',
+            email: rawUser.email || '',
+            nip: rawUser.nip || '',
+            role: rawUser.roleObj?.slug || rawUser.role_obj?.slug || rawUser.role || 'staff',
+            roleName: rawUser.roleObj?.name || rawUser.role_obj?.name || rawUser.role_name || '',
+            dinas: rawUser.dinas?.name || rawUser.dinas_name || rawUser.dinas || '',
+            dinasId: rawUser.dinas?.id || rawUser.dinas_id || '',
+            ssoId: rawUser.sso_id || rawUser.ssoId || '',
+            jenisKelamin: rawUser.jenis_kelamin || rawUser.jenisKelamin || '',
+            jabatan: rawUser.jabatan || rawUser.roleObj?.name || rawUser.role || '',
+            unitKerja: rawUser.unit_kerja || rawUser.unitKerja || '',
+          };
+          localStorage.setItem('user', JSON.stringify(normalizedUser));
         }
 
         setStatus('success');
 
         // Redirect berdasarkan role dari user data atau roleObj
         setTimeout(() => {
-          const roleSlug = user?.roleObj?.slug || user?.role || 'staff';
-          
+          const roleSlug = normalizedUser?.role || 'staff';
           console.log('SSO User Role:', roleSlug); // Debug log
-          
+
           // Cek jika role adalah teknisi - reject akses
           if (roleSlug === 'teknisi') {
             setStatus('error');
             setError('Role Teknisi tidak memiliki akses ke aplikasi Change & Configuration Management. Silakan gunakan aplikasi Service Desk.');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('isLoggedIn');
+            localStorage.clear();
             // Redirect ke SSO atau halaman error setelah 5 detik
             setTimeout(() => {
               window.location.href = 'https://api.bispro.digitaltech.my.id'; // Redirect ke SSO
             }, 5000);
             return;
           }
-          
+
           switch(roleSlug) {
             case 'admin_kota':
+              navigate('/diskominfo/dashboarddiskominfo');
+              break;
+            case 'admin_dinas':
               navigate('/Admin/dashboardadmin');
               break;
             case 'kepala_dinas':
@@ -84,10 +103,6 @@ const SsoCallback = () => {
               break;
             case 'auditor':
               navigate('/auditor/dashboardauditor');
-              break;
-            case 'admin_dinas':
-            case 'diskominfo':
-              navigate('/diskominfo/dashboarddiskominfo');
               break;
             case 'staff':
             default:

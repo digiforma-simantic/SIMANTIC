@@ -8,9 +8,22 @@ import tandaminus from "../../assets/tandaminusadmin.png";
 import tandaseru from "../../assets/tandaseruadmin.png";
 
 const DashboardAdmin = () => {
-  const { user, loading } = useAuth();
+  // Ambil user dari localStorage hasil login SSO
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [approvals, setApprovals] = useState([]);
   const [loadingApprovals, setLoadingApprovals] = useState(true);
+
+  useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
   const pantauStatus = [
     { id: 1, status: "approved", color: "bg-green-500" },
     { id: 2, status: "pending", color: "bg-blue-500" },
@@ -42,7 +55,7 @@ const DashboardAdmin = () => {
     }
   }, [user]);
 
-  if (loading) {
+  if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F7FCFF]">
         <p className="text-gray-500">Memuat...</p>
@@ -63,8 +76,8 @@ const DashboardAdmin = () => {
 
           <div className="mb-8">
             <p className="text-sm text-gray-600">Selamat datang,</p>
-            <h1 className="text-3xl font-semibold text-gray-900">{user?.name || 'User'}</h1>
-            <p className="text-sm text-gray-500 mt-1">{user?.roleName || user?.role} - {user?.dinas || 'N/A'}</p>
+            <h1 className="text-3xl font-semibold text-gray-900">{user?.name || "-"}</h1>
+            <p className="text-sm text-gray-500 mt-1">{user?.roleName || user?.role} - {user?.dinas || "N/A"}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

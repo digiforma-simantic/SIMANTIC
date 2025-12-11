@@ -76,12 +76,27 @@ class SsoCallbackController extends Controller
             // Sync user to local database
             $user = $this->syncUserFromSso($userData);
 
+
             // Generate local Sanctum token
             $token = $user->createToken('sso-login')->plainTextToken;
 
-            // Redirect to frontend with token
+            // Mapping role ke dashboard path
+            $roleToDashboard = [
+                'admin_kota'     => '/diskominfo/dashboarddiskominfo',
+                'admin_dinas'    => '/Admin/dashboardadmin',
+                'auditor'        => '/auditor/dashboardauditor',
+                'kepala_seksi'   => '/Kasi/dashboardkasi',
+                'staff'          => '/staff/dashboardstaff',
+                'kepala_dinas'   => '/Kadis/dashboardkadis',
+                'kepala_bidang'  => '/Kabid/dashboardkabid',
+                // tambahkan sesuai kebutuhan
+            ];
+            $role = $user->roleObj?->slug ?? 'staff';
+            $dashboardPath = $roleToDashboard[$role] ?? '/dashboard';
+
+            // Redirect ke frontend sesuai role
             $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
-            $redirectUrl = "{$frontendUrl}/sso/callback?token={$token}";
+            $redirectUrl = "{$frontendUrl}{$dashboardPath}?token={$token}";
 
             return redirect($redirectUrl);
 

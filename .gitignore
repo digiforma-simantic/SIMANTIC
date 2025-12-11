@@ -1,24 +1,53 @@
-*.log
+# ============================================
+# OS & Editor
+# ============================================
 .DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
+Thumbs.db
+*.log
+
 /.idea
-/.nova
-/.phpunit.cache
 /.vscode
+/.fleet
 /.zed
-/auth.json
+
+phpunit.result.cache
+.phpunit.result.cache
+.phpactor.json
+
+# ============================================
+# Environment Files
+# ============================================
+.env
+.env.*
+!.env.example
+Homestead.json
+Homestead.yaml
+auth.json
+
+# ============================================
+# Laravel / Backend
+# ============================================
+/vendor
+/storage/*.key
+/storage/pail
+/storage/logs
+/storage/framework/cache/data
+/storage/framework/sessions
+/storage/framework/views
+
+# ============================================
+# Node / Frontend
+# ============================================
 /node_modules
 /public/build
 /public/hot
 /public/storage
-/storage/*.key
-/storage/pail
-/vendor
-Homestead.json
-Homestead.yaml
-Thumbs.db
+
+# ============================================
+# Custom Ignore (SIMANTIC PROJECT)
+# ============================================
+# Jangan push folder mobile
+/mobile/
+
+# Jika folder mobile ada di dalam frontend
+# /frontend/mobile/

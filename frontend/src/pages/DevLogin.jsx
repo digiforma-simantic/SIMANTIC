@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -10,6 +10,33 @@ export default function DevLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // State untuk daftar user dev (quick login)
+  const [devUsers, setDevUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  // Ambil daftar user dev dari backend (misal: hanya role tertentu)
+  useEffect(() => {
+    const fetchDevUsers = async () => {
+      setLoadingUsers(true);
+      try {
+        // Ganti endpoint sesuai backend, misal: /api/auth/dev/users
+        const response = await fetch('http://127.0.0.1:8000/api/auth/dev/users', {
+          headers: { 'Accept': 'application/json' },
+        });
+        const data = await response.json();
+        if (response.ok && Array.isArray(data.users)) {
+          setDevUsers(data.users);
+        } else {
+          setDevUsers([]);
+        }
+      } catch {
+        setDevUsers([]);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+    fetchDevUsers();
+  }, []);
 
   // Role to dashboard mapping
   const roleToDashboard = {
@@ -65,7 +92,7 @@ export default function DevLogin() {
     setError('');
 
     try {
-      // Login via backend API
+      // Login via backend API (endpoint sesuai backend)
       const response = await fetch('http://127.0.0.1:8000/api/auth/dev/login', {
         method: 'POST',
         headers: {
@@ -81,6 +108,8 @@ export default function DevLogin() {
         const normalizedUser = persistSession(data.token, data.user);
         const dashboardPath = roleToDashboard[normalizedUser.role] || '/dashboard';
         navigate(dashboardPath);
+        // Force reload agar context user terupdate dari localStorage
+        window.location.reload();
       } else {
         setError(data.message || 'Email atau password salah');
         setLoading(false);
@@ -200,20 +229,27 @@ export default function DevLogin() {
           </div>
         </div>
 
-        {/* Quick Login Buttons */}
+        {/* Quick Login Buttons (dinamis dari backend) */}
         <div className="space-y-2">
-          <button onClick={() => handleQuickLogin('admin.kota@example.com')} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg">
-            <p className="font-medium text-gray-900">Admin Kota</p>
-            <p className="text-xs text-gray-500">admin.kota@example.com</p>
-          </button>
-          <button onClick={() => handleQuickLogin('kepala.seksi@example.com')} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg">
-            <p className="font-medium text-gray-900">Kepala Seksi</p>
-            <p className="text-xs text-gray-500">kepala.seksi@example.com</p>
-          </button>
-          <button onClick={() => handleQuickLogin('staff@example.com')} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg">
-            <p className="font-medium text-gray-900">Staff</p>
-            <p className="text-xs text-gray-500">staff@example.com</p>
-          </button>
+          {loadingUsers && (
+            <div className="text-gray-500 text-sm">Memuat user dev...</div>
+          )}
+          {!loadingUsers && devUsers.length === 0 && (
+            <div className="text-gray-400 text-sm">Tidak ada user dev ditemukan.</div>
+          )}
+          {!loadingUsers && devUsers.map((user) => (
+            <button
+              key={user.email}
+              onClick={() => handleQuickLogin(user.email)}
+              className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg"
+            >
+              <p className="font-medium text-gray-900">{user.name || user.email}</p>
+              <p className="text-xs text-gray-500">{user.email}</p>
+              {user.role && (
+                <span className="text-xs text-blue-500">{user.roleObj?.name || user.role}</span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Footer Note */}

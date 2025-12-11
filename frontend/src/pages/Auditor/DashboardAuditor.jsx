@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebaradmin from "../../components/Auditor/Sidebarauditor";
 import Headeradmin from "../../components/Auditor/Headerauditor";
@@ -18,6 +18,20 @@ const DashboardAuditor = () => {
     { id: 3, priority: 'High', name: 'Patch Emergency CVE-2025-1234', rfcNumber: '#RFC-0001', date: '17 Agustus 2025', badgeColor: 'bg-red-600' },
   ];
 
+  // Ambil user dari localStorage hasil login SSO
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-[#F7FCFF] font-geologica text-[#001B33]">
       <Sidebaradmin />
@@ -29,7 +43,7 @@ const DashboardAuditor = () => {
           {/* Welcome Section */}
           <div className="mb-8">
             <p className="text-sm text-gray-600">Selamat datang,</p>
-            <h1 className="text-3xl font-semibold text-gray-900">Sudarsono</h1>
+            <h1 className="text-3xl font-semibold text-gray-900">{user?.name || "-"}</h1>
           </div>
 
           {/* Status Approval Cards */}

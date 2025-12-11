@@ -8,3 +8,6 @@ use App\Http\Controllers\Auth\DevLoginController;
  * Pure API routes for development only
  */
 Route::post('/auth/dev/login', [DevLoginController::class, 'login'])->name('dev.login');
+
+// Endpoint untuk ambil daftar user dev (untuk quick login)
+Route::get('/auth/dev/users', [DevLoginController::class, 'devUsers']);

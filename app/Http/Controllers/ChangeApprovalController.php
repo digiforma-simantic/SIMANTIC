@@ -71,7 +71,7 @@ class ChangeApprovalController extends Controller
     *         @OA\Property(property="level", type="string", example="kepala_bidang"),
      *         @OA\Property(property="decision", type="string", example="approve"),
      *         @OA\Property(property="reason", type="string", example="Setuju, risiko sudah diterima."),
-     *         @OA\Property(property="decided_at", type="string", example="2025-11-15 10:30:00")
+    *         @OA\Property(property="approved_at", type="string", example="2025-11-15 10:30:00")
      *       )
      *     )
      *   ),
@@ -98,7 +98,7 @@ class ChangeApprovalController extends Controller
         // Map decision for database storage
         $approval->decision = $data['decision'] === 'need_info' ? 'revise' : $data['decision'];
         $approval->reason      = $data['note'] ?? null;
-        $approval->decided_at  = Carbon::now();
+        $approval->approved_at  = Carbon::now();
         $approval->save();
 
         // Map decision to RFC status
@@ -195,7 +195,7 @@ class ChangeApprovalController extends Controller
                         'decision'      => $approval->decision,
                         'level'         => $approval->level,
                         'note'          => $approval->reason,
-                        'decided_at'    => $approval->decided_at?->toISOString(),
+                        'approved_at'    => $approval->approved_at?->toISOString(),
                     ]
                 );
         } catch (\Throwable $e) {

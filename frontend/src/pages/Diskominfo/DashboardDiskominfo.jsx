@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import Sidebardiskominfo from "../../components/Diskominfo/Sidebardiskominfo";
@@ -12,18 +12,50 @@ const DashboardDiskominfo = () => {
     { id: 3, priority: 'High', name: 'Install Aplikasi Kerja', rfcNumber: '#RFC-001', date: '17 Agustus 2025', badgeColor: 'bg-[#1e3a5f]' },
   ];
 
+  // Ambil user dari localStorage hasil login SSO
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans text-gray-900">
       <Sidebardiskominfo />
 
       <div className="flex-1 flex flex-col ml-0 md:ml-64 transition-all">
-        <Headerdiskominfo />
+
+        {/* Header dengan nama user kanan atas */}
+        <div className="flex items-center justify-between mb-4">
+          <Headerdiskominfo />
+          <div className="flex items-center gap-2">
+            {/* ...icon search, bell, profile... */}
+          </div>
+        </div>
 
         <div className="px-8 py-6">
           {/* Welcome Section */}
           <div className="mb-8">
             <p className="text-sm text-gray-600 mb-1">Selamat datang,</p>
-            <h1 className="text-3xl font-bold text-gray-900">Ayu Rahmawati</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{(() => {
+              const storedUser = localStorage.getItem('user');
+              if (storedUser) {
+                try {
+                  const user = JSON.parse(storedUser);
+                  return user?.name || "-";
+                } catch {
+                  return "-";
+                }
+              }
+              return "-";
+            })()}</h1>
           </div>
 
           {/* Status Approval Cards */}

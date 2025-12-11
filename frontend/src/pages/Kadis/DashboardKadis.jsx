@@ -10,6 +10,20 @@ const DashboardKadis = () => {
     { id: 2, status: 'pending'},
     { id: 3, status: 'pending'},
   ];
+  
+  // Ambil user dari localStorage hasil login SSO
+  const [user, setUser] = React.useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  React.useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
 
 
   return (
@@ -23,7 +37,7 @@ const DashboardKadis = () => {
           {/* Welcome Section */}
           <div className="mb-8">
             <p className="text-sm text-gray-600">Selamat datang,</p>
-            <h1 className="text-3xl font-semibold text-gray-900">Sri Permatasari</h1>
+            <h1 className="text-3xl font-semibold text-gray-900">{user ? user.name   : "Loading..."}</h1>
           </div>
 
           {/* Status Approval Cards */}
