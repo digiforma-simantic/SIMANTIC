@@ -1,11 +1,24 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import React, { useEffect, useState } from "react";
 import Headeruser from "../../components/Admin/Headeruser";
 
-export default function ProfileNavigation() {
-  const { user, loading } = useAuth();
+const DataUser = () => {
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const [loading, setLoading] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#F7FCFF] flex items-center justify-center">
         <p className="text-gray-500">Memuat data user...</p>
@@ -15,13 +28,10 @@ export default function ProfileNavigation() {
 
   return (
     <div className="min-h-screen bg-[#F7FCFF] font-geologica">
-
       {/* Header dari components */}
       <Headeruser />
-
       {/* Main content */}
       <main className="flex mt-8 max-w-[1400px] mx-auto space-x-6">
-        
         {/* Sidebar */}
         <aside className="bg-[#F2FAFF] p-6 rounded-lg shadow-md w-64 h-42">
           <h2 className="font-bold text-[#001729] mb-4">Navigasi Profil</h2>
@@ -39,7 +49,6 @@ export default function ProfileNavigation() {
           </h2>
 
           <form className="space-y-6">
-
             {/* Nama lengkap */}
             <div>
               <label className="block mb-1 font-semibold text-[#001729]">
@@ -55,7 +64,6 @@ export default function ProfileNavigation() {
 
             {/* Jenis Kelamin & NIP */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Jenis kelamin
@@ -67,7 +75,6 @@ export default function ProfileNavigation() {
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   NIP
@@ -79,12 +86,10 @@ export default function ProfileNavigation() {
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
             </div>
 
             {/* Jabatan & Unit Kerja */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Jabatan
@@ -96,7 +101,6 @@ export default function ProfileNavigation() {
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Unit Kerja
@@ -108,12 +112,10 @@ export default function ProfileNavigation() {
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
             </div>
 
             {/* Asal Dinas & Email */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Asal Dinas
@@ -125,7 +127,6 @@ export default function ProfileNavigation() {
                   className="w-full border border-gray-300 rounded-md px-4 py-2 text-[#001729] bg-gray-50 focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-
               <div>
                 <label className="block mb-1 font-semibold text-[#001729]">
                   Email
@@ -138,10 +139,11 @@ export default function ProfileNavigation() {
                 />
               </div>
             </div>
-
           </form>
         </section>
       </main>
     </div>
   );
-}
+};
+
+export default DataUser;
