@@ -25,6 +25,7 @@ class SsoCallbackController extends Controller
      */
     public function callback(Request $request)
     {
+        \Log::info('Masuk ke fungsi SSO callback', ['token' => $request->query('token')]);
         $ssoToken = $request->query('token');
 
         if (!$ssoToken) {
@@ -64,18 +65,18 @@ class SsoCallbackController extends Controller
                 ], 401);
             }
 
-            $userData = $ssoData['data'] ?? null;
+            // Ambil data user dari response SSO (nested di ['data']['user'])
+            $userData = $ssoData['data']['user'] ?? null;
 
-            if (!$userData || !isset($userData['email'])) {
+            if (!$userData || !isset($userData['id']) || !isset($userData['email'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data user tidak lengkap dari SSO',
+                    'message' => 'Data user dari SSO tidak lengkap (ID atau email tidak ada)',
                 ], 400);
             }
 
             // Sync user to local database
             $user = $this->syncUserFromSso($userData);
-
 
             // Generate local Sanctum token
             $token = $user->createToken('sso-login')->plainTextToken;
@@ -94,7 +95,17 @@ class SsoCallbackController extends Controller
             $role = $user->roleObj?->slug ?? 'staff';
             $dashboardPath = $roleToDashboard[$role] ?? '/dashboard';
 
-            // Redirect ke frontend sesuai role
+            // Cek apakah request dari AJAX/fetch (frontend)
+            if ($request->wantsJson() || $request->isXmlHttpRequest() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => true,
+                    'token' => $token,
+                    'user' => $user,
+                    'dashboard_path' => $dashboardPath,
+                ]);
+            }
+
+            // Redirect ke frontend sesuai role (fallback untuk akses langsung via browser)
             $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
             $redirectUrl = "{$frontendUrl}{$dashboardPath}?token={$token}";
 
@@ -119,8 +130,7 @@ class SsoCallbackController extends Controller
      */
     private function syncUserFromSso(array $ssoUserData): User
     {
-        $email = $ssoUserData['email'];
-        $ssoId = $ssoUserData['id'] ?? null;
+        $ssoId = $ssoUserData['id'];
         $roleSlug = $ssoUserData['role'] ?? 'staff';
         $dinasName = $ssoUserData['dinas'] ?? null;
 
@@ -146,17 +156,19 @@ class SsoCallbackController extends Controller
             $dinasId = $dinas->id;
         }
 
-        // Create or update user
+        // Create or update user based on SSO ID
         $user = User::updateOrCreate(
-            ['email' => $email],
+            ['sso_id' => $ssoId], // Find user by their unique SSO ID
             [
                 'name' => $ssoUserData['name'],
+                'email' => $ssoUserData['email'], // Update email in case it changes
                 'nip' => $ssoUserData['nip'] ?? null,
                 'jenis_kelamin' => $ssoUserData['jenis_kelamin'] ?? null,
                 'role_id' => $role->id,
                 'dinas_id' => $dinasId,
+                'role' => $roleSlug, // tambahan agar field string ikut terisi
+                'dinas' => $dinasName, // tambahan agar field string ikut terisi
                 'unit_kerja' => $ssoUserData['unit_kerja'] ?? null,
-                'sso_id' => $ssoId,
                 'password' => null, // SSO users don't need local password
             ]
         );

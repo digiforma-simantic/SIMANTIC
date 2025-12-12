@@ -1,3 +1,6 @@
+use App\Http\Controllers\Api\AssetController;
+// Endpoint untuk menerima data aset dari tim aset eksternal
+Route::post('/external-assets/store', [AssetController::class, 'storeFromExternal']);
 
 <?php
 use App\Http\Controllers\Api\SsoDinasController;
@@ -117,7 +120,7 @@ Route::prefix('v1')
             ->name('rfc.pending-approval');
         Route::post('rfc/{id}/approve', [RfcController::class, 'approve'])
             ->name('rfc.approve');
-    Route::post('api/v1/rfc/{id}/forward', [\App\Http\Controllers\Api\V1\RfcApprovalController::class, 'forward'])->name('rfc.forward');
+    Route::post('rfc/{id}/forward', [\App\Http\Controllers\Api\V1\RfcApprovalController::class, 'forward'])->name('rfc.forward');
         Route::get('rfc/history', [RfcController::class, 'getHistory'])
             ->name('rfc.history');
         Route::get('rfc/{id}', [RfcController::class, 'show'])

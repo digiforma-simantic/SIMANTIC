@@ -131,6 +131,7 @@ const DetailPermohonan = () => {
               <SendButton
                 label="Kirim Kasi"
                 tujuan="Kepala Seksi"
+                tujuanLevel="kepala_seksi"
                 note="Forward ke Kasi sesuai dinas"
                 submitting={submitting}
                 setSubmitting={setSubmitting}
@@ -140,6 +141,7 @@ const DetailPermohonan = () => {
               <SendButton
                 label="Kirim Kabid"
                 tujuan="Kepala Bidang"
+                tujuanLevel="kepala_bidang"
                 note="Forward ke Kabid sesuai dinas"
                 submitting={submitting}
                 setSubmitting={setSubmitting}
@@ -149,6 +151,7 @@ const DetailPermohonan = () => {
               <SendButton
                 label="Kirim Kadis"
                 tujuan="Kepala Dinas"
+                tujuanLevel="kepala_dinas"
                 note="Forward ke Kadis sesuai dinas"
                 submitting={submitting}
                 setSubmitting={setSubmitting}
@@ -158,6 +161,7 @@ const DetailPermohonan = () => {
               <SendButton
                 label="Kirim Diskominfo"
                 tujuan="Admin Kota"
+                tujuanLevel="admin_kota"
                 note="Forward ke Admin Kota"
                 submitting={submitting}
                 setSubmitting={setSubmitting}
@@ -182,12 +186,12 @@ const DetailItem = ({ label, value }) => (
 
 
 // BUTTON COMPONENT UNTUK KIRIM RFC SESUAI TUJUAN (harus di luar komponen utama)
-function SendButton({ label, tujuan, note, submitting, setSubmitting, id, navigate }) {
+function SendButton({ label, tujuan, tujuanLevel, note, submitting, setSubmitting, id, navigate }) {
   async function handleClick() {
     if (!window.confirm(`Yakin ingin mengirim permohonan ke ${tujuan}?`)) return;
     setSubmitting(true);
     try {
-      await rfcAPI.forward(id, note);
+      await rfcAPI.forward(id, { note, tujuan: tujuanLevel });
       alert(`Permohonan berhasil dikirim ke ${tujuan}.`);
       navigate('/Admin/DaftarApproval');
     } catch (error) {

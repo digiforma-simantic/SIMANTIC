@@ -42,10 +42,9 @@ class User extends Authenticatable
         'password',
         'nip',
         'jenis_kelamin',
-        'role_id',
-        'dinas_id',
-        'unit_kerja',
-        'unit_kerja_id',
+        'role',
+        'dinas',
+        'unit_kerja_string',
         'sso_id',
     ];
 
@@ -155,19 +154,29 @@ class User extends Authenticatable
     {
         parent::booted();
         static::created(function ($user) {
-            $roleSlug = null;
-            if ($user->role_id) {
-                $role = Role::find($user->role_id);
-                $roleSlug = $role?->slug;
+            if ($user->dinas_id) {
+                try {
+                    $roleSlug = null;
+                    if ($user->role_id) {
+                        $role = Role::find($user->role_id);
+                        $roleSlug = $role?->slug;
+                    }
+                    \DB::table('dinas_users')->insert([
+                        'name'      => $user->name,
+                        'role'      => $roleSlug,
+                        'dinas_id'  => $user->dinas_id,
+                        'sso_id'    => $user->sso_id,
+                        'created_at'=> now(),
+                        'updated_at'=> now(),
+                    ]);
+                } catch (\Throwable $e) {
+                    // Log the error but don't block user creation
+                    \Log::error('Failed to insert into dinas_users after user creation', [
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
-            \DB::table('dinas_users')->insert([
-                'name'      => $user->name,
-                'role'      => $roleSlug,
-                'dinas_id'  => $user->dinas_id,
-                'sso_id'    => $user->sso_id,
-                'created_at'=> now(),
-                'updated_at'=> now(),
-            ]);
         });
     }
 }

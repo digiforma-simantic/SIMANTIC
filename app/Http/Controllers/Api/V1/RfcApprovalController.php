@@ -61,11 +61,6 @@ class RfcApprovalController extends Controller
             $rfc->update([
                 'status' => 'approval_pending',
             ]);
-        } else {
-            // Kalau sudah level terakhir (misal Kepala Dinas), set RFC jadi approved
-            $rfc->update([
-                'status' => 'approved',
-            ]);
         }
 
         return response()->json([
@@ -150,7 +145,8 @@ class RfcApprovalController extends Controller
     public function forward(Rfc $rfc, Request $request)
     {
         $request->validate([
-            'note' => 'nullable|string',
+            'note'   => 'nullable|string',
+            'tujuan' => 'required|string|in:kepala_seksi,kepala_bidang,kepala_dinas,admin_kota',
         ]);
 
         $user = $request->user();
@@ -169,22 +165,8 @@ class RfcApprovalController extends Controller
             'approved_at' => now(),
         ]);
 
-        // Tentukan level tujuan sesuai priority RFC
-        $priority = strtolower($rfc->priority);
-        if ($priority === 'low') {
-            $nextLevel = 'kepala_seksi';
-        } elseif ($priority === 'medium') {
-            $nextLevel = 'kepala_bidang';
-        } elseif ($priority === 'high') {
-            $nextLevel = 'kepala_dinas';
-        } elseif ($priority === 'kritikal' || $priority === 'critical') {
-            $nextLevel = 'admin_kota';
-        } else {
-            return response()->json([
-                'message' => 'Priority tidak valid',
-            ], 400);
-        }
-
+        // Tentukan level tujuan berdasarkan input 'tujuan' dari frontend
+        $nextLevel = $request->tujuan;
         RfcApproval::create([
             'rfc_id'      => $rfc->id,
             'approver_id' => $this->getApproverIdByLevel($rfc, $nextLevel),

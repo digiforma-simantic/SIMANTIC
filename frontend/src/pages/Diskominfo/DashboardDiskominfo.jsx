@@ -44,18 +44,7 @@ const DashboardDiskominfo = () => {
           {/* Welcome Section */}
           <div className="mb-8">
             <p className="text-sm text-gray-600 mb-1">Selamat datang,</p>
-            <h1 className="text-3xl font-bold text-gray-900">{(() => {
-              const storedUser = localStorage.getItem('user');
-              if (storedUser) {
-                try {
-                  const user = JSON.parse(storedUser);
-                  return user?.name || "-";
-                } catch {
-                  return "-";
-                }
-              }
-              return "-";
-            })()}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{user?.name || "Pengguna"}</h1>
           </div>
 
           {/* Status Approval Cards */}

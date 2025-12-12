@@ -7,7 +7,7 @@ import bellIcon from "../assets/notification.png";
 import userIcon from "../assets/user.png";
 
 const Header = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, } = useAuth();
 
   // Format nama: nama depan lengkap + inisial nama belakang
   const getShortName = (fullName) => {
@@ -23,10 +23,7 @@ const Header = () => {
     return `${firstName} ${initials}`;
   };
 
-  const handleLogout = () => {
-    // ini akan clear localStorage + sessionStorage + redirect
-    logout();
-  };
+
 
   return (
     <header className="w-full bg-[#F4FAFF] border-b border-[#E2EDF5] shadow-sm">
@@ -67,14 +64,6 @@ const Header = () => {
           <span className="ml-1 text-sm font-semibold text-[#002444]">
             {loading ? "Memuat..." : getShortName(user?.name)}
           </span>
-
-          {/* BUTTON LOGOUT */}
-          <button
-            onClick={handleLogout}
-            className="ml-2 px-3 py-2 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-          >
-            Logout
-          </button>
         </div>
       </div>
     </header>

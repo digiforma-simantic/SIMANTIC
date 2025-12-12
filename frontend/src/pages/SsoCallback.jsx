@@ -23,30 +23,32 @@ const SsoCallback = () => {
     localStorage.setItem('token', token);
     localStorage.setItem('isLoggedIn', 'true');
 
-    // Get user data dengan token untuk tahu role-nya
-    const apiBaseUrl = import.meta.env.VITE_API_SSO_BASE_URL || 'http://127.0.0.1:8000';
-    
-    fetch(`${apiBaseUrl}/api/v2/auth/me`, {
+    // Panggil backend SIMANTIC untuk proses registrasi user lokal
+    const backendUrl = 'http://127.0.0.1:8000/api/sso/callback?token=' + encodeURIComponent(token);
+    fetch(backendUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
       },
+      credentials: 'include',
+      mode: 'cors',
     })
-      .then(res => {
+      .then(async (res) => {
         if (!res.ok) {
-          // Jika gagal fetch user, redirect ke staff dashboard (fallback)
-          console.warn('Failed to fetch user, using default redirect');
-          return { role: 'staff' };
+          setStatus('error');
+          setError('Gagal melakukan registrasi user ke backend SIMANTIC. Cek koneksi atau CORS.');
+          return;
         }
-        return res.json();
-      })
-      .then(data => {
-        console.log('SSO User Data:', data); // Debug log
-        const rawUser = data.data?.user || data.data || data.user || data;
+        const data = await res.json();
+        if (!data || !data.user) {
+          setStatus('error');
+          setError('Data user tidak ditemukan di response backend.');
+          return;
+        }
+        const rawUser = data.user;
         let normalizedUser = null;
         if (rawUser && rawUser.id) {
-          // Normalisasi field user agar frontend tidak kosong
           normalizedUser = {
             id: rawUser.id,
             name: rawUser.name || '',
@@ -66,19 +68,16 @@ const SsoCallback = () => {
 
         setStatus('success');
 
-        // Redirect berdasarkan role dari user data atau roleObj
         setTimeout(() => {
           const roleSlug = normalizedUser?.role || 'staff';
           console.log('SSO User Role:', roleSlug); // Debug log
 
-          // Cek jika role adalah teknisi - reject akses
           if (roleSlug === 'teknisi') {
             setStatus('error');
             setError('Role Teknisi tidak memiliki akses ke aplikasi Change & Configuration Management. Silakan gunakan aplikasi Service Desk.');
             localStorage.clear();
-            // Redirect ke SSO atau halaman error setelah 5 detik
             setTimeout(() => {
-              window.location.href = 'https://api.bispro.digitaltech.my.id'; // Redirect ke SSO
+              window.location.href = 'https://api.bispro.digitaltech.my.id';
             }, 5000);
             return;
           }
@@ -111,10 +110,9 @@ const SsoCallback = () => {
         }, 1500);
       })
       .catch(err => {
-        console.error('SSO callback error:', err);
-        // Fallback ke staff dashboard jika error
-        setStatus('success');
-        setTimeout(() => navigate('/staff/dashboardstaff'), 1500);
+        setStatus('error');
+        setError('Gagal melakukan request ke backend SIMANTIC. Cek koneksi atau CORS.');
+        console.error('Fetch to backend SIMANTIC error:', err);
       });
   }, [searchParams, navigate]);
 
