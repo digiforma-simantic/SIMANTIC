@@ -1,6 +1,10 @@
+
 <?php
 
 return [
+    'siprima' => [
+        'assets_url' => env('SIPRIMA_ASSETS_URL', 'https://api.siprima.digitaltech.my.id/api/assets'),
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -43,5 +47,4 @@ return [
         'url' => env('ASSET_API_URL', 'https://api.siprima.digitaltech.my.id/api/assets'),
         'token' => env('ASSET_API_TOKEN'),
     ],
-
 ];

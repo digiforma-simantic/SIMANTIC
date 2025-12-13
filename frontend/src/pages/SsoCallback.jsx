@@ -8,23 +8,21 @@ const SsoCallback = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    console.log('SSO Token:', token); // Debug log
+    const ssoToken = searchParams.get('token');
+    console.log('SSO Token (for backend only):', ssoToken); // Debug log
 
-    if (!token) {
+    if (!ssoToken) {
       setStatus('error');
       setError('Token tidak ditemukan');
       setTimeout(() => navigate('/login'), 3000);
       return;
     }
 
-    // Simpan token SSO ke localStorage, hapus semua token lain
+    // Jangan simpan token SSO ke localStorage!
     localStorage.clear();
-    localStorage.setItem('token', token);
-    localStorage.setItem('isLoggedIn', 'true');
 
-    // Panggil backend SIMANTIC untuk proses registrasi user lokal
-    const backendUrl = 'http://127.0.0.1:8000/api/sso/callback?token=' + encodeURIComponent(token);
+    // Panggil backend SIMANTIC untuk dapatkan token Sanctum
+    const backendUrl = 'http://127.0.0.1:8000/api/sso/callback?token=' + encodeURIComponent(ssoToken);
     fetch(backendUrl, {
       method: 'GET',
       headers: {
@@ -41,10 +39,25 @@ const SsoCallback = () => {
           return;
         }
         const data = await res.json();
-        if (!data || !data.user) {
+        // Ambil token Sanctum dari response backend
+        if (!data || !data.token || !data.user) {
           setStatus('error');
-          setError('Data user tidak ditemukan di response backend.');
+          setError('Token login tidak ditemukan di response backend.');
           return;
+        }
+        // Simpan token Sanctum ke localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('sso_token', data.sso_token);
+        localStorage.setItem('isLoggedIn', 'true');
+        // Fallback: hapus token lama sebelum set baru
+        localStorage.removeItem('siprima_token');
+        localStorage.removeItem('sindra_token');
+        // Simpan token SIPRIMA dan SINDRA ke localStorage jika ada
+        if (data.siprima_token) {
+          localStorage.setItem('siprima_token', data.siprima_token);
+        }
+        if (data.sindra_token) {
+          localStorage.setItem('sindra_token', data.sindra_token);
         }
         const rawUser = data.user;
         let normalizedUser = null;

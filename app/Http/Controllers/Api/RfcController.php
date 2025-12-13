@@ -74,8 +74,14 @@ class RfcController extends Controller
         $user = $request->user();
         
         // Filter RFC berdasarkan sso_id user yang login (untuk staff)
-        $query = Rfc::where('sso_id', $user->sso_id)
-            ->orderBy('created_at', 'desc');
+        // $query = Rfc::where('sso_id', $user->sso_id)
+        //     ->orderBy('created_at', 'desc');
+
+        $query = Rfc::query()->orderBy('created_at', 'desc');
+
+        if ($request->sso_id) {
+            $query->where('sso_id', $request->sso_id);
+        }
 
         // Optional filter status
         if ($status = $request->query('status')) {
@@ -125,8 +131,9 @@ class RfcController extends Controller
      */
     public function show(Request $request, $id)
     {
+        // return "haha";
         try {
-            $rfc = Rfc::with(['requester.roleObj', 'requester.dinas', 'approvals.approver.roleObj'])
+            $rfc = Rfc::with(['approvals.approver.roleObj'])
                 ->findOrFail($id);
 
             return response()->json([
@@ -140,14 +147,7 @@ class RfcController extends Controller
                     'ci_code' => $rfc->ci_code,
                     'attachment_path' => $rfc->attachment_path,
                     'created_at' => $rfc->created_at,
-                    'requester' => $rfc->requester ? [
-                        'id' => $rfc->requester->id,
-                        'name' => $rfc->requester->name,
-                        'email' => $rfc->requester->email,
-                        'nip' => $rfc->requester->nip,
-                        'role_name' => $rfc->requester->roleObj->name ?? 'Staff',
-                        'dinas_name' => $rfc->requester->dinas->name ?? null,
-                    ] : null,
+                    'sso_id' => $rfc->sso_id,
                     'approvals' => $rfc->approvals->map(function ($approval) {
                         return [
                             'level' => $approval->level,

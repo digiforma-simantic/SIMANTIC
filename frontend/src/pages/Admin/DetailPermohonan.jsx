@@ -10,6 +10,7 @@ const DetailPermohonan = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [rfc, setRfc] = useState(null);
+  const [userSso, setUserSso] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -18,6 +19,23 @@ const DetailPermohonan = () => {
       try {
         const response = await rfcAPI.getById(id);
         setRfc(response.data);
+
+        console.log("Fetched RFC:", response.data); // Debug log
+        try {
+          const sso_token = localStorage.getItem("sso_token");
+          if (!sso_token) return null;
+          const response_sso = await fetch(`https://api.bispro.digitaltech.my.id/api/v2/auth/user/` + response.data.sso_id, {
+            headers: {
+              Authorization: `Bearer ${sso_token}`,
+            },
+          }); 
+          if (!response_sso.ok) throw new Error("Failed to fetch SSO user");
+          const data = await response_sso.json();
+          setUserSso(data.data);
+        } catch (error) {
+          console.error("Error fetching SSO user ID:", error);
+          alert("Gagal memuat data requester user");
+        }
       } catch (error) {
         console.error("Error fetching RFC:", error);
         alert("Gagal memuat data RFC");
@@ -25,6 +43,7 @@ const DetailPermohonan = () => {
         setLoading(false);
       }
     }
+
     fetchRFC();
   }, [id]);
 
@@ -71,11 +90,10 @@ const DetailPermohonan = () => {
               {/* USER CARD */}
               <div className="w-full md:w-1/4 bg-[#F8FBFF] border border-[#E3ECF5] rounded-xl p-5 h-fit">
                 <p className="font-bold text-lg text-[#001B33]">
-                  {rfc.requester?.name || 'Unknown'}
+                  {userSso?.name || 'Unknown'}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {rfc.requester?.role_name || 'Staff'}
-                  {rfc.requester?.dinas_name && ` - ${rfc.requester.dinas_name}`}
+                  Role : {userSso?.role || 'Unknown'}
                 </p>
               </div>
 
@@ -132,7 +150,7 @@ const DetailPermohonan = () => {
                 label="Kirim Kasi"
                 tujuan="Kepala Seksi"
                 tujuanLevel="kepala_seksi"
-                note="Forward ke Kasi sesuai dinas"
+                user_id={userSso?.id}
                 submitting={submitting}
                 setSubmitting={setSubmitting}
                 id={id}
@@ -142,7 +160,7 @@ const DetailPermohonan = () => {
                 label="Kirim Kabid"
                 tujuan="Kepala Bidang"
                 tujuanLevel="kepala_bidang"
-                note="Forward ke Kabid sesuai dinas"
+                user_id={userSso?.id}
                 submitting={submitting}
                 setSubmitting={setSubmitting}
                 id={id}
@@ -152,7 +170,7 @@ const DetailPermohonan = () => {
                 label="Kirim Kadis"
                 tujuan="Kepala Dinas"
                 tujuanLevel="kepala_dinas"
-                note="Forward ke Kadis sesuai dinas"
+                user_id={userSso?.id}
                 submitting={submitting}
                 setSubmitting={setSubmitting}
                 id={id}
@@ -162,7 +180,7 @@ const DetailPermohonan = () => {
                 label="Kirim Diskominfo"
                 tujuan="Admin Kota"
                 tujuanLevel="admin_kota"
-                note="Forward ke Admin Kota"
+                user_id={userSso?.id}
                 submitting={submitting}
                 setSubmitting={setSubmitting}
                 id={id}
@@ -186,12 +204,12 @@ const DetailItem = ({ label, value }) => (
 
 
 // BUTTON COMPONENT UNTUK KIRIM RFC SESUAI TUJUAN (harus di luar komponen utama)
-function SendButton({ label, tujuan, tujuanLevel, note, submitting, setSubmitting, id, navigate }) {
+function SendButton({ label, tujuan, tujuanLevel, submitting, setSubmitting, id, navigate, user_id }) {
   async function handleClick() {
     if (!window.confirm(`Yakin ingin mengirim permohonan ke ${tujuan}?`)) return;
     setSubmitting(true);
     try {
-      await rfcAPI.forward(id, { note, tujuan: tujuanLevel });
+      await rfcAPI.set(id, { user_id: user_id, level: tujuanLevel });
       alert(`Permohonan berhasil dikirim ke ${tujuan}.`);
       navigate('/Admin/DaftarApproval');
     } catch (error) {

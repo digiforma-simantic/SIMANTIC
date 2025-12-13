@@ -15,6 +15,40 @@ use Illuminate\Http\Request;
 class ConfigurationItemController extends Controller
 {
     /**
+     * GET /api/v1/assets
+     * Ambil data aset dari SIPRIMA (proxy backend, pakai token per user dari cache)
+     */
+    public function externalAssets(Request $request)
+    {
+        $user = $request->user();
+        $token = \Cache::get("siprima_token_for_user_{$user->id}");
+        if (!$token) {
+            // Bisa trigger sync ulang ke SIPRIMA, atau return error
+            return response()->json([
+                'success' => false,
+                'message' => 'Token SIPRIMA tidak ditemukan. Silakan login ulang atau lakukan sinkronisasi.',
+            ], 401);
+        }
+
+        $resp = \Http::withToken($token)
+            ->acceptJson()
+            ->get('https://api.siprima.digitaltech.my.id/api/assets');
+
+        if (!$resp->successful()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal fetch data dari SIPRIMA',
+                'detail' => $resp->body(),
+            ], 502);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $resp->json(),
+        ]);
+    }
+
+    /**
      * GET /api/v1/config-items
      *
      * @OA\Get(

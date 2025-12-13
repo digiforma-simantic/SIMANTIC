@@ -3,85 +3,123 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Dinas;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class SsoCallbackController extends Controller
 {
+    private function cacheKey(string $provider, int $userId): string
+    {
+        return "{$provider}_token_for_user_{$userId}";
+    }
+
     /**
-     * Handle SSO callback from central authentication system
-     * 
-     * Flow:
-     * 1. User logs in at SSO portal (https://api.bispro.digitaltech.my.id)
-     * 2. SSO redirects to: https://simantic.online/api/sso/callback?token=xxx
-     * 3. We verify token with SSO API /api/v2/auth/me
-     * 4. Create/update user in local database
-     * 5. Generate local Sanctum token
-     * 6. Redirect to frontend with token
+     * Sinkronisasi SINDRA (server-to-server).
+     * Sesuaikan endpoint & param sesuai tim SINDRA.
      */
+    private function syncUserFromSsoToSindra(string $ssoToken, User $user): ?string
+    {
+        try {
+            $response = Http::timeout(30)
+                ->acceptJson()
+                ->get(`https://api-sindra.okkyprojects.com/api/sso/redirect?token=` . $ssoToken);
+
+            Log::info('SINDRA sync response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('SINDRA sync failed', ['status' => $response->status(), 'body' => $response->body()]);
+                return null;
+            }
+
+            $json = $response->json();
+            $token = $json['token'] ?? $json['access_token'] ?? ($json['data']['token'] ?? null);
+
+            if (!$token) {
+                Log::error('SINDRA sync token missing', ['body' => $response->body()]);
+                return null;
+            }
+
+            Cache::put($this->cacheKey('sindra', $user->id), $token, now()->addHour());
+            return $token;
+
+        } catch (\Throwable $e) {
+            Log::error('SINDRA sync exception', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    private function syncUserFromSsoToSiprimaByEmail(string $email): ?string
+    {
+        $response = \Http::asForm()->post('https://api.siprima.digitaltech.my.id/api/login', [
+            'email' => $email,
+            'password' => 'password123', // default password, pastikan sesuai kebijakan SIPRIMA
+        ]);
+
+        if (!$response->successful()) {
+            \Log::error('Gagal login ke SIPRIMA', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+            return null;
+        }
+
+        $json = $response->json();
+        $token = $json['token'] ?? $json['access_token'] ?? ($json['data']['token'] ?? null);
+
+        if (!$token) {
+            \Log::error('Token SIPRIMA tidak ditemukan di response', ['body' => $json]);
+            return null;
+        }
+
+        return $token;
+    }
+
     public function callback(Request $request)
     {
-        \Log::info('Masuk ke fungsi SSO callback', ['token' => $request->query('token')]);
         $ssoToken = $request->query('token');
-
         if (!$ssoToken) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token SSO tidak ditemukan',
-            ], 400);
+            return response()->json(['success' => false, 'message' => 'Token SSO tidak ditemukan'], 400);
         }
 
         try {
-            // Verify token with SSO API
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Authorization' => "Bearer {$ssoToken}",
-                    'Accept' => 'application/json',
-                ])
+            // 1) Verify ke SSO
+            $resp = \Http::timeout(30)
+                ->acceptJson()
+                ->withToken($ssoToken)
                 ->get('https://api.bispro.digitaltech.my.id/api/v2/auth/me');
 
-            if (!$response->successful()) {
-                Log::error('SSO token verification failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token SSO tidak valid atau sudah kadaluarsa',
-                ], 401);
+            if (!$resp->successful()) {
+                return response()->json(['success' => false, 'message' => 'Token SSO tidak valid'], 401);
             }
 
-            $ssoData = $response->json();
-
-            if (!isset($ssoData['success']) || !$ssoData['success']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal memverifikasi token SSO',
-                ], 401);
-            }
-
-            // Ambil data user dari response SSO (nested di ['data']['user'])
+            $ssoData = $resp->json();
             $userData = $ssoData['data']['user'] ?? null;
 
-            if (!$userData || !isset($userData['id']) || !isset($userData['email'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data user dari SSO tidak lengkap (ID atau email tidak ada)',
-                ], 400);
+            if (!$userData || !isset($userData['id'], $userData['email'])) {
+                return response()->json(['success' => false, 'message' => 'Data user SSO tidak lengkap'], 400);
             }
 
-            // Sync user to local database
+            // 2) Sync user ke DB SIMANTIC
             $user = $this->syncUserFromSso($userData);
 
-            // Generate local Sanctum token
-            $token = $user->createToken('sso-login')->plainTextToken;
+            // 3) Login ke SIPRIMA pakai email
+            $siprimaToken = $this->syncUserFromSsoToSiprimaByEmail($userData['email']);
 
-            // Mapping role ke dashboard path
+            // 4) Sinkronisasi ke SINDRA tetap pakai SSO token (jika memang endpointnya butuh token SSO)
+            $sindraToken = $this->syncUserFromSsoToSindra($ssoToken, $user);
+
+            // 5) Buat token SIMANTIC (Sanctum) untuk frontend
+            $simanticToken = $user->createToken('sso-login')->plainTextToken;
+
+            // 6) Dashboard path
             $roleToDashboard = [
                 'admin_kota'     => '/diskominfo/dashboarddiskominfo',
                 'admin_dinas'    => '/Admin/dashboardadmin',
@@ -90,189 +128,62 @@ class SsoCallbackController extends Controller
                 'staff'          => '/staff/dashboardstaff',
                 'kepala_dinas'   => '/Kadis/dashboardkadis',
                 'kepala_bidang'  => '/Kabid/dashboardkabid',
-                // tambahkan sesuai kebutuhan
+                'teknisi'        => '/teknisi/dashboardstaff',
             ];
+
             $role = $user->roleObj?->slug ?? 'staff';
             $dashboardPath = $roleToDashboard[$role] ?? '/dashboard';
 
-            // Cek apakah request dari AJAX/fetch (frontend)
-            if ($request->wantsJson() || $request->isXmlHttpRequest() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-                return response()->json([
-                    'success' => true,
-                    'token' => $token,
-                    'user' => $user,
-                    'dashboard_path' => $dashboardPath,
-                ]);
-            }
-
-            // Redirect ke frontend sesuai role (fallback untuk akses langsung via browser)
-            $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
-            $redirectUrl = "{$frontendUrl}{$dashboardPath}?token={$token}";
-
-            return redirect($redirectUrl);
-
-        } catch (\Exception $e) {
-            Log::error('SSO callback error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            // 7) Balikin JSON: ketiga token dikembalikan ke frontend
+            return response()->json([
+                'success' => true,
+                'token' => $simanticToken,
+                'sso_token' => $ssoToken,
+                'siprima_token' => $siprimaToken,
+                'sindra_token' => $sindraToken,
+                'user' => $user,
+                'dashboard_path' => $dashboardPath,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat memproses login SSO',
-                'error' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
+        } catch (\Throwable $e) {
+            \Log::error('SSO callback error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan SSO'], 500);
         }
     }
 
-    /**
-     * Sync user from SSO data to local database
-     */
     private function syncUserFromSso(array $ssoUserData): User
     {
         $ssoId = $ssoUserData['id'];
         $roleSlug = $ssoUserData['role'] ?? 'staff';
         $dinasName = $ssoUserData['dinas'] ?? null;
 
-        // Find or create role
         $role = Role::firstOrCreate(
             ['slug' => $roleSlug],
-            [
-                'name' => ucwords(str_replace('_', ' ', $roleSlug)),
-                'description' => "Role from SSO: {$roleSlug}",
-            ]
+            ['name' => ucwords(str_replace('_', ' ', $roleSlug))]
         );
 
-        // Find dinas if provided
         $dinasId = null;
         if ($dinasName) {
             $dinas = Dinas::firstOrCreate(
                 ['name' => $dinasName],
-                [
-                    'type' => $this->detectDinasType($dinasName),
-                    'address' => null,
-                ]
+                ['type' => 'dinas', 'address' => null] // isi simpel dulu
             );
             $dinasId = $dinas->id;
         }
 
-        // Create or update user based on SSO ID
-        $user = User::updateOrCreate(
-            ['sso_id' => $ssoId], // Find user by their unique SSO ID
+        return User::updateOrCreate(
+            ['sso_id' => $ssoId],
             [
-                'name' => $ssoUserData['name'],
-                'email' => $ssoUserData['email'], // Update email in case it changes
-                'nip' => $ssoUserData['nip'] ?? null,
-                'jenis_kelamin' => $ssoUserData['jenis_kelamin'] ?? null,
+                'name' => $ssoUserData['name'] ?? 'Unknown',
+                'email' => $ssoUserData['email'],
                 'role_id' => $role->id,
                 'dinas_id' => $dinasId,
-                'role' => $roleSlug, // tambahan agar field string ikut terisi
-                'dinas' => $dinasName, // tambahan agar field string ikut terisi
+                'role' => $roleSlug,
+                'dinas' => $dinasName,
                 'unit_kerja' => $ssoUserData['unit_kerja'] ?? null,
-                'password' => null, // SSO users don't need local password
+                // jangan null kalau kolom password NOT NULL
+                'password' => $ssoUserData['email'], // atau bcrypt random, sesuaikan migrasi kamu
             ]
         );
-
-        Log::info('User synced from SSO', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'sso_id' => $ssoId,
-        ]);
-
-        return $user;
-    }
-
-    /**
-     * Detect dinas type from name
-     */
-    private function detectDinasType(string $name): string
-    {
-        $nameLower = strtolower($name);
-
-        if (str_contains($nameLower, 'diskominfo') || str_contains($nameLower, 'komunikasi dan informatika')) {
-            return 'diskominfo';
-        }
-
-        if (str_contains($nameLower, 'badan') || str_contains($nameLower, 'inspektorat')) {
-            return 'badan';
-        }
-
-        return 'dinas';
-    }
-
-    /**
-     * API endpoint untuk testing SSO callback (returns JSON instead of redirect)
-     */
-    public function callbackApi(Request $request)
-    {
-        $ssoToken = $request->input('token') ?? $request->query('token');
-
-        if (!$ssoToken) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token SSO tidak ditemukan',
-            ], 400);
-        }
-
-        try {
-            // Verify token with SSO API
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Authorization' => "Bearer {$ssoToken}",
-                    'Accept' => 'application/json',
-                ])
-                ->get('https://api.bispro.digitaltech.my.id/api/v2/auth/me');
-
-            if (!$response->successful()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token SSO tidak valid',
-                    'sso_status' => $response->status(),
-                ], 401);
-            }
-
-            $ssoData = $response->json();
-            $userData = $ssoData['data'] ?? null;
-
-            if (!$userData || !isset($userData['email'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data user tidak lengkap dari SSO',
-                ], 400);
-            }
-
-            // Sync user
-            $user = $this->syncUserFromSso($userData);
-
-            // Generate token
-            $token = $user->createToken('sso-login')->plainTextToken;
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Login SSO berhasil',
-                'data' => [
-                    'token' => $token,
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'nip' => $user->nip,
-                        'role' => $user->roleObj?->slug,
-                        'dinas' => $user->dinas?->name,
-                    ],
-                ],
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('SSO callback API error', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat memproses login SSO',
-                'error' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
-        }
     }
 }

@@ -1,13 +1,11 @@
-use App\Http\Controllers\Api\AssetController;
-// Endpoint untuk menerima data aset dari tim aset eksternal
-Route::post('/external-assets/store', [AssetController::class, 'storeFromExternal']);
-
 <?php
-use App\Http\Controllers\Api\SsoDinasController;
-// Endpoint ambil data dinas dari SSO eksternal
-Route::get('/sso/dinas', [SsoDinasController::class, 'index']);
+// use App\Http\Controllers\Api\AssetController;
+// Route::apiResource('assets', AssetController::class)->only(['index', 'show']);
+// Route::post('/assets/sync-external', [AssetController::class, 'syncFromExternal']);
+// Route::post('/external-assets/store', [AssetController::class, 'storeFromExternal']);
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\V1\RfcApprovalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -80,6 +78,9 @@ Route::prefix('v1')
     ->middleware(['auth:sanctum', 'throttle:60,1'])
     ->group(function () {
 
+        // Endpoint aset untuk frontend (proxy ke SIPRIMA via backend)
+        Route::get('assets', [ConfigurationItemController::class, 'externalAssets']);
+
         // Debug: cek siapa user yang login (hapus saat production)
         Route::get('me', function (Request $r) {
             $user = $r->user();
@@ -104,8 +105,8 @@ Route::prefix('v1')
         /**
          * Master Data Import
          */
-        Route::post('import/assets', [\App\Http\Controllers\Api\AssetImportController::class, 'import'])
-            ->name('import.assets');
+        // Route::post('import/assets', [\App\Http\Controllers\Api\AssetImportController::class, 'import'])
+        //     ->name('import.assets');
         Route::post('import/dinas', [\App\Http\Controllers\Api\DinasImportController::class, 'import'])
             ->name('import.dinas');
         Route::post('import/users', [\App\Http\Controllers\Api\UserImportController::class, 'import'])
@@ -115,15 +116,21 @@ Route::prefix('v1')
         Route::get('config-items/{config_item}/graph', [CmdbController::class, 'show'])
             ->name('config-items.graph');
 
+        Route::get('rfc/approvals', [RfcApprovalController::class, 'index'])
+            ->name('rfc.approvals');
+            
         // RFC Approval Workflow
         Route::get('rfc/pending-approval', [RfcController::class, 'getPendingApprovals'])
             ->name('rfc.pending-approval');
+        Route::post('rfc/{rfc}/set', [RfcApprovalController::class, 'set'])
+            ->name('rfc.set');
         Route::post('rfc/{id}/approve', [RfcController::class, 'approve'])
             ->name('rfc.approve');
-    Route::post('rfc/{id}/forward', [\App\Http\Controllers\Api\V1\RfcApprovalController::class, 'forward'])->name('rfc.forward');
+        Route::post('rfc/{id}/forward', [RfcApprovalController::class, 'forward'])
+            ->name('rfc.forward');
         Route::get('rfc/history', [RfcController::class, 'getHistory'])
             ->name('rfc.history');
-        Route::get('rfc/{id}', [RfcController::class, 'show'])
+        Route::get('rfc/{id}/detail', [RfcController::class, 'show'])
             ->name('rfc.show');
 
         /**
@@ -131,6 +138,7 @@ Route::prefix('v1')
          */
         Route::get('rfc',       [RfcController::class, 'index'])->name('rfc.index');
         Route::get('rfc/{rfc}', [RfcController::class, 'show' ])->name('rfc.show');
+
 
         /**
          * Implementation Reports (internal access)

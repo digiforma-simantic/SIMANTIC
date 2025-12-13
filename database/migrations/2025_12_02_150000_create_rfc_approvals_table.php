@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('rfc_approvals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('rfc_id')->constrained('rfc')->onDelete('cascade');
-            $table->foreignId('approver_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('approver_id')->nullable();
             $table->enum('level', ['kepala_seksi', 'kepala_bidang', 'kepala_dinas', 'admin_dinas'])->comment('Level approval sesuai alur berjenjang OPD');
             $table->enum('decision', ['approved', 'rejected', 'revise'])->nullable()->comment('Keputusan: approved, rejected, revise (null jika masih pending)');
             $table->text('reason')->nullable()->comment('Catatan/alasan keputusan');

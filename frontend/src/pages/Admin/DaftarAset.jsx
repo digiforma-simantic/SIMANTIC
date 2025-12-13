@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Headeradmin from "../../components/Admin/Headeradmin";
 import Sidebaradmin from "../../components/Admin/Sidebaradmin";
 import { Link } from "react-router-dom";
-import { configItemsAPI } from "../../services/api";
+import { assetsAPI } from "../../services/assetsApi";
 
 export default function AsetAdmin() {
   const [loading, setLoading] = useState(true);
@@ -11,8 +11,7 @@ export default function AsetAdmin() {
   useEffect(() => {
     async function fetchAssets() {
       try {
-        const response = await configItemsAPI.getAll();
-        const assets = response.data || [];
+        const assets = await assetsAPI.getAll();
         setAllAssets(assets);
         setLoading(false);
       } catch (err) {
@@ -24,13 +23,9 @@ export default function AsetAdmin() {
   }, []);
 
   // Pisahkan aset lengkap dan tidak lengkap
-  const completeAssets = allAssets.filter(
-    (asset) => asset.ci_code && asset.version && asset.os_name && asset.ip_address
-  );
-
-  const incompleteAssets = allAssets.filter(
-    (asset) => !asset.ci_code || !asset.version || !asset.os_name || !asset.ip_address
-  );
+  // Untuk aset mentah, tampilkan semua sebagai "Butuh Lengkap Data"
+  const completeAssets = [];
+  const incompleteAssets = allAssets;
 
   return (
     <div className="flex bg-[#F7FCFF] min-h-screen font-geologica">
@@ -69,8 +64,8 @@ export default function AsetAdmin() {
                         className="flex items-center justify-between bg-white rounded-lg border border-[#E6EEF7] py-4 px-5"
                       >
                         <div>
-                          <p className="font-semibold text-gray-900">{item.name}</p>
-                          <p className="text-xs text-gray-500">{item.ci_code}</p>
+                          <p className="font-semibold text-gray-900">{item.nama}</p>
+                          <p className="text-xs text-gray-500">{item.ci_code || "CI Code belum diisi"}</p>
                         </div>
 
                         <Link
@@ -101,15 +96,15 @@ export default function AsetAdmin() {
                         className="flex items-center justify-between bg-white rounded-lg border border-[#E6EEF7] py-4 px-5"
                       >
                         <div>
-                          <p className="font-semibold text-gray-900">{item.name}</p>
+                          <p className="font-semibold text-gray-900">{item.nama}</p>
                           <p className="text-xs text-gray-500">{item.ci_code || "CI Code belum diisi"}</p>
                         </div>
 
                         <Link
-                          to={`/FormDetailAset/${item.id}`}
-                          className="text-sm font-semibold text-[#FF7A00] hover:underline"
+                          to={`/DaftarDetailAset/${item.id}`}
+                          className="text-sm font-semibold text-[#005BBB] hover:underline"
                         >
-                          Isi Detail
+                          Cek Detail
                         </Link>
                       </div>
                     ))}

@@ -31,11 +31,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // API group + Sanctum
+        // API group (Bearer Token, stateless)
         $middleware->group('api', [
-            EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
+
 
         // (opsional) alias middleware
         $middleware->alias([

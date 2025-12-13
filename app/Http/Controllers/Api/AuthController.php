@@ -49,7 +49,7 @@ class AuthController extends Controller
 {
     public function SSOCallback(Request $request)
     {
-        // ambil token dari request
+        // Ambil token SSO dari request (hanya untuk verifikasi ke SSO, BUKAN untuk auth:sanctum)
         $token = $request->input('token');
 
         if (!$token) {
@@ -59,7 +59,7 @@ class AuthController extends Controller
         }
 
         try {
-            // panggil API SSO untuk ambil data user
+            // 1. Verifikasi token SSO ke server SSO
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token
             ])->get('https://api.bispro.digitaltech.my.id/api/v2/auth/me')->json();
@@ -73,7 +73,7 @@ class AuthController extends Controller
 
             $ssoUserData = $response['data']['user'];
 
-            // Ekstrak data dari SSO
+            // 2. Sinkronisasi user ke database lokal
             $ssoId = $ssoUserData['id'] ?? null;
             $email = $ssoUserData['email'] ?? null;
             $name = $ssoUserData['name'] ?? 'No Name';
@@ -82,8 +82,6 @@ class AuthController extends Controller
             $role = $ssoUserData['role'] ?? null;
             $dinasData = $ssoUserData['dinas'] ?? null;
             $unitKerja = $ssoUserData['unit_kerja'] ?? null;
-            
-            // Ambil nama dinas jika 'dinas' adalah array/object
             $dinasName = is_array($dinasData) ? ($dinasData['nama'] ?? $dinasData['name'] ?? null) : $dinasData;
 
             if (!$ssoId || !$email) {
@@ -91,7 +89,6 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Data pengguna dari SSO tidak lengkap'], 400);
             }
 
-            // Cari user berdasarkan sso_id, fallback ke email
             $user = User::where('sso_id', $ssoId)->first();
             if (!$user) {
                 $user = User::where('email', $email)->first();
@@ -127,10 +124,10 @@ class AuthController extends Controller
             ], 500);
         }
 
-        // buat token sanctum
+        // 3. Setelah user terverifikasi, BUAT token Sanctum lokal (JANGAN gunakan token SSO untuk auth:sanctum)
         $tokenApi = $user->createToken('dev-token')->plainTextToken;
 
-        // kirim balik ke frontend
+        // 4. Kembalikan token Sanctum ke frontend (hanya token ini yang boleh dipakai untuk Bearer auth:sanctum)
         return response()->json([
             'message' => 'berhasil login',
             'token'   => $tokenApi,

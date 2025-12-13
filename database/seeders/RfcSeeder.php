@@ -3,42 +3,46 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
+use App\Models\Rfc;
 
 class RfcSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
-        // Admin Dinas Kominfo (sso_id = 3)
-        $adminDinasId = DB::table('users')->where('sso_id', 3)->value('id');
-        $dinasId = DB::table('dinas')->where('name', 'Dinas Komunikasi dan Informatika')->value('id');
-
-        // Dummy RFCs hanya untuk admin dinas Kominfo, tanpa approval
-        $rfcs = [
-            [
-                'title' => 'Install Aplikasi Kerja',
-                'description' => 'Permintaan instalasi aplikasi kerja baru untuk seluruh pegawai dinas.',
-                'status' => 'draft',
-                'created_by' => $adminDinasId,
-                'dinas_id' => $dinasId,
-                'created_at' => Carbon::parse('2025-08-17'),
-                'updated_at' => Carbon::parse('2025-08-17'),
+        Rfc::create([
+            'rfc_service_id' => 1,
+            'ci_code'        => 'CI-2025-001',
+            'title'          => 'Upgrade Server Database',
+            'description'    => 'Melakukan upgrade pada server database utama untuk meningkatkan performa.',
+            'priority'       => 'high',
+            'status'         => 'pending',
+            'config_comment' => 'Perlu koordinasi dengan tim DBA.',
+            'attachments'    => [
+                ['filename' => 'proposal.pdf', 'url' => '/storage/rfc/attachments/proposal.pdf'],
+                ['filename' => 'timeline.xlsx', 'url' => '/storage/rfc/attachments/timeline.xlsx'],
             ],
-            [
-                'title' => 'Update Server',
-                'description' => 'Permintaan update server utama untuk peningkatan keamanan.',
-                'status' => 'draft',
-                'created_by' => $adminDinasId,
-                'dinas_id' => $dinasId,
-                'created_at' => Carbon::parse('2025-08-18'),
-                'updated_at' => Carbon::parse('2025-08-18'),
-            ],
-        ];
+            'requested_at'   => now(),
+            'asset_uuid'     => '123e4567-e89b-12d3-a456-426614174000',
+            'sso_id'         => 1001,
+        ]);
 
-        foreach ($rfcs as $rfc) {
-            DB::table('rfc')->insert($rfc);
-        }
+        Rfc::create([
+            'rfc_service_id' => 2,
+            'ci_code'        => 'CI-2025-002',
+            'title'          => 'Penambahan Storage Server',
+            'description'    => 'Permintaan penambahan storage untuk server backup.',
+            'priority'       => 'medium',
+            'status'         => 'approved',
+            'config_comment' => 'Sudah disetujui oleh manajer IT.',
+            'attachments'    => [
+                ['filename' => 'storage-request.pdf', 'url' => '/storage/rfc/attachments/storage-request.pdf'],
+            ],
+            'requested_at'   => now()->subDays(3),
+            'asset_uuid'     => '223e4567-e89b-12d3-a456-426614174001',
+            'sso_id'         => 1002,
+        ]);
     }
 }

@@ -6,9 +6,34 @@ use App\Http\Controllers\Controller;
 use App\Models\Rfc;
 use App\Models\RfcApproval;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class RfcApprovalController extends Controller
 {
+
+    public function index()
+    {
+        $rfcApprovals = RfcApproval::with('rfc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $rfcApprovals,
+        ]);
+    }
+    public function set(Request $request, $id)
+    {
+        $request->validate([
+            'user_id'=> 'required|integer',
+            'level'  => 'required|string|in:kepala_seksi,kepala_bidang,kepala_dinas,admin_kota',
+        ]);
+
+        RfcApproval::create( [
+            'rfc_id'      => $id,
+            'approver_id' => $request->user_id,
+            'level'       => $request->level,
+        ]);
+        
+    }
     /**
      * Helper: ambil approval yang lagi pending untuk user ini
      */
@@ -28,9 +53,10 @@ class RfcApprovalController extends Controller
     {
         $request->validate([
             'note' => 'nullable|string',
+            'user_id' => 'required|integer',
         ]);
 
-        $user = $request->user();
+        $user = $request->user_id;
         $approval = $this->getPendingApprovalForUser($rfc, $user);
 
         if (!$approval) {
@@ -142,15 +168,15 @@ class RfcApprovalController extends Controller
      * POST /api/v1/rfc/{rfc}/forward
      * Catatan: mirip approve tapi decision = forward
      */
-    public function forward(Rfc $rfc, Request $request)
-    {
+    public function forward(Request $request, $id)
+    {   
         $request->validate([
             'note'   => 'nullable|string',
             'tujuan' => 'required|string|in:kepala_seksi,kepala_bidang,kepala_dinas,admin_kota',
         ]);
 
-        $user = $request->user();
-        $approval = $this->getPendingApprovalForUser($rfc, $user);
+        $rfc = Rfc::findOrFail($id);
+        $approval = $this->getPendingApprovalForUser($rfc, $request->user());
 
         if (!$approval) {
             return response()->json([
