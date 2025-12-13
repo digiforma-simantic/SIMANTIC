@@ -154,6 +154,11 @@ export const rfcAPI = {
     const res = await api.post(`/api/v1/rfc/${id}/forward`, payload);
     return res.data;
   },
+
+  async update(id, payload) {
+    const res = await api.put(`/api/v1/rfc/${id}`, payload);
+    return res.data;
+  }
 };
 
 export const rfcApprovalAPI = {

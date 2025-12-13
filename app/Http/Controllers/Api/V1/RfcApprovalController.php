@@ -27,6 +27,10 @@ class RfcApprovalController extends Controller
             'level'  => 'required|string|in:kepala_seksi,kepala_bidang,kepala_dinas,admin_kota',
         ]);
 
+        Rfc::where('id', $id)->update([
+            'status' => 'pending',
+        ]);
+
         RfcApproval::create( [
             'rfc_id'      => $id,
             'approver_id' => $request->user_id,

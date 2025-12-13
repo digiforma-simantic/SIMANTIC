@@ -130,16 +130,22 @@ const DetailPermohonan = () => {
                   <p className="font-semibold text-sm text-[#001B33]">
                     File Bukti
                   </p>
-                  {rfc.attachment_path || rfc.attachments ? (
-                    <div className="flex items-center gap-2 cursor-pointer w-fit hover:underline mt-1">
-                      <img src={dokumen} alt="dokumen" className="w-5 h-5" />
-                      <span className="text-sm text-[#005BBB] font-medium">
-                        {rfc.attachment_path ? rfc.attachment_path.split('/').pop() : 'Dokumen.Pdf.File'}
-                      </span>
-                    </div>
+                  {rfc.attachement_path && rfc.attachment_path.length > 0 ? (
+                    rfc.attachment_path.map((file, index) => (
+                      <a
+                        key={index}
+                        href={file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-gray-600 hover:text-gray-900 cursor-pointer mb-2"
+                      >
+                        <img src={dokumen} alt="file icon" className="w-5 h-5" /> 
+                        <span className="text-sm">File {index + 1}</span>
+                      </a>
+                    ))  
                   ) : (
-                    <p className="text-sm text-gray-400 mt-1">null</p>
-                  )}
+                    <p className="text-gray-600">Tidak ada file bukti.</p>
+                  )} 
                 </div>
               </div>
             </div>

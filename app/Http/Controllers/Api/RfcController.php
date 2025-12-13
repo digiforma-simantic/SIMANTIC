@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Rfc;
+use App\Models\RfcApproval;
 use App\Models\RiskRegister;
 use App\Models\RfcAttachment;
 use Illuminate\Http\Request;
@@ -145,7 +146,7 @@ class RfcController extends Controller
                     'priority' => $rfc->priority,
                     'status' => $rfc->status,
                     'ci_code' => $rfc->ci_code,
-                    'attachment_path' => $rfc->attachment_path,
+                    'attachment_path' => $rfc->attachments,
                     'created_at' => $rfc->created_at,
                     'sso_id' => $rfc->sso_id,
                     'approvals' => $rfc->approvals->map(function ($approval) {
@@ -340,6 +341,29 @@ class RfcController extends Controller
                 'updated_at'      => $rfc->updated_at->toDateTimeString(),
             ],
         ], 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $rfcApproval = RfcApproval::findOrFail($id);
+
+        $validated = $request->validate([
+            'decision'     => 'sometimes|in:approved,rejected,revise',
+            'reason'       => 'nullable|string',
+        ]);
+
+        if($request->reason){
+            $validated['reason'] = $request->reason;
+            $validated['decision'] = 'revise';
+        }
+
+        $rfcApproval->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'RFC successfully updated',
+            'data' => $rfcApproval,
+        ]);
     }
 
     /**

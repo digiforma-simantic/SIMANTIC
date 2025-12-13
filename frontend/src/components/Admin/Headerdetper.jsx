@@ -8,10 +8,14 @@ import panahkembali from "../../assets/panahkembali.png"
 
 export default function HeaderNotif() {
   const navigate = useNavigate();
+  // Ambil user dari localStorage
+  const user = React.useMemo(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  }, []);
 
   return (
     <header className="bg-[#F4FAFF] w-full px-6 py-5 flex items-center justify-between border-b border-[#E2EDF5] shadow-sm">
-
       {/* LEFT — Back + Title */}
       <div className="flex items-center gap-4">
         {/* Panah tanpa box */}
@@ -32,7 +36,7 @@ export default function HeaderNotif() {
 
         {/* Notifikasi Icon */}
         <Link
-        to="/Notifikasi"
+          to="/Notifikasi"
           className="w-11 h-11 bg-white border border-[#E2EDF5] rounded-lg flex items-center justify-center shadow-sm"
         >
           <img src={notificationIcon} alt="notif" className="w-5 h-5" />
@@ -47,7 +51,7 @@ export default function HeaderNotif() {
         </Link>
 
         {/* Username berdiri sendiri */}
-        <span className="text-[#002444] font-medium">Joko G.</span>
+        <span className="text-[#002444] font-medium">{user?.name || '-'}</span>
       </div>
     </header>
   );

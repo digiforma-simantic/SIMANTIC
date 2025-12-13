@@ -1,8 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Headerdetapp from "../../components/Kasi/Headerdetapp";
 import { FileText } from "lucide-react";
+import { rfcAPI } from "../../services/api";
+import { ssoUserApi } from "../../services/ssoUser";
 
 const DetailApprovalKasi = () => {
+  const [rfc, setRfc] = useState([]);
+  const [ssoUser, setSsoUser] = useState(null);
+  const [modalButuhInfo, setModalButuhInfo] = useState(false);
+
+  const id = window.location.pathname.split("/").pop();
+
+  const fetchSsoUser = async (id) => {
+    try {
+      const response = await ssoUserApi.getById(id);
+      setSsoUser(response.data.data)
+    } catch (error) {
+      console.error("Error fetching SSO user ID:", error);
+    }
+  };
+
+  const fetchRfcs = async () => {
+    try {
+      const response = await rfcAPI.getById(id);
+      setRfc(response.data);
+      fetchSsoUser(response.data.sso_id);
+    } catch (error) {
+      console.error("Error fetching RFC details:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRfcs();
+  }, []);
+
+  const submitButuhInfo = async () => {
+    console.log("Submitting butuh info:", rfc.butuh_info);
+    const response  = await rfcAPI.update(rfc.id, { reason: rfc.butuh_info });
+
+    if (!response.success) {
+      alert("Gagal mengirim butuh info: ", response);
+    } else {
+      alert("Berhasil mengirim butuh info");
+      setModalButuhInfo(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F7FCFF]">
 
@@ -13,22 +56,52 @@ const DetailApprovalKasi = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+          {/* MODAL - Butuh Info */}
+          {modalButuhInfo && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                <h2 className="text-xl font-bold mb-4">Butuh Info</h2>
+                  <textarea
+                    onChange={(e) => setRfc({ ...rfc, butuh_info: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md p-2 mb-4"
+                    rows="4"
+                    placeholder="Masukkan informasi yang dibutuhkan..."
+                  ></textarea>
+                  <div className="flex justify-end gap-4">
+                    <button
+                      onClick={() => setModalButuhInfo(false)}
+                      className="bg-gray-300 hover:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      onClick={submitButuhInfo}
+                      className="bg-[#03B75FF] hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+                    >
+                      Kirim
+                    </button>
+                  </div>
+              </div>
+            </div>
+          )}
+
+
           {/* LEFT CARD - INFO & ACTION BUTTONS */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             
             {/* User Info */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                Slamet Budianto
+                {ssoUser?.name}
               </h2>
-              <p className="text-gray-500">#0001</p>
+              <p className="text-gray-500">#{rfc.id}</p>
             </div>
 
             {/* ACTION BUTTONS (2×2 GRID) */}
             <div className="grid grid-cols-2 gap-4">
               
               {/* Butuh Info */}
-              <button className="w-full bg-[#1E63F8] hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
+              <button onClick={() => setModalButuhInfo(true)} className="w-full bg-[#1E63F8] hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
                 Butuh Info
               </button>
 
@@ -55,8 +128,8 @@ const DetailApprovalKasi = () => {
 
             {/* Judul RFC */}
             <div className="mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Judul RFC</h3>
-              <p className="text-gray-500">Staff Dinas Kesehatan</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{rfc?.title}</h3>
+              <p className="text-gray-500">{ssoUser?.dinas}</p>
             </div>
 
             {/* Aset Terdampak */}
@@ -69,24 +142,31 @@ const DetailApprovalKasi = () => {
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Deskripsi Permintaan</h3>
               <p className="text-gray-600 leading-relaxed">
-                Diperlukan pembaruan pada modul pelaporan kinerja agar sesuai dengan 
-                format terbaru dari BKN.
+                {rfc?.description}
               </p>
             </div>
 
             {/* Prioritas */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Prioritas</h3>
-              <p className="text-gray-600">Low</p>
+              <p className="text-gray-600">{rfc?.priority}</p>
             </div>
 
             {/* File Bukti */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">File Bukti</h3>
-              <div className="flex items-center gap-3 text-gray-600 hover:text-gray-900 cursor-pointer">
+              {rfc?.attachment_path?.map((file, index) => (
+                <a key={index} href={file} target="_blank" rel="noopener noreferrer">
+                  <div key={index} className="flex items-center gap-3 text-gray-600 hover:text-gray-900 cursor-pointer mb-2">
+                    <FileText className="w-5 h-5" />
+                    <span className="text-sm">File {index + 1}</span>
+                  </div>
+                </a>
+              ))}
+              {/* <div className="flex items-center gap-3 text-gray-600 hover:text-gray-900 cursor-pointer">
                 <FileText className="w-5 h-5" />
                 <span className="text-sm">Dokumen Plr.File</span>
-              </div>
+              </div> */}
             </div>
 
           </div>

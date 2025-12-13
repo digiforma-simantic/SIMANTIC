@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { rfcApprovalAPI } from "../../services/api";
 import { Link } from "react-router-dom";
 import Sidebaradmin from "../../components/Admin/Sidebaradmin";
 import Headeradmin from "../../components/Admin/Headeradmin";
@@ -24,11 +25,27 @@ const DashboardAdmin = () => {
     window.addEventListener("storage", syncUser);
     return () => window.removeEventListener("storage", syncUser);
   }, []);
-  const pantauStatus = [
-    { id: 1, status: "approved", color: "bg-green-500" },
-    { id: 2, status: "pending", color: "bg-blue-500" },
-    { id: 3, status: "pending", color: "bg-blue-500" },
-  ];
+  const [pantauStatus, setPantauStatus] = useState([]);
+  const [loadingPantau, setLoadingPantau] = useState(true);
+  // Fetch all RFC Approval for Pantau Status
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchPantauStatus() {
+      try {
+        const res = await rfcApprovalAPI.getAll();
+        const list = res.data;
+        if (!isMounted) return;
+        setPantauStatus(list);
+      } catch (error) {
+        console.error("Error fetching pantau status:", error);
+        if (isMounted) setPantauStatus([]);
+      } finally {
+        if (isMounted) setLoadingPantau(false);
+      }
+    }
+    fetchPantauStatus();
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     // Fetch approvals berdasarkan role user
@@ -125,33 +142,51 @@ const DashboardAdmin = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-sm font-semibold text-[#001B33]">Pantau Status</h2>
-                <span className="text-xs text-gray-500">Admin saja</span>
+                <Link
+                  className="text-xs font-semibold text-[#005BBB] hover:underline"
+                  to="/Admin/PantauStatus"
+                >
+                  Lihat Semua
+                </Link>
               </div>
 
-              <div className="space-y-4">
-                {pantauStatus.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                      <div>
-                        <p className="font-medium text-sm text-gray-900">Install Aplikasi Kerja</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-xs text-gray-500">#000{item.id}</p>
-                          <span className="text-xs text-gray-400">•</span>
-                          <p className="text-xs text-gray-500">17 Agustus 2025</p>
+              {loadingPantau ? (
+                <p className="text-center text-gray-500 py-4">Memuat data status...</p>
+              ) : pantauStatus.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">Tidak ada data status</p>
+              ) : (
+                <div className="space-y-4">
+                  {pantauStatus.slice(0, 6).map((item) => {
+                    // Status color logic
+                    let color = "bg-gray-400";
+                    if (item?.rfc?.status === "approved") color = "bg-green-500";
+                    else if (item?.rfc?.status === "pending") color = "bg-blue-500";
+                    else if (item?.rfc?.status === "rejected") color = "bg-red-500";
+                    else if (!item?.rfc?.status) color = "bg-gray-400";
+                    return (
+                      <div key={item.id} className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl p-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${color}`}></div>
+                          <div>
+                            <p className="font-medium text-sm text-gray-900">{item?.rfc?.title ?? '-'}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-xs text-gray-500">#000{item?.id ?? '-'}</p>
+                              <span className="text-xs text-gray-400">•</span>
+                              <p className="text-xs text-gray-500">{item?.rfc?.created_at ? item.rfc.created_at : '-'}</p>
+                            </div>
+                          </div>
                         </div>
+                        <Link 
+                          to={`/Admin/StatusPengajuan/${item?.rfc_id ?? item?.id}`} 
+                          className="text-xs font-medium text-[#005BBB] hover:underline whitespace-nowrap"
+                        >
+                          Cek Status
+                        </Link>
                       </div>
-                    </div>
-
-                    <Link 
-                      to={`/Admin/StatusPengajuan/${item.id}`} 
-                      className="text-xs font-medium text-[#005BBB] hover:underline whitespace-nowrap"
-                    >
-                      Cek Status
-                    </Link>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

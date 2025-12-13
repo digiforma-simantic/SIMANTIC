@@ -118,7 +118,7 @@ Route::prefix('v1')
 
         Route::get('rfc/approvals', [RfcApprovalController::class, 'index'])
             ->name('rfc.approvals');
-            
+
         // RFC Approval Workflow
         Route::get('rfc/pending-approval', [RfcController::class, 'getPendingApprovals'])
             ->name('rfc.pending-approval');
@@ -138,6 +138,7 @@ Route::prefix('v1')
          */
         Route::get('rfc',       [RfcController::class, 'index'])->name('rfc.index');
         Route::get('rfc/{rfc}', [RfcController::class, 'show' ])->name('rfc.show');
+        Route::put('rfc/{rfc}', [RfcController::class, 'update' ])->name('rfc.update');
 
 
         /**

@@ -1,42 +1,39 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { rfcAPI } from "../../services/api";
+import { rfcApprovalAPI } from "../../services/api";
 import { ssoUserApi } from "../../services/ssoUser";
 
 // ICONS
 import searchIcon from "../../assets/search-normal.png";
 import docIcon from "../../assets/tandaminusadmin.png";
 
-import Headerdafapp from "../../components/Admin/Headerdafapp";
+import HeaderPantauStatus from "../../components/Admin/HeaderPantauStatus";
 
-const DaftarApprovalAdmin = () => {
+const PantauStatusAdmin = () => {
   const navigate = useNavigate();
 
-  const [approvals, setApprovals] = useState([]);
+  const [rfcs, setRfcs] = useState([]);
   const [ssoUsers, setSsoUsers] = useState({}); // { [ssoId]: userData }
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ambil daftar approval
+  // Ambil semua RFC yang sudah dikirim admin ke approval
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchApprovals() {
+    async function fetchRfcs() {
       try {
-        const res = await rfcAPI.getAll();
-
-        // backend kamu: { success: true, data: [...] }
-        const list = res?.data;
-        console.log("Fetched approvals:", list);
-
+        // Ambil semua data dari tabel rfc approval
+        const res = await rfcApprovalAPI.getAll();
+        const list = res.data;
         if (!isMounted) return;
-        setApprovals(list);
+        setRfcs(list);
 
-        // ambil sso_id unik dari list
+        // Ambil sso_id unik dari list
         const ssoIds = [
           ...new Set(
             list
-              .map((x) => x?.sso_id)
+              .map((x) => x?.rfc?.sso_id)
               .filter((id) => id !== null && id !== undefined && id !== "")
           ),
         ];
@@ -57,14 +54,14 @@ const DaftarApprovalAdmin = () => {
         if (!isMounted) return;
         setSsoUsers((prev) => ({ ...prev, ...Object.fromEntries(results) }));
       } catch (error) {
-        console.error("Error fetching approvals:", error);
-        if (isMounted) setApprovals([]);
+        console.error("Error fetching RFCs:", error);
+        if (isMounted) setRfcs([]);
       } finally {
         if (isMounted) setLoading(false);
       }
     }
 
-    fetchApprovals();
+    fetchRfcs();
 
     return () => {
       isMounted = false;
@@ -74,49 +71,24 @@ const DaftarApprovalAdmin = () => {
   // helper: ambil nama user dari payload SSO (fleksibel)
   const getSsoName = (ssoPayload) => {
     if (!ssoPayload) return null;
-
-    // coba beberapa kemungkinan struktur response SSO
-    // 1) { name: "..." }
     if (ssoPayload.name) return ssoPayload.name;
-
-    // 2) { data: { name: "..." } }
     if (ssoPayload.data?.name) return ssoPayload.data.name;
-
-    // 3) { data: { user: { name: "..." } } }
     if (ssoPayload.data?.user?.name) return ssoPayload.data.user.name;
-
-    // 4) { user: { name: "..." } }
     if (ssoPayload.user?.name) return ssoPayload.user.name;
-
     return null;
   };
 
-  const formatTanggalID = (dateString) => {
-    if (!dateString) return "-";
-
-    return new Date(dateString).toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  const filteredApprovals = useMemo(() => {
+  const filteredRfcs = useMemo(() => {
     const term = searchTerm.toLowerCase();
-    return (approvals ?? []).filter((item) => {
-      const titleMatch = (item?.title ?? "").toLowerCase().includes(term);
-      const status = item?.status;
-      // Pastikan hanya yang benar-benar null/undefined/empty string, bukan 'pending'
-      const isNullStatus = status === null || status === undefined;
-      return titleMatch && isNullStatus;
-    });
-  }, [approvals, searchTerm]);
+    return (rfcs ?? []).filter((item) =>
+      (item?.rfc?.title ?? "").toLowerCase().includes(term)
+    );
+  }, [rfcs, searchTerm]);
 
-  console.log("Filtered Approvals:", filteredApprovals);
   return (
     <div className="flex-1 flex flex-col ml-0 md:ml-0 transition-all">
       {/* HEADER */}
-      <Headerdafapp />
+      <HeaderPantauStatus />
 
       {/* CARD WRAPPER */}
       <div className="bg-[#F2FAFF] shadow-md rounded-2xl p-8 w-full max-w-7xl mx-auto mt-10">
@@ -126,7 +98,7 @@ const DaftarApprovalAdmin = () => {
             <img src={searchIcon} alt="search" className="w-5 opacity-60" />
             <input
               type="text"
-              placeholder="Cari Daftar Approval..."
+              placeholder="Cari Pantau Status..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-transparent outline-none w-full text-gray-700"
@@ -136,23 +108,21 @@ const DaftarApprovalAdmin = () => {
 
         {/* TITLE */}
         <h2 className="text-lg font-semibold text-gray-800 mb-5">
-          Daftar Approval ({filteredApprovals.length})
+          Pantau Status ({filteredRfcs.length})
         </h2>
 
         {/* LIST */}
         {loading ? (
           <p className="text-center text-gray-500 py-8">Memuat data...</p>
-        ) : filteredApprovals.length === 0 ? (
+        ) : filteredRfcs.length === 0 ? (
           <p className="text-center text-gray-500 py-8">
-            Tidak ada approval pending
+            Tidak ada data RFC yang dipantau
           </p>
         ) : (
           <div className="space-y-4">
-            {filteredApprovals.map((item) => {
-              const ssoId = item?.sso_id;
+            {filteredRfcs.map((item) => {
+              const ssoId = item?.rfc?.sso_id;
               const ssoPayload = ssoUsers[String(ssoId)];
-              console.log("ssoUsers:", ssoUsers); 
-              console.log("SSO Payload for ID", ssoId, ":", ssoPayload);
               const requesterName = getSsoName(ssoPayload);
 
               return (
@@ -164,28 +134,26 @@ const DaftarApprovalAdmin = () => {
                     <img src={docIcon} alt="doc" className="w-6" />
                     <div>
                       <h3 className="font-semibold text-gray-800">
-                        {item?.title ?? "-"}
+                        {item?.rfc?.title ?? "-"}
                       </h3>
 
                       <p className="text-sm text-gray-500">
-                        {formatTanggalID(item?.created_at)}
+                        {item?.rfc?.created_at ?? item?.created_at ?? "-"}
                       </p>
 
                       <p className="text-xs text-gray-400">
-                        {requesterName
-                          ? `${requesterName}`
-                          :  "-"}
+                        {requesterName ? `${requesterName}` :  "-"}
                       </p>
                     </div>
                   </div>
 
                   <button
                     onClick={() =>
-                      navigate(`/Admin/DetailPermohonan/${item?.id}`)
+                      navigate(`/Admin/StatusPengajuan/${item?.rfc_id}`)
                     }
                     className="text-[#02294A] font-semibold hover:underline"
                   >
-                    Cek Detail
+                    Cek Status
                   </button>
                 </div>
               );
@@ -197,4 +165,4 @@ const DaftarApprovalAdmin = () => {
   );
 };
 
-export default DaftarApprovalAdmin;
+export default PantauStatusAdmin;

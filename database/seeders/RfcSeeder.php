@@ -44,5 +44,20 @@ class RfcSeeder extends Seeder
             'asset_uuid'     => '223e4567-e89b-12d3-a456-426614174001',
             'sso_id'         => 1002,
         ]);
+
+        // Tambah RFC status null
+        Rfc::create([
+            'rfc_service_id' => 3,
+            'ci_code'        => 'CI-2025-003',
+            'title'          => 'Install Aplikasi Kerja',
+            'description'    => 'Permintaan instalasi aplikasi kerja baru.',
+            'priority'       => 'high',
+            'status'         => null, // status null
+            'config_comment' => null,
+            'attachments'    => null,
+            'requested_at'   => now(),
+            'asset_uuid'     => '323e4567-e89b-12d3-a456-426614174002',
+            'sso_id'         => 6,
+        ]);
     }
 }

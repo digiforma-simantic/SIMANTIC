@@ -14,6 +14,7 @@ import DetailAsetStaff from "./pages/Staff/DetailAsetStaff";
 import DetailPengajuanStaff from "./pages/Staff/DetailPengajuanStaff";
 
 import DashboardAdmin from "./pages/Admin/DashboardAdmin";
+import PantauStatusAdmin from "./pages/Admin/PantauStatusAdmin";
 import DaftarAset from "./pages/Admin/DaftarAset";
 import AsetSaya from "./pages/Admin/AsetSaya";
 import DaftarApproval from "./pages/Admin/DaftarApproval";
@@ -141,6 +142,7 @@ function App() {
       <Route path="/Admin/asetsaya" element={<AsetSaya />} />
       <Route path="/DaftarApproval" element={<DaftarApproval />} />
       <Route path="/Admin/daftarapproval" element={<DaftarApproval />} />
+      <Route path="/Admin/PantauStatus" element={<PantauStatusAdmin />} />
       <Route path="/Admin/DetailPermohonan/:id" element={<DetailPermohonan />} />
       <Route path="/Admin/StatusPengajuan/:id" element={<StatusPengajuanAdmin />} />
       <Route path="/Admin/RiwayatApproval" element={<RiwayatApproval />} />

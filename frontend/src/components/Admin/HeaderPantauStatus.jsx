@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 
 import notificationIcon from "../../assets/notification.png";
 import userIcon from "../../assets/user.png";
-import panahkembali from "../../assets/panahkembali.png"
+import panahkembali from "../../assets/panahkembali.png";
 
-export default function HeaderNotif() {
+export default function HeaderPantauStatus() {
   const navigate = useNavigate();
   // Ambil user dari localStorage
   const user = React.useMemo(() => {
@@ -22,11 +22,11 @@ export default function HeaderNotif() {
           onClick={() => navigate(-1)}
           className="text-2xl text-[#002444] hover:text-gray-700"
         >
-          <img src={panahkembali} alt="back" className="w-5 h-5"></img>
+          <img src={panahkembali} alt="back" className="w-5 h-5" />
         </button>
 
         <h1 className="text-lg font-semibold text-[#002444]">
-          Daftar Approval
+          Pantau Status
         </h1>
       </div>
 
