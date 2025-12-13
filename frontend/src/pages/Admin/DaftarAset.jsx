@@ -6,7 +6,12 @@ import { assetsAPI } from "../../services/assetsApi";
 
 export default function AsetAdmin() {
   const [loading, setLoading] = useState(true);
-  const [allAssets, setAllAssets] = useState([]);
+  const [allAssets, setAllAssets] = useState([
+    { id: 1, nama: "Aset 1", ci_code: "CI001" },
+    { id: 2, nama: "Aset 2", ci_code: "" },
+    { id: 3, nama: "Aset 3", ci_code: "CI003" },
+    { id: 4, nama: "Aset 4", ci_code: null },
+  ]);
 
   useEffect(() => {
     async function fetchAssets() {
@@ -24,7 +29,10 @@ export default function AsetAdmin() {
 
   // Pisahkan aset lengkap dan tidak lengkap
   // Untuk aset mentah, tampilkan semua sebagai "Butuh Lengkap Data"
-  const completeAssets = [];
+  const completeAssets = [
+    ...allAssets.filter((asset) => asset.ci_code && asset.ci_code.trim() !== ""),
+    ...allAssets
+  ];
   const incompleteAssets = allAssets;
 
   return (
@@ -53,7 +61,6 @@ export default function AsetAdmin() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
                   Daftar Aset ({completeAssets.length})
                 </h2>
-
                 {completeAssets.length === 0 ? (
                   <p className="text-gray-500 text-center py-4">Belum ada aset dengan data lengkap</p>
                 ) : (
@@ -67,7 +74,6 @@ export default function AsetAdmin() {
                           <p className="font-semibold text-gray-900">{item.nama}</p>
                           <p className="text-xs text-gray-500">{item.ci_code || "CI Code belum diisi"}</p>
                         </div>
-
                         <Link
                           to={`/DaftarDetailAset/${item.id}`}
                           className="text-sm font-semibold text-[#005BBB] hover:underline"
@@ -79,13 +85,11 @@ export default function AsetAdmin() {
                   </div>
                 )}
               </div>
-
               {/* SECTION: Butuh Lengkap Data */}
               <div className="bg-[#F2FAFF] border border-[#E2EDF5] rounded-xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
                   Butuh Lengkap Data ({incompleteAssets.length})
                 </h2>
-
                 {incompleteAssets.length === 0 ? (
                   <p className="text-gray-500 text-center py-4">Semua aset sudah memiliki data lengkap</p>
                 ) : (
@@ -99,9 +103,8 @@ export default function AsetAdmin() {
                           <p className="font-semibold text-gray-900">{item.nama}</p>
                           <p className="text-xs text-gray-500">{item.ci_code || "CI Code belum diisi"}</p>
                         </div>
-
                         <Link
-                          to={`/DaftarDetailAset/${item.id}`}
+                          to={`/FormDetailAset/${item.id}`}
                           className="text-sm font-semibold text-[#005BBB] hover:underline"
                         >
                           Cek Detail
