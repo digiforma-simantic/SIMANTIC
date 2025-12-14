@@ -142,11 +142,9 @@ export const rfcAPI = {
     return res.data;
   },
 
-  async approve(id, decision, reason = null) {
-    const res = await api.post(`/api/v1/rfc/${id}/approve`, {
-      decision,
-      reason,
-    });
+  async approve(id, payload) {
+    // payload: { user_id, note? }
+    const res = await api.post(`/api/v1/rfc/${id}/approve`, payload);
     return res.data;
   },
 

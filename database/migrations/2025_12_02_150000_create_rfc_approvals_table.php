@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('rfc_id')->constrained('rfc')->onDelete('cascade');
             $table->foreignId('approver_id')->nullable();
             $table->enum('level', ['kepala_seksi', 'kepala_bidang', 'kepala_dinas', 'admin_dinas'])->comment('Level approval sesuai alur berjenjang OPD');
-            $table->enum('decision', ['approved', 'rejected', 'revise'])->nullable()->comment('Keputusan: approved, rejected, revise (null jika masih pending)');
+            $table->enum('decision', ['approved', 'rejected', 'revise', 'pending'])->nullable()->comment('Keputusan: approved, rejected, revise, pending (null jika masih belum ada keputusan)');
             $table->text('reason')->nullable()->comment('Catatan/alasan keputusan');
             $table->timestamp('approved_at')->nullable()->comment('Waktu keputusan dibuat');
             $table->timestamps();

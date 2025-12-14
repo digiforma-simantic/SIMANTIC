@@ -131,7 +131,7 @@ Route::prefix('v1')
             ->name('rfc.pending-approval');
         Route::post('rfc/{rfc}/set', [RfcApprovalController::class, 'set'])
             ->name('rfc.set');
-        Route::post('rfc/{id}/approve', [RfcController::class, 'approve'])
+        Route::put('rfc/{id}/approve', [RfcController::class, 'approve'])
             ->name('rfc.approve');
         Route::post('rfc/{id}/forward', [RfcApprovalController::class, 'forward'])
             ->name('rfc.forward');

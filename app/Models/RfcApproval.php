@@ -29,6 +29,7 @@ class RfcApproval extends Model
         'decision',     // null (pending) | approve | reject | need_info | forward
         'reason',
         'approved_at',
+        'updated_at',
     ];
 
     protected $casts = [

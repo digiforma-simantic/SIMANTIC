@@ -348,8 +348,9 @@ class RfcController extends Controller
         $rfcApproval = RfcApproval::findOrFail($id);
 
         $validated = $request->validate([
-            'decision'     => 'sometimes|in:approved,rejected,revise',
+            'decision'     => 'sometimes|in:approved,rejected,revise,pending',
             'reason'       => 'nullable|string',
+            'level'        => 'sometimes|string',
         ]);
 
         if($request->reason){
@@ -505,7 +506,7 @@ class RfcController extends Controller
     public function approve(Request $request, $id)
     {
         $request->validate([
-            'decision' => 'required|in:approved,rejected',
+            'decision' => 'required|in:approved,rejected,pending',
             'reason' => 'nullable|string',
         ]);
 

@@ -46,6 +46,62 @@ const DetailApprovalKasi = () => {
     }
   };
 
+
+  // Fungsi untuk handle setujui (langsung update status RFC)
+  const handleApprove = async () => {
+    try {
+      // Gunakan id approval, bukan id RFC utama jika tersedia
+      const approvalId = rfc.approval_id || rfc.id;
+      const approvedAt = new Date().toISOString();
+      const response = await rfcAPI.update(approvalId, {
+        decision: "approved",
+        reason: null,
+        approved_at: approvedAt
+      });
+      if (!response.success) {
+        alert('Gagal menyetujui RFC');
+      } else {
+        alert('RFC berhasil disetujui!');
+        fetchRfcs();
+      }
+    } catch (error) {
+      alert('Terjadi kesalahan saat menyetujui RFC');
+    }
+  };
+
+  // Fungsi untuk handle Teruskan (update decision ke pending, level ke kepala_bidang, reason null, updated_at)
+  // Helper untuk format tanggal ke 'YYYY-MM-DD HH:mm:ss'
+  function formatDateTime(date) {
+    const pad = (n) => n < 10 ? '0' + n : n;
+    return date.getFullYear() + '-' +
+      pad(date.getMonth() + 1) + '-' +
+      pad(date.getDate()) + ' ' +
+      pad(date.getHours()) + ':' +
+      pad(date.getMinutes()) + ':' +
+      pad(date.getSeconds());
+  }
+
+  const handleForward = async () => {
+    try {
+      const approvalId = rfc.approval_id || rfc.id;
+      const updatedAt = formatDateTime(new Date());
+      const response = await rfcAPI.update(approvalId, {
+        decision: "pending",
+        level: "kepala_bidang",
+        reason: null,
+        updated_at: updatedAt
+      });
+      if (!response.success) {
+        alert('Gagal meneruskan RFC');
+      } else {
+        alert('RFC berhasil diteruskan ke Kepala Bidang!');
+        fetchRfcs();
+      }
+    } catch (error) {
+      alert('Terjadi kesalahan saat meneruskan RFC');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F7FCFF]">
 
@@ -59,28 +115,29 @@ const DetailApprovalKasi = () => {
           {/* MODAL - Butuh Info */}
           {modalButuhInfo && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                <h2 className="text-xl font-bold mb-4">Butuh Info</h2>
-                  <textarea
-                    onChange={(e) => setRfc({ ...rfc, butuh_info: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md p-2 mb-4"
-                    rows="4"
-                    placeholder="Masukkan informasi yang dibutuhkan..."
-                  ></textarea>
-                  <div className="flex justify-end gap-4">
-                    <button
-                      onClick={() => setModalButuhInfo(false)}
-                      className="bg-gray-300 hover:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      onClick={submitButuhInfo}
-                      className="bg-[#03B75FF] hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-                    >
-                      Kirim
-                    </button>
-                  </div>
+              <div className="bg-[#00213A] rounded-xl shadow-lg p-6 w-full max-w-md">
+                <h2 className="text-lg font-bold mb-3 text-white">Keterangan</h2>
+                <textarea
+                  onChange={(e) => setRfc({ ...rfc, butuh_info: e.target.value })}
+                  className="w-full bg-white border-none rounded-md p-3 mb-5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  rows="6"
+                  placeholder="Tuliskan Keterangan"
+                  style={{ resize: 'none' }}
+                ></textarea>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setModalButuhInfo(false)}
+                    className="bg-[#C82333] hover:bg-[#a71d2a] text-white font-semibold py-2 px-6 rounded-lg transition"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={submitButuhInfo}
+                    className="bg-[#28A745] hover:bg-[#218838] text-white font-semibold py-2 px-6 rounded-lg transition"
+                  >
+                    Kirim
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -106,17 +163,19 @@ const DetailApprovalKasi = () => {
               </button>
 
               {/* Setujui */}
-              <button className="w-full bg-[#03B344] hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">
+              <button
+                className="w-full bg-[#03B344] hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition"
+                onClick={handleApprove}
+              >
                 Setujui
               </button>
 
-              {/* Tolak */}
-              <button className="w-full bg-[#B30000] hover:bg-red-800 text-white font-semibold py-3 rounded-lg transition">
-                Tolak
-              </button>
 
               {/* Teruskan */}
-              <button className="w-full bg-[#FF7A00] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition">
+              <button
+                className="w-full bg-[#FF7A00] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition"
+                onClick={handleForward}
+              >
                 Teruskan
               </button>
 
