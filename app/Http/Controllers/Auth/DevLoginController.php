@@ -164,8 +164,15 @@ class DevLoginController extends Controller
     }
 
     /**
-     * Ambil daftar user dev (untuk quick login di frontend)
-     * GET /auth/dev/users
+     * @OA\Get(
+     *     path="/api/auth/dev/users",
+     *     summary="Get all dev users",
+     *     tags={"Auth"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of dev users"
+     *     )
+     * )
      */
     public function devUsers(Request $request)
     {

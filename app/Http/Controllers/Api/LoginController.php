@@ -7,6 +7,29 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * @OA\Post(
+ *     path="/api/auth/login",
+ *     summary="User login",
+ *     tags={"Auth"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"email","password"},
+ *             @OA\Property(property="email", type="string", example="user@example.com"),
+ *             @OA\Property(property="password", type="string", example="password")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Login success"
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="Unauthorized"
+ *     )
+ * )
+ */
 class LoginController extends Controller
 {
     /**

@@ -12,213 +12,6 @@
         }
     ],
     "paths": {
-        "/api/assets": {
-            "get": {
-                "tags": [
-                    "Asset"
-                ],
-                "summary": "Get all assets",
-                "operationId": "50c726a8d4ee77df00ce287ce38f08e7",
-                "responses": {
-                    "200": {
-                        "description": "List of assets",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer",
-                                                "example": 1
-                                            },
-                                            "aset_uuid": {
-                                                "type": "string",
-                                                "example": "M-25-001"
-                                            },
-                                            "nama": {
-                                                "type": "string",
-                                                "example": "Laptop M-25-001"
-                                            },
-                                            "lokasi": {
-                                                "type": "string",
-                                                "example": "Gedung A, Lantai 5, Area Karyawan"
-                                            },
-                                            "penanggung_jawab": {
-                                                "type": "string",
-                                                "example": "Suhandoyo"
-                                            },
-                                            "level_resiko": {
-                                                "type": "string",
-                                                "example": "Low"
-                                            },
-                                            "sub_kategori": {
-                                                "type": "string",
-                                                "example": "Hardware"
-                                            },
-                                            "created_at": {
-                                                "type": "string",
-                                                "format": "date-time",
-                                                "example": "2025-08-17T10:00:00Z"
-                                            },
-                                            "updated_at": {
-                                                "type": "string",
-                                                "format": "date-time",
-                                                "example": "2025-08-17T10:00:00Z"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/assets/{id}": {
-            "get": {
-                "tags": [
-                    "Asset"
-                ],
-                "summary": "Get asset by ID",
-                "operationId": "bd8cd9b5700d93a32b257b93822796d1",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Asset ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Asset detail",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": 1
-                                        },
-                                        "aset_uuid": {
-                                            "type": "string",
-                                            "example": "M-25-001"
-                                        },
-                                        "nama": {
-                                            "type": "string",
-                                            "example": "Laptop M-25-001"
-                                        },
-                                        "lokasi": {
-                                            "type": "string",
-                                            "example": "Gedung A, Lantai 5, Area Karyawan"
-                                        },
-                                        "penanggung_jawab": {
-                                            "type": "string",
-                                            "example": "Suhandoyo"
-                                        },
-                                        "level_resiko": {
-                                            "type": "string",
-                                            "example": "Low"
-                                        },
-                                        "sub_kategori": {
-                                            "type": "string",
-                                            "example": "Hardware"
-                                        },
-                                        "created_at": {
-                                            "type": "string",
-                                            "format": "date-time",
-                                            "example": "2025-08-17T10:00:00Z"
-                                        },
-                                        "updated_at": {
-                                            "type": "string",
-                                            "format": "date-time",
-                                            "example": "2025-08-17T10:00:00Z"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Asset not found"
-                    }
-                }
-            }
-        },
-        "/api/v1/import/assets": {
-            "post": {
-                "tags": [
-                    "Asset Import"
-                ],
-                "summary": "Import assets from external API",
-                "description": "Import assets from external API",
-                "operationId": "3d57d74dd73e7fe3eac2a642d6a7ebed",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "token": {
-                                        "description": "Optional API token override",
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Assets imported successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Assets imported successfully"
-                                        },
-                                        "imported": {
-                                            "type": "integer",
-                                            "example": 10
-                                        },
-                                        "updated": {
-                                            "type": "integer",
-                                            "example": 5
-                                        },
-                                        "total": {
-                                            "type": "integer",
-                                            "example": 15
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Import failed"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/sso/callback": {
             "get": {
                 "tags": [
@@ -1289,6 +1082,47 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "User login",
+                "operationId": "ae23a03d7ac75f0c4e27a00a51d5c11d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login success"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
             }
         },
         "/api/v1/maintenance-jobs": {
@@ -2999,6 +2833,20 @@
                 }
             }
         },
+        "/api/auth/dev/users": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get all dev users",
+                "operationId": "783dc0dd23652cc48f3a422a36302f62",
+                "responses": {
+                    "200": {
+                        "description": "List of dev users"
+                    }
+                }
+            }
+        },
         "/api/v1/changes/{change}/decisions": {
             "post": {
                 "tags": [
@@ -3290,14 +3138,6 @@
         }
     },
     "tags": [
-        {
-            "name": "Asset",
-            "description": "Asset management endpoints"
-        },
-        {
-            "name": "Asset Import",
-            "description": "Import assets from external API to Configuration Items"
-        },
         {
             "name": "Auth",
             "description": "Endpoints untuk autentikasi, SSO dan token"
