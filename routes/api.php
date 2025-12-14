@@ -26,9 +26,16 @@ use App\Http\Controllers\Api\PatchJobController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Auth\SsoCallbackController;
 
+use App\Http\Controllers\Api\AuditorComplianceController;
+
 /**
  * Dev login moved to routes/dev.php (no CSRF)
  */
+
+// Auditor Compliance API
+Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::apiResource('auditor-compliances', AuditorComplianceController::class);
+});
 
 Route::get('/ping', fn () => response()->json(['message' => 'pong 🏓']))
     ->name('ping');
@@ -139,7 +146,6 @@ Route::prefix('v1')
         Route::get('rfc',       [RfcController::class, 'index'])->name('rfc.index');
         Route::get('rfc/{rfc}', [RfcController::class, 'show' ])->name('rfc.show');
         Route::put('rfc/{rfc}', [RfcController::class, 'update' ])->name('rfc.update');
-
 
         /**
          * Implementation Reports (internal access)

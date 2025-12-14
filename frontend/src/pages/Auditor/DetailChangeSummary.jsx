@@ -30,7 +30,7 @@ const DetailChangeSummary = () => {
                 {/* User Card */}
                 <div className="bg-white border-2 border-green-500 rounded-xl p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-1">Slamet Budianto</h2>
-                  <p className="text-sm text-gray-500 mb-4">#0001</p>
+                  <p className="text-sm text-gray-500 mb-4">Dinas Kesehatan</p>
                 </div>
 
                 {/* Status Button */}
@@ -61,10 +61,7 @@ const DetailChangeSummary = () => {
                     value="Pemindahan aplikasi antrian ke server baru agar lebih stabil dan cepat." 
                   />
 
-                  <DetailItem 
-                    label="Urgensi Perubahan" 
-                    value="Server lama sering lambat dan menyebabkan antrian tidak tampil." 
-                  />
+                  {/* Urgensi Perubahan dihapus */}
 
                 </div>
 
@@ -76,20 +73,14 @@ const DetailChangeSummary = () => {
                     value="Minor" 
                   />
 
-                  <DetailItem 
-                    label="Rencana Implementasi" 
-                    value="Migrasi database & API ke server baru, lalu uji koneksi." 
-                  />
+                  {/* Rencana Implementasi dihapus */}
 
                   <DetailItem 
                     label="Aset Terdampak" 
                     value="Aplikasi Antrian & Database Antrian RSUD" 
                   />
 
-                  <DetailItem 
-                    label="Rencana Rollback" 
-                    value="Kembali ke server lama jika migrasi gagal." 
-                  />
+                  {/* Rencana Rollback dihapus */}
 
                   <DetailItem 
                     label="PIC" 
