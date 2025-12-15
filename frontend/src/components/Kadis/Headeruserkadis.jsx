@@ -8,6 +8,19 @@ import panahkembali from "../../assets/panahkembali.png"
 
 export default function Headeruserkadis() {
   const navigate = useNavigate();
+  // Ambil user dari localStorage hasil login SSO
+  const [user, setUser] = React.useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  React.useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
 
   return (
     <header className="bg-[#F4FAFF] w-full px-6 py-5 flex items-center justify-between border-b border-[#E2EDF5] shadow-sm">
@@ -47,7 +60,7 @@ export default function Headeruserkadis() {
         </Link>
 
         {/* Username berdiri sendiri */}
-        <span className="text-[#002444] font-medium">Sri P.</span>
+        <span className="text-[#002444] font-medium">{user ? user.name : '-'}</span>
       </div>
     </header>
   );

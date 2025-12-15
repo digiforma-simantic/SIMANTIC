@@ -4,7 +4,7 @@ import Sidebar from "../../components/Admin/Sidebaradmin";
 import Header from "../../components/Admin/Headeradmin";
 import { useParams, Link } from "react-router-dom";
 
-export default function DetailLaporanImplementasi() {
+export default function DetailLaporanImplementasiAdmin() {
   const { id } = useParams();
   const [detail, setDetail] = useState(null);
   const [loading] = useState(false);
@@ -48,7 +48,7 @@ export default function DetailLaporanImplementasi() {
         <div className="p-6">
           <div className="max-w-6xl mx-auto">
             <div className="mb-6">
-              <Link to="/Admin/LaporanImplementasi" className="text-[#005BBB] text-sm hover:underline">&larr; Kembali</Link>
+              <Link to="/Admin/LaporanImplementasiadmin" className="text-[#005BBB] text-sm hover:underline">&larr; Kembali</Link>
               <h2 className="text-2xl font-bold text-gray-900 mt-4 text-center">Detail Laporan Implementasi</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

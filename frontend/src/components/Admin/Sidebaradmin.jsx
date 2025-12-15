@@ -155,8 +155,8 @@ const Sidebar = ({ isOpen, onClose }) => {
           <SidebarItem
             icon={laporanIcon}
             label="Laporan Implementasi"
-            onClick={() => navigate("/Admin/LaporanImplementasi")}
-            active={location.pathname === "/Admin/LaporanImplementasi"}
+            onClick={() => navigate("/Admin/LaporanImplementasiadmin")}
+            active={location.pathname === "/Admin/LaporanImplementasiadmin"}
           />
 
         </nav>

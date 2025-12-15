@@ -7,6 +7,7 @@ import permohonanIcon from "../../assets/permohonan.png";
 import helpIcon from "../../assets/message-question.png";
 import logoutIcon from "../../assets/Logout_Icon_UIA.png";
 import riwayatIcon from "../../assets/riwayat.png";
+import laporanIcon from "../../assets/permohonan.png";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const [openPermohonan, setOpenPermohonan] = useState(false);
@@ -102,6 +103,13 @@ const Sidebar = ({ isOpen, onClose }) => {
             label="Aset"
             onClick={() => navigate("/Diskominfo/DaftarAsetDiskominfo")}
             active={location.pathname.startsWith("/Diskominfo/DaftarAsetDiskominfo")}
+          />
+
+          <SidebarItem
+            icon={laporanIcon}
+            label="Laporan Implementasi"
+            onClick={() => navigate("/Diskominfo/LaporanImplementasi")}
+            active={location.pathname.startsWith("/Diskominfo/LaporanImplementasi")}
           />
 
           <SidebarItem

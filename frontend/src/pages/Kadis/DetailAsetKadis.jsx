@@ -18,7 +18,7 @@ export default function DetailAset() {
             Laptop M-25-001
           </h2>
           <h4 className="text-lg font-semibold text-[#001729] mb-1">0001</h4>
-        </div>s
+        </div>
 
         {/* Card Informasi Kiri */}
         <div className="bg-[#F2FAFF] border border-gray-200 shadow rounded-xl p-6 space-y-6">
