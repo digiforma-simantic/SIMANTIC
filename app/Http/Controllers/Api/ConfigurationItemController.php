@@ -6,18 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ConfigurationItem;
 use Illuminate\Http\Request;
 
-/**
- * @OA\Tag(
- *     name="CMDB",
- *     description="Manajemen Configuration Item (CI) dan relasinya dalam CMDB"
- * )
- */
+// ...existing code...
 class ConfigurationItemController extends Controller
 {
-    /**
-     * GET /api/v1/assets
-     * Ambil data aset dari SIPRIMA (proxy backend, pakai token per user dari cache)
-     */
+    // ...existing code...
     public function externalAssets(Request $request)
     {
         $user = $request->user();
@@ -48,47 +40,7 @@ class ConfigurationItemController extends Controller
         ]);
     }
 
-    /**
-     * GET /api/v1/config-items
-     *
-     * @OA\Get(
-     *   path="/api/v1/config-items",
-     *   tags={"CMDB"},
-     *   summary="Daftar Configuration Item (CI) milik OPD user login",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="type",
-     *     in="query",
-     *     required=false,
-     *     description="Filter tipe CI (server, laptop, aplikasi, dll)",
-     *     @OA\Schema(type="string", example="hardware")
-     *   ),
-     *   @OA\Parameter(
-     *     name="status",
-     *     in="query",
-     *     required=false,
-     *     description="Filter status CI (active, under_change, retired, maintenance)",
-     *     @OA\Schema(type="string", example="active")
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="List Configuration Item",
-     *     @OA\JsonContent(type="array", @OA\Items(
-     *       @OA\Property(property="id", type="integer", example=245),
-     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
-     *       @OA\Property(property="name", type="string", example="Laptop M-25-007"),
-     *       @OA\Property(property="type", type="string", example="hardware"),
-     *       @OA\Property(property="environment", type="string", example="production"),
-     *       @OA\Property(property="criticality", type="string", example="low"),
-     *       @OA\Property(property="status", type="string", example="active"),
-     *       @OA\Property(property="version", type="string", example="Firmware BIOS v1.14.2"),
-     *       @OA\Property(property="os_name", type="string", example="Windows 11 Pro 64-bit"),
-     *       @OA\Property(property="ip_address", type="string", example="10.10.5.123"),
-     *       @OA\Property(property="relation_note", type="string", example="Laptop M-25-007 terhubung ke Server AD dan Printer Lantai 5")
-     *     ))
-     *   )
-     * )
-     */
+    // ...existing code...
     public function index(Request $request)
     {
         $query = ConfigurationItem::with('ownerDinas');
@@ -114,63 +66,7 @@ class ConfigurationItemController extends Controller
         return response()->json($items);
     }
 
-    /**
-     * POST /api/v1/config-items
-     *
-     * Ini yang akan dipanggil oleh aplikasi SIMANTIC untuk menyimpan
-     * konfigurasi aset (bagian bawah form: CI Code, Versi, OS, IP, Relasi).
-     *
-     * @OA\Post(
-     *   path="/api/v1/config-items",
-     *   tags={"CMDB"},
-     *   summary="Menambahkan Configuration Item (CI) baru",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"name","ci_code","type","environment","criticality","status"},
-     *       @OA\Property(property="name", type="string", example="Laptop M-25-007"),
-     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
-     *       @OA\Property(property="type", type="string", example="hardware"),
-     *       @OA\Property(
-     *         property="environment",
-     *         type="string",
-     *         example="production",
-     *         enum={"production","staging","development"}
-     *       ),
-     *       @OA\Property(
-     *         property="criticality",
-     *         type="string",
-     *         example="low",
-     *         enum={"low","medium","high","critical"}
-     *       ),
-     *       @OA\Property(
-     *         property="status",
-     *         type="string",
-     *         example="active",
-     *         enum={"active","under_change","retired","maintenance"}
-     *       ),
-     *       @OA\Property(property="version", type="string", example="Firmware BIOS v1.14.2"),
-     *       @OA\Property(property="os_name", type="string", example="Windows 11 Pro 64-bit"),
-     *       @OA\Property(property="ip_address", type="string", example="10.10.5.123"),
-     *       @OA\Property(
-     *         property="relation_note",
-     *         type="string",
-     *         example="Laptop M-25-007 terhubung ke Server Active Directory dan Printer Jaringan Lantai 5"
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=201,
-     *     description="CI berhasil dibuat",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="id", type="integer", example=245),
-     *       @OA\Property(property="ci_code", type="string", example="CI-000245")
-     *     )
-     *   ),
-     *   @OA\Response(response=422, description="Validasi gagal")
-     * )
-     */
+    // ...existing code...
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -200,33 +96,7 @@ class ConfigurationItemController extends Controller
         return response()->json($ci, 201);
     }
 
-    /**
-     * GET /api/v1/config-items/{config_item}
-     *
-     * @OA\Get(
-     *   path="/api/v1/config-items/{id}",
-     *   tags={"CMDB"},
-     *   summary="Menampilkan detail Configuration Item (CI)",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     description="ID Configuration Item",
-     *     @OA\Schema(type="integer", example=245)
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Detail CI",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="id", type="integer", example=245),
-     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
-     *       @OA\Property(property="name", type="string", example="Laptop M-25-007")
-     *     )
-     *   ),
-     *   @OA\Response(response=404, description="CI tidak ditemukan")
-     * )
-     */
+    // ...existing code...
     public function show(ConfigurationItem $config_item)
     {
         $config_item->load([
@@ -240,40 +110,7 @@ class ConfigurationItemController extends Controller
         return response()->json($config_item);
     }
 
-    /**
-     * PUT /api/v1/config-items/{config_item}
-     *
-     * @OA\Put(
-     *   path="/api/v1/config-items/{id}",
-     *   tags={"CMDB"},
-     *   summary="Memperbarui data Configuration Item (CI)",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     description="ID Configuration Item",
-     *     @OA\Schema(type="integer", example=245)
-     *   ),
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       @OA\Property(property="name", type="string", example="Laptop M-25-007"),
-     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
-     *       @OA\Property(property="type", type="string", example="hardware"),
-     *       @OA\Property(property="environment", type="string", example="production"),
-     *       @OA\Property(property="criticality", type="string", example="low"),
-     *       @OA\Property(property="status", type="string", example="active"),
-     *       @OA\Property(property="version", type="string", example="Firmware BIOS v1.14.2"),
-     *       @OA\Property(property="os_name", type="string", example="Windows 11 Pro 64-bit"),
-     *       @OA\Property(property="ip_address", type="string", example="10.10.5.123"),
-     *       @OA\Property(property="relation_note", type="string", example="Relasi antar aset diperbarui...")
-     *     )
-     *   ),
-     *   @OA\Response(response=200, description="CI berhasil diperbarui"),
-     *   @OA\Response(response=422, description="Validasi gagal")
-     * )
-     */
+    // ...existing code...
     public function update(Request $request, ConfigurationItem $config_item)
     {
         $data = $request->validate([
@@ -294,47 +131,7 @@ class ConfigurationItemController extends Controller
         return response()->json($config_item);
     }
 
-    /**
-     * PATCH /api/v1/config-items/{config_item}/configuration
-     * 
-     * Update konfigurasi CI (CI Code, Version, OS, IP, Relation)
-     * Khusus untuk form admin yang mengisi detail konfigurasi
-     *
-     * @OA\Patch(
-     *   path="/api/v1/config-items/{id}/configuration",
-     *   tags={"CMDB"},
-     *   summary="Update konfigurasi CI (Admin Form)",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     description="ID Configuration Item",
-     *     @OA\Schema(type="integer", example=245)
-     *   ),
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       @OA\Property(property="ci_code", type="string", example="CI-000245"),
-     *       @OA\Property(property="version", type="string", example="v1.14.2"),
-     *       @OA\Property(property="os_name", type="string", example="Windows 11 Pro 64-bit"),
-     *       @OA\Property(property="ip_address", type="string", example="10.10.5.123"),
-     *       @OA\Property(property="relation_note", type="string", example="Terhubung ke Server AD dan Printer Lantai 5")
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Konfigurasi berhasil disimpan",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="success", type="boolean", example=true),
-     *       @OA\Property(property="message", type="string", example="Konfigurasi berhasil disimpan"),
-     *       @OA\Property(property="data", type="object")
-     *     )
-     *   ),
-     *   @OA\Response(response=422, description="Validasi gagal"),
-     *   @OA\Response(response=404, description="CI tidak ditemukan")
-     * )
-     */
+    // ...existing code...
     public function updateConfiguration(Request $request, ConfigurationItem $config_item)
     {
         $data = $request->validate([
@@ -359,25 +156,7 @@ class ConfigurationItemController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/v1/config-items/{config_item}
-     *
-     * @OA\Delete(
-     *   path="/api/v1/config-items/{id}",
-     *   tags={"CMDB"},
-     *   summary="Menghapus Configuration Item (soft delete)",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     description="ID Configuration Item",
-     *     @OA\Schema(type="integer", example=245)
-     *   ),
-     *   @OA\Response(response=200, description="CI berhasil dihapus"),
-     *   @OA\Response(response=404, description="CI tidak ditemukan")
-     * )
-     */
+    // ...existing code...
     public function destroy(ConfigurationItem $config_item)
     {
         $config_item->delete();

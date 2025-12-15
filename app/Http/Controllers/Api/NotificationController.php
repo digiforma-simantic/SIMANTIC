@@ -7,48 +7,10 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
-/**
- * @OA\Tag(
- *     name="Notifications",
- *     description="Notifikasi untuk user pengaju / pengguna aplikasi"
- * )
- */
+// ...existing code...
 class NotificationController extends Controller
 {
-    /**
-     * GET /api/v1/notifications
-     *
-     * Menampilkan daftar notifikasi milik user login.
-     *
-     * @OA\Get(
-     *   path="/api/v1/notifications",
-     *   tags={"Notifications"},
-     *   summary="Daftar notifikasi user login",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="only_unread",
-     *     in="query",
-     *     required=false,
-     *     description="Jika =1, hanya ambil notifikasi yang belum dibaca",
-     *     @OA\Schema(type="integer", example=1)
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Berhasil mengambil daftar notifikasi",
-     *     @OA\JsonContent(type="array",
-     *       @OA\Items(
-     *         @OA\Property(property="id", type="integer", example=10),
-     *         @OA\Property(property="title", type="string", example="Permintaan disetujui"),
-     *         @OA\Property(property="message", type="string", example="Perubahan Install Aplikasi Kerja telah disetujui Kepala Dinas."),
-     *         @OA\Property(property="ref_type", type="string", example="rfc"),
-     *         @OA\Property(property="ref_id", type="integer", example=5),
-     *         @OA\Property(property="is_read", type="boolean", example=false),
-     *         @OA\Property(property="created_at", type="string", example="2025-08-17T10:30:00Z")
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    // ...existing code...
     public function index(Request $request)
     {
         $user = $request->user();
@@ -83,35 +45,7 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Notification marked as read']);
     }
 
-    /**
-     * GET /api/v1/notification/staff
-     * Return notifications for staff (requester) grouped by today / yesterday.
-     *
-     * @OA\Get(
-     *   path="/api/v1/notification/staff",
-     *   tags={"Notifications"},
-     *   summary="Daftar notifikasi staf pengaju (grouped: today/yesterday)",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Berhasil mengambil notifikasi staff (grouped)",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="status", type="boolean", example=true),
-     *       @OA\Property(property="data", type="object",
-     *         @OA\Property(property="today", type="array", @OA\Items(type="object",
-     *           @OA\Property(property="id", type="integer"),
-     *           @OA\Property(property="status", type="string"),
-     *           @OA\Property(property="description", type="string"),
-     *           @OA\Property(property="created_at", type="string"),
-     *           @OA\Property(property="time_label", type="string")
-     *         )),
-     *         @OA\Property(property="yesterday", type="array", @OA\Items(type="object"))
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    // ...existing code...
     public function staff(Request $request)
     {
         $user = $request->user();

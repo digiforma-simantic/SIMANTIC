@@ -8,57 +8,10 @@ use App\Models\Rfc;
 use App\Models\ConfigurationItem;
 use Illuminate\Http\Request;
 
-/**
- * @OA\Tag(
- *     name="Implementation Report",
- *     description="API untuk laporan implementasi dari Service Desk setelah perbaikan selesai"
- * )
- */
+// ...existing code...
 class ImplementationReportController extends Controller
 {
-    /**
-     * @OA\Post(
-     *   path="/api/v1/implementation-reports",
-     *   tags={"Implementation Report"},
-     *   summary="Submit laporan implementasi dari Service Desk - No Authentication Required",
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"rfc_service_id","status","description"},
-     *       @OA\Property(property="rfc_service_id", type="string", example="SD-2025-001"),
-     *       @OA\Property(property="status", type="string", enum={"success","failed","partial"}, example="success"),
-     *       @OA\Property(property="description", type="string", example="Perbaikan server berhasil. RAM upgrade 16GB."),
-     *       @OA\Property(property="attachments", type="array", @OA\Items(type="string"), example={"https://example.com/report.pdf"}),
-     *       @OA\Property(property="completed_at", type="string", format="date-time", example="2025-12-07 15:30:00")
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=201,
-     *     description="Laporan berhasil diterima",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="status", type="boolean", example=true),
-     *       @OA\Property(property="message", type="string", example="Implementation report received successfully"),
-     *       @OA\Property(
-     *         property="data",
-     *         type="object",
-     *         @OA\Property(property="id", type="integer", example=1),
-     *         @OA\Property(property="rfc_service_id", type="string", example="SD-2025-001"),
-     *         @OA\Property(property="status", type="string", example="success"),
-     *         @OA\Property(property="synced", type="boolean", example=true),
-     *         @OA\Property(property="rfc_id", type="integer", example=5)
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=422,
-     *     description="Validasi gagal",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="message", type="string", example="The rfc service id field is required."),
-     *       @OA\Property(property="errors", type="object")
-     *     )
-     *   )
-     * )
-     */
+    // ...existing code...
     public function store(Request $request)
     {
         // Validasi input dari Service Desk
@@ -110,45 +63,7 @@ class ImplementationReportController extends Controller
         ], 201);
     }
 
-    /**
-     * @OA\Get(
-     *   path="/api/v1/implementation-reports",
-     *   tags={"Implementation Report"},
-     *   summary="List semua implementation reports",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="rfc_id",
-     *     in="query",
-     *     required=false,
-     *     description="Filter by RFC ID",
-     *     @OA\Schema(type="integer")
-     *   ),
-     *   @OA\Parameter(
-     *     name="status",
-     *     in="query",
-     *     required=false,
-     *     description="Filter by status (success, failed, partial)",
-     *     @OA\Schema(type="string")
-     *   ),
-     *   @OA\Parameter(
-     *     name="page",
-     *     in="query",
-     *     required=false,
-     *     description="Page number",
-     *     @OA\Schema(type="integer", default=1)
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="List implementation reports with pagination",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="current_page", type="integer", example=1),
-     *       @OA\Property(property="data", type="array", @OA\Items(type="object")),
-     *       @OA\Property(property="total", type="integer", example=100)
-     *     )
-     *   ),
-     *   @OA\Response(response=401, description="Unauthorized")
-     * )
-     */
+    // ...existing code...
     public function index(Request $request)
     {
         $query = ImplementationReport::with(['rfc']);
@@ -168,42 +83,7 @@ class ImplementationReportController extends Controller
         return response()->json($reports);
     }
 
-    /**
-     * @OA\Get(
-     *   path="/api/v1/implementation-reports/{id}",
-     *   tags={"Implementation Report"},
-     *   summary="Detail implementation report",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     description="Implementation Report ID",
-     *     @OA\Schema(type="integer")
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Detail report",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="status", type="boolean", example=true),
-     *       @OA\Property(
-     *         property="data",
-     *         type="object",
-     *         @OA\Property(property="id", type="integer", example=1),
-     *         @OA\Property(property="rfc_service_id", type="string", example="SD-2025-001"),
-     *         @OA\Property(property="rfc_id", type="integer", example=5),
-     *         @OA\Property(property="status", type="string", example="success"),
-     *         @OA\Property(property="description", type="string", example="Perbaikan berhasil"),
-     *         @OA\Property(property="attachments", type="array", @OA\Items(type="string")),
-     *         @OA\Property(property="completed_at", type="string", format="date-time"),
-     *         @OA\Property(property="rfc", type="object")
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(response=404, description="Not found"),
-     *   @OA\Response(response=401, description="Unauthorized")
-     * )
-     */
+    // ...existing code...
     public function show(ImplementationReport $implementationReport)
     {
         $implementationReport->load(['rfc']);

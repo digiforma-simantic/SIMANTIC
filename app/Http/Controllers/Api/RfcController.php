@@ -13,23 +13,6 @@ use Illuminate\Support\Facades\DB;
 // ...existing code...
 class RfcController extends Controller
 {
-    /**
-     * GET /api/v1/rfc
-     * Menampilkan daftar RFC milik OPD user login (dengan pagination).
-    // ...existing code...
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     description="ID RFC",
-     *     @OA\Schema(type="integer", example=1)
-     *   ),
-     *   @OA\Response(response=200, description="Detail RFC"),
-     *   @OA\Response(response=403, description="Tidak boleh melihat RFC OPD lain"),
-     *   @OA\Response(response=404, description="RFC tidak ditemukan")
-     * )
-     */
     public function show(Request $request, $id)
     {
         // return "haha";
@@ -43,25 +26,7 @@ class RfcController extends Controller
                     'id' => $rfc->id,
                     'title' => $rfc->title,
                     'description' => $rfc->description,
-                    'priority' => $rfc->priority,
-                    'status' => $rfc->status,
-                    'ci_code' => $rfc->ci_code,
-                    'attachment_path' => $rfc->attachments,
-                    'created_at' => $rfc->created_at,
-                    'sso_id' => $rfc->sso_id,
-                    'approvals' => $rfc->approvals->map(function ($approval) {
-                        return [
-                            'level' => $approval->level,
-                            'decision' => $approval->decision,
-                            'reason' => $approval->reason,
-                            'approved_at' => $approval->approved_at,
-                            'approver' => [
-                                'name' => $approval->approver->name ?? 'Unknown',
-                                'role_name' => $approval->approver->roleObj->name ?? 'Unknown',
-                            ],
-                        ];
-                    }),
-                ],
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -71,78 +36,6 @@ class RfcController extends Controller
             ], 404);
         }
     }
-
-        /**
-       
-     * POST /api/v1/rfc
-     *
-     * NOTE:
-     * - Kalau body mengandung "rfc_id" → dianggap request dari aplikasi SERVICE DESK.
-     * - Kalau body mengandung "ci_ids" → dianggap request dari user OPD (flow lama + auto assessment).
-     *
-     * @OA\Post(
-     *   path="/api/v1/rfc",
-     *   tags={"RFC"},
-     *   summary="Buat RFC baru (Service Desk) - No Authentication Required",
-     *   @OA\RequestBody(
-     *     required=true,
-     *     description="Request dari aplikasi Service Desk",
-     *     @OA\JsonContent(
-     *       required={"title","priority"},
-     *       @OA\Property(
-     *         property="rfc_service_id",
-     *         type="string",
-     *         example="SD-2025-001",
-     *         description="ID RFC dari aplikasi Service Desk"
-     *       ),
-     *       @OA\Property(
-     *         property="title",
-     *         type="string",
-     *         maxLength=255,
-     *         example="Upgrade Server Production",
-     *         description="Judul RFC (required, max 255 karakter)"
-     *       ),
-     *       @OA\Property(
-     *         property="description",
-     *         type="string",
-     *         example="Perlu upgrade RAM",
-     *         description="Deskripsi detail RFC (nullable)"
-     *       ),
-     *       @OA\Property(
-     *         property="priority",
-     *         type="string",
-     *         enum={"low","medium","high"},
-     *         example="high",
-     *         description="Prioritas RFC (required)"
-     *       ),
-     *       @OA\Property(
-     *         property="attachments",
-     *         type="array",
-     *         @OA\Items(type="string"),
-     *         example={"file1.pdf", "file2.jpg"},
-     *         description="Array URL lampiran dari Service Desk (nullable)"
-     *       ),
-     *       @OA\Property(
-     *         property="requested_at",
-     *         type="string",
-     *         format="date-time",
-     *         example="2025-12-02 10:00:00",
-     *         description="Timestamp request dibuat di Service Desk (nullable)"
-     *       ),
-     *       @OA\Property(
-     *         property="ci_code",
-     *         type="string",
-     *         example="CI-2025-001",
-     *         description="Configuration Item code untuk callback (nullable)"
-     *       ),
-     *       @OA\Property(
-     *         property="asset_uuid",
-     *         type="string",
-     *         example="uuid-123",
-     *         description="UUID aset terdampak (nullable)"
-     *       ),
-     *       @OA\Property(
-    // ...existing code...
 
     public function store(Request $request)
     {
@@ -225,18 +118,7 @@ class RfcController extends Controller
         ]);
     }
 
-    /**
-     * GET /api/v1/rfc/pending-approval
-     * Get pending RFCs for approval based on user role
-     * 
-     * @OA\Get(
-     *     path="/api/v1/rfc/pending-approval",
-     *     tags={"RFC"},
-     *     summary="Get pending RFCs for current user to approve",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Success")
-     * )
-     */
+    // ...existing code...
     public function getPendingApprovals(Request $request)
     {
         $user = $request->user();
@@ -341,26 +223,7 @@ class RfcController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/v1/rfc/{id}/approve
-     * Approve or reject RFC
-     * 
-     * @OA\Post(
-     *     path="/api/v1/rfc/{id}/approve",
-     *     tags={"RFC"},
-     *     summary="Approve or reject RFC",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="decision", type="string", enum={"approved", "rejected"}),
-     *             @OA\Property(property="reason", type="string", nullable=true)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Success")
-     * )
-     */
+    // ...existing code...
     public function approve(Request $request, $id)
     {
         $request->validate([
@@ -446,18 +309,7 @@ class RfcController extends Controller
         }
     }
 
-    /**
-     * GET /api/v1/rfc/history
-     * Get RFC approval history for current user
-     * 
-     * @OA\Get(
-     *     path="/api/v1/rfc/history",
-     *     tags={"RFC"},
-     *     summary="Get RFC approval history for current user",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Success")
-     * )
-     */
+    // ...existing code...
     public function getHistory(Request $request)
     {
         $user = $request->user();

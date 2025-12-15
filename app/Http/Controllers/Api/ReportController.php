@@ -8,48 +8,10 @@ use App\Models\Rfc;
 use App\Models\PatchDeployment;
 use App\Models\ConfigurationItem;
 
-/**
- * @OA\Tag(
- *     name="Reports & Audit",
- *     description="Laporan ringkasan Change Management dan Patch Compliance"
- * )
- */
+// ...existing code...
 class ReportController extends Controller
 {
-    /**
-     * GET /api/v1/reports/change-summary
-     *
-     * @OA\Get(
-     *   path="/api/v1/reports/change-summary",
-     *   tags={"Reports & Audit"},
-     *   summary="Laporan ringkasan Change Management (RFC Summary)",
-     *   description="Menghasilkan ringkasan statistik dari seluruh RFC (Request for Change), mencakup status, kategori, dan jumlah total RFC per OPD.",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Ringkasan statistik Change Management",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="overview", type="object",
-     *         @OA\Property(property="total_rfc", type="integer", example=124)
-     *       ),
-     *       @OA\Property(property="by_priority", type="object",
-     *         @OA\Property(property="low", type="integer", example=72),
-     *         @OA\Property(property="medium", type="integer", example=40),
-     *         @OA\Property(property="high", type="integer", example=12)
-     *       ),
-     *       @OA\Property(property="chart", type="object",
-     *         @OA\Property(property="labels", type="array",
-     *           @OA\Items(type="string", example="Low")
-     *         ),
-     *         @OA\Property(property="data", type="array",
-     *           @OA\Items(type="integer", example=72)
-     *         )
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    // ...existing code...
     public function changeSummary()
     {
         // Data agregat RFC (now from Service Desk)
@@ -77,44 +39,7 @@ class ReportController extends Controller
         ]);
     }
 
-    /**
-     * GET /api/v1/reports/patch-compliance
-     *
-     * @OA\Get(
-     *   path="/api/v1/reports/patch-compliance",
-     *   tags={"Reports & Audit"},
-     *   summary="Laporan kepatuhan Patch Deployment (Patch Compliance)",
-     *   description="Menghasilkan laporan kepatuhan patching berdasarkan status Patch Deployment di seluruh Configuration Item (CI).",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Ringkasan kepatuhan patch deployment",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="summary", type="object",
-     *         @OA\Property(property="total_patch_jobs", type="integer", example=56),
-     *         @OA\Property(property="success", type="integer", example=42),
-     *         @OA\Property(property="failed", type="integer", example=6),
-     *         @OA\Property(property="rolled_back", type="integer", example=8),
-     *         @OA\Property(property="compliance_rate", type="number", format="float", example=87.5)
-     *       ),
-     *       @OA\Property(property="by_status", type="object",
-     *         @OA\Property(property="planned", type="integer", example=10),
-     *         @OA\Property(property="deployed", type="integer", example=40),
-     *         @OA\Property(property="failed", type="integer", example=6)
-     *       ),
-     *       @OA\Property(property="chart", type="object",
-     *         @OA\Property(property="labels", type="array",
-     *           @OA\Items(type="string", example="Deployed")
-     *         ),
-     *         @OA\Property(property="data", type="array",
-     *           @OA\Items(type="integer", example=40)
-     *         )
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    // ...existing code...
     public function patchCompliance()
     {
         $total = PatchDeployment::count();
