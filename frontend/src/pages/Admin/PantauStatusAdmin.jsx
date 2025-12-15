@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { rfcApprovalAPI } from "../../services/api";
+import { rfcAPI, rfcApprovalAPI } from "../../services/api";
 import { ssoUserApi } from "../../services/ssoUser";
 
 // ICONS
@@ -24,7 +24,7 @@ const PantauStatusAdmin = () => {
     async function fetchRfcs() {
       try {
         // Ambil semua data dari tabel rfc approval
-        const res = await rfcApprovalAPI.getAll();
+        const res = await rfcAPI.getPending();
         const list = res.data;
         if (!isMounted) return;
         setRfcs(list);

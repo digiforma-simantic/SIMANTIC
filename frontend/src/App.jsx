@@ -1,3 +1,5 @@
+import LaporanImplementasi from "./pages/Admin/LaporanImplementasi";
+import DetailLaporanImplementasi from "./pages/Admin/DetailLaporanImplementasi";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -157,6 +159,9 @@ function App() {
       <Route path="/bantuan2" element={<Bantuan2 />} />
       <Route path="/bantuan3" element={<Bantuan3 />} />
       <Route path="/bantuan4" element={<Bantuan4 />} />
+      <Route path="/Admin/LaporanImplementasi" element={<LaporanImplementasi />} />
+      <Route path="/DetailLaporanImplementasi/:id" element={<DetailLaporanImplementasi />} />
+
 
       {/* KASI */}
       <Route path="/Kasi/dashboardkasi" element={<DashboardKasi />} />

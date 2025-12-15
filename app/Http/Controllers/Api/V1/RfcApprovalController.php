@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Http;
 class RfcApprovalController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $rfcApprovals = RfcApproval::with('rfc')->get();
 

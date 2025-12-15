@@ -73,10 +73,6 @@ class RfcController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
-        // Filter RFC berdasarkan sso_id user yang login (untuk staff)
-        // $query = Rfc::where('sso_id', $user->sso_id)
-        //     ->orderBy('created_at', 'desc');
 
         $query = Rfc::query()->orderBy('created_at', 'desc');
 
@@ -91,6 +87,15 @@ class RfcController extends Controller
 
         if ($priority = $request->query('priority')) {
             $query->where('priority', $priority);
+        }
+
+        if ($request->has('status')) {
+            $status = $request->query('status');
+            if ($status === 'null') {
+                $query->whereNull('status');
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         $perPage = (int) $request->query('per_page', 100);

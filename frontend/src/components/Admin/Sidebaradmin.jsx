@@ -7,8 +7,10 @@ import asetIcon from "../../assets/permohonan.png";
 import asetSayaIcon from "../../assets/home-outline.png";
 import daftarAsetIcon from "../../assets/riwayat.png";
 import helpIcon from "../../assets/message-question.png";
-import logoutIcon from "../../assets/Logout_Icon_UIA.png";
 import riwayatIcon from "../../assets/riwayat.png";
+import logoutIcon from "../../assets/Logout_Icon_UIA.png";
+
+import laporanIcon from "../../assets/riwayat.png"; // gunakan icon riwayat untuk sementara
 
 const Sidebar = ({ isOpen, onClose }) => {
   const [openAset, setOpenAset] = useState(false);
@@ -140,12 +142,21 @@ const Sidebar = ({ isOpen, onClose }) => {
             </button>
           </SidebarItem>
 
+
           {/* RIWAYAT */}
           <SidebarItem
             icon={riwayatIcon}
             label="Riwayat"
             onClick={() => navigate("/Admin/RiwayatApproval")}
             active={location.pathname === "/Admin/RiwayatApproval"}
+          />
+
+          {/* LAPORAN IMPLEMENTASI */}
+          <SidebarItem
+            icon={laporanIcon}
+            label="Laporan Implementasi"
+            onClick={() => navigate("/Admin/LaporanImplementasi")}
+            active={location.pathname === "/Admin/LaporanImplementasi"}
           />
 
         </nav>

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { rfcApprovalAPI } from "../../services/api";
+import { rfcAPI } from "../../services/api";
 import { Link } from "react-router-dom";
 import Sidebaradmin from "../../components/Admin/Sidebaradmin";
 import Headeradmin from "../../components/Admin/Headeradmin";
-import { useAuth } from "../../contexts/AuthContext";
-
 import tandaminus from "../../assets/tandaminusadmin.png";
 import tandaseru from "../../assets/tandaseruadmin.png";
 
@@ -14,8 +12,8 @@ const DashboardAdmin = () => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
-  const [approvals, setApprovals] = useState([]);
-  const [loadingApprovals, setLoadingApprovals] = useState(true);
+  const [rfcs, setRfcs] = useState([]);
+  const [loadingRfcs, setLoadingRfcs] = useState(true);
 
   useEffect(() => {
     const syncUser = () => {
@@ -32,45 +30,25 @@ const DashboardAdmin = () => {
     let isMounted = true;
     async function fetchPantauStatus() {
       try {
-        const res = await rfcApprovalAPI.getAll();
+        const res = await rfcAPI.getPending();
+        const resRfcs = await rfcAPI.getNull();  
         const list = res.data;
+        const rfcsData = resRfcs.data;
         if (!isMounted) return;
         setPantauStatus(list);
+        setRfcs(rfcsData);
       } catch (error) {
         console.error("Error fetching pantau status:", error);
         if (isMounted) setPantauStatus([]);
       } finally {
         if (isMounted) setLoadingPantau(false);
+        if (isMounted) setLoadingRfcs(false);
       }
     }
     fetchPantauStatus();
     return () => { isMounted = false; };
   }, []);
 
-  useEffect(() => {
-    // Fetch approvals berdasarkan role user
-    async function fetchApprovals() {
-      try {
-        // TODO: Implementasi fetch dari API
-        // const response = await axios.get('/api/v1/rfcs/pending-approval');
-        // setApprovals(response.data);
-        
-        // Sementara pakai dummy data
-        setApprovals([
-          { id: 1, title: "Install Aplikasi Kerja", date: "17 Agustus 2025", priority: "high" },
-          { id: 2, title: "Update Server", date: "18 Agustus 2025", priority: "medium" },
-        ]);
-        setLoadingApprovals(false);
-      } catch (error) {
-        console.error("Error fetching approvals:", error);
-        setLoadingApprovals(false);
-      }
-    }
-
-    if (user) {
-      fetchApprovals();
-    }
-  }, [user]);
 
   if (!user) {
     return (
@@ -79,6 +57,8 @@ const DashboardAdmin = () => {
       </div>
     );
   }
+
+  console.log("Pantau Status Data:", pantauStatus);
 
   return (
     <div className="flex min-h-screen bg-[#F7FCFF] font-geologica text-[#001B33]">
@@ -111,13 +91,13 @@ const DashboardAdmin = () => {
                 </Link>
               </div>
 
-              {loadingApprovals ? (
+              {loadingRfcs ? (
                 <p className="text-center text-gray-500 py-4">Memuat data approval...</p>
-              ) : approvals.length === 0 ? (
+              ) : rfcs.length === 0 ? (
                 <p className="text-center text-gray-500 py-4">Tidak ada approval pending</p>
               ) : (
                 <div className="space-y-4">
-                  {approvals.slice(0, 6).map((item) => (
+                  {rfcs.slice(0, 4).map((item) => (
                     <div key={item.id} className="flex items-center justify-between bg-[#F9FCFF] border border-[#E6EEF7] rounded-xl p-4">
 
                       <div className="flex items-start gap-3">
@@ -156,7 +136,7 @@ const DashboardAdmin = () => {
                 <p className="text-center text-gray-500 py-4">Tidak ada data status</p>
               ) : (
                 <div className="space-y-4">
-                  {pantauStatus.slice(0, 6).map((item) => {
+                  {pantauStatus.slice(0, 3).map((item) => {
                     // Status color logic
                     let color = "bg-gray-400";
                     if (item?.rfc?.status === "approved") color = "bg-green-500";
@@ -168,16 +148,16 @@ const DashboardAdmin = () => {
                         <div className="flex items-center gap-3">
                           <div className={`w-3 h-3 rounded-full ${color}`}></div>
                           <div>
-                            <p className="font-medium text-sm text-gray-900">{item?.rfc?.title ?? '-'}</p>
+                            <p className="font-medium text-sm text-gray-900">{item?.title ?? '-'}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <p className="text-xs text-gray-500">#000{item?.id ?? '-'}</p>
                               <span className="text-xs text-gray-400">•</span>
-                              <p className="text-xs text-gray-500">{item?.rfc?.created_at ? item.rfc.created_at : '-'}</p>
+                              <p className="text-xs text-gray-500">{item?.created_at ? item.created_at : '-'}</p>
                             </div>
                           </div>
                         </div>
                         <Link 
-                          to={`/Admin/StatusPengajuan/${item?.rfc_id ?? item?.id}`} 
+                          to={`/Admin/StatusPengajuan/${item?.id}`} 
                           className="text-xs font-medium text-[#005BBB] hover:underline whitespace-nowrap"
                         >
                           Cek Status

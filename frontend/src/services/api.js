@@ -1,3 +1,18 @@
+/**
+ * =========================================================
+ * IMPLEMENTATION REPORTS API
+ * =========================================================
+ */
+export const implementationAPI = {
+  async getReports() {
+    const res = await api.get("/api/v1/implementation-reports");
+    return res.data;
+  },
+  async getReportById(id) {
+    const res = await api.get(`/api/v1/implementation-reports/${id}`);
+    return res.data;
+  }
+};
 import axios from "axios";
 
 /**
@@ -132,6 +147,16 @@ export const rfcAPI = {
     return res.data;
   },
 
+  async getPending() {
+    const res = await api.get(`/api/v1/rfc?status=pending`);
+    return res.data;
+  },
+
+  async getNull() {
+    const res = await api.get(`/api/v1/rfc?status=null`);
+    return res.data;
+  },
+
   async getById(id) {
     const res = await api.get(`/api/v1/rfc/${id}/detail`);
     return res.data;
@@ -164,6 +189,16 @@ export const rfcAPI = {
 export const rfcApprovalAPI = {
   async getAll() {
     const res = await api.get("/api/v1/rfc/approvals");
+    return res.data;
+  },
+
+  async getPending() {
+    const res = await api.get(`/api/v1/rfc/approvals?status=pending`);
+    return res.data;
+  },
+
+  async getNull() {
+    const res = await api.get(`/api/v1/rfc/approvals?status=null`);
     return res.data;
   }
 };
