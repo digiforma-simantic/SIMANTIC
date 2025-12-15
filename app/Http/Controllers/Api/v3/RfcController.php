@@ -251,7 +251,7 @@ class RfcController extends Controller
      *     )
      * )
      */
-    public function setRfcApproval(Request $request, $id)
+    public function c(Request $request, $id)
     {
         $rfc = Rfc::find($id);
         if (!$rfc) {
