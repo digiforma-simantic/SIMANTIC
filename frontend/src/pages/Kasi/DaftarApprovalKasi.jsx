@@ -32,14 +32,14 @@ const DaftarApprovalKasi = () => {
             <img src={searchIcon} alt="search" className="w-5 opacity-60" />
             <input
               type="text"
-              placeholder="Cari Daftar Approval..."
+              placeholder="Cari Daftar RFC..."
               className="bg-transparent outline-none w-full text-gray-700"
             />
           </div>
         </div>
 
         {/* TITLE */}
-        <h2 className="text-lg font-semibold text-gray-800 mb-5">Daftar Approval</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-5">Daftar RFC</h2>
 
         {/* LIST */}
         <div className="space-y-4">

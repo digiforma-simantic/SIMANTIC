@@ -17,7 +17,7 @@ const DaftarApprovalAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ambil daftar approval
+  // ambil Daftar RFC
   useEffect(() => {
     let isMounted = true;
 
@@ -126,7 +126,7 @@ const DaftarApprovalAdmin = () => {
             <img src={searchIcon} alt="search" className="w-5 opacity-60" />
             <input
               type="text"
-              placeholder="Cari Daftar Approval..."
+              placeholder="Cari Daftar RFC..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-transparent outline-none w-full text-gray-700"
@@ -136,7 +136,7 @@ const DaftarApprovalAdmin = () => {
 
         {/* TITLE */}
         <h2 className="text-lg font-semibold text-gray-800 mb-5">
-          Daftar Approval ({filteredApprovals.length})
+          Daftar RFC ({filteredApprovals.length})
         </h2>
 
         {/* LIST */}

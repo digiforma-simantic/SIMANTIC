@@ -25,7 +25,7 @@ export default function BantuanAuditor() {
           {/* STEPS */}
             <div className="space-y-4 ml-10">
             {[
-                "Pergi ke halaman Daftar Approval",
+                "Pergi ke halaman Daftar RFC",
                 "Klik Cek Detail",
                 "Pastikan seluruh data sudah lengkap dan sesuai standar",
                 "Setelah anda meninjau data pengajuan, lakukan salah satu tindakan",
@@ -40,10 +40,10 @@ export default function BantuanAuditor() {
                     </div>
 
                     <p className="flex-1 text-[#002444] leading-relaxed">
-                    {text.includes("Daftar Approval") ? (
+                    {text.includes("Daftar RFC") ? (
                         <>
                         Pergi ke halaman{" "}
-                        <span className="font-semibold">Daftar Approval</span>
+                        <span className="font-semibold">Daftar RFC</span>
                         </>
                     ) : text.includes("Cek Detail") ? (
                         <>

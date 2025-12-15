@@ -81,7 +81,7 @@ const DashboardAdmin = () => {
             <div className="bg-[#F2FAFF] rounded-2xl shadow-sm border border-[#E2EDF5] p-6">
 
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-sm font-semibold text-[#001B33]">Daftar Approval</h2>
+                <h2 className="text-sm font-semibold text-[#001B33]">Daftar RFC</h2>
 
                 <Link
                   className="text-xs font-semibold text-[#005BBB] hover:underline"

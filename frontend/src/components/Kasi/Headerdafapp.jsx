@@ -23,7 +23,7 @@ export default function HeaderNotif() {
         </button>
 
         <h1 className="text-lg font-semibold text-[#002444]">
-          Daftar Approval
+          Daftar RFC
         </h1>
       </div>
 
