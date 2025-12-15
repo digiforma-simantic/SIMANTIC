@@ -441,4 +441,78 @@ class RfcController extends Controller
             'data' => $rfcApproval,
         ]);
     }
+
+        /**
+         * @OA\Get(
+         *     path="/api/v3/rfc-approval/{id}",
+         *     tags={"RFC Approval"},
+         *     summary="Get RFC Approval detail by ID",
+         *     description="Retrieve a single RFC Approval record by its ID, including related RFC data.",
+         *     security={{"bearerAuth":{}}},
+         *     @OA\Parameter(
+         *         name="id",
+         *         in="path",
+         *         description="RFC Approval ID",
+         *         required=true,
+         *         @OA\Schema(type="integer")
+         *     ),
+         *     @OA\Response(
+         *         response=200,
+         *         description="Successful operation",
+         *         @OA\JsonContent(
+         *             @OA\Property(property="message", type="string", example="success"),
+         *             @OA\Property(property="data", type="object",
+         *                 @OA\Property(property="rfc_approval", type="object",
+         *                     @OA\Property(property="id", type="integer", example=1),
+         *                     @OA\Property(property="rfc_id", type="integer", example=1),
+         *                     @OA\Property(property="level", type="string", example="kasi"),
+         *                     @OA\Property(property="approver_id", type="integer", example=2),
+         *                     @OA\Property(property="decision", type="string", example="approve"),
+         *                     @OA\Property(property="reason", type="string", example="All requirements met"),
+         *                     @OA\Property(property="approved_at", type="string", format="date-time", example="2025-12-16T10:00:00Z"),
+         *                     @OA\Property(property="created_at", type="string", format="date-time"),
+         *                     @OA\Property(property="updated_at", type="string", format="date-time")
+         *                 ),
+         *                 @OA\Property(property="rfc", type="object",
+         *                     @OA\Property(property="id", type="integer", example=1),
+         *                     @OA\Property(property="title", type="string", example="Update Production Server"),
+         *                     @OA\Property(property="status", type="string", example="pending"),
+         *                     @OA\Property(property="priority", type="string", example="high"),
+         *                     @OA\Property(property="description", type="string", example="Change server configuration"),
+         *                     @OA\Property(property="created_at", type="string", format="date-time"),
+         *                     @OA\Property(property="updated_at", type="string", format="date-time")
+         *                 )
+         *             )
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=404,
+         *         description="RFC Approval not found",
+         *         @OA\JsonContent(
+         *             @OA\Property(property="message", type="string", example="RFC Approval not found")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=401,
+         *         description="Unauthenticated"
+         *     )
+         * )
+         */
+    public function detailRfcApproval(Request$request, $id)
+    {
+        $rfcApproval = RfcApproval::with('rfc')->find($id);
+        if (!$rfcApproval) {
+            return response()->json([
+                'message' => 'RFC Approval not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'success',
+            'data' => [
+                'rfc_approval' => $rfcApproval,
+                'rfc' => $rfcApproval->rfc,
+            ],
+        ]);
+    }
 }
