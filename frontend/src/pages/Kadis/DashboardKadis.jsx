@@ -4,7 +4,7 @@ import Sidebaradmin from "../../components/Kadis/Sidebarkadis";
 import Headeradmin from "../../components/Kadis/Headerkadis";
 
 const DashboardKadis = () => {
-  // Data untuk Daftar Approval
+  // Data untuk Daftar RFC
   const daftarApprovals = [
     { id: 1, status: 'approved'},
     { id: 2, status: 'pending'},
@@ -67,10 +67,10 @@ const DashboardKadis = () => {
             </div>
           </div>
 
-          {/* Daftar Approval */}
+          {/* Daftar RFC */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-[#001B33]">Daftar Approval</h2>
+                <h2 className="text-lg font-semibold text-[#001B33]">Daftar RFC</h2>
                 <Link
                   to="/Kasi/DaftarApprovalKasi"
                   className="text-sm text-[#02294A] font-semibold hover:underline"

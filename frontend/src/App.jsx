@@ -2,6 +2,7 @@ import LaporanImplementasi from "./pages/Admin/LaporanImplementasi";
 import DetailLaporanImplementasi from "./pages/Admin/DetailLaporanImplementasi";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import Landing from "./pages/Landing";
 
 import DashboardStaff from "./pages/Staff/DashboardStaff";
 import AsetStaff from "./pages/Staff/AsetStaff";
@@ -115,6 +116,9 @@ import DevBypass from "./pages/DevBypass";
 function App() {
   return (
     <Routes>
+      {/* ROOT - Redirect to SSO if not logged in */}
+      <Route path="/" element={<Landing />} />
+      
       {/* DEV BYPASS - Skip login, langsung masuk dashboard */}
       <Route path="/dev-bypass" element={<DevBypass />} />
       

@@ -41,10 +41,10 @@ export default function BantuanDiskominfo() {
                     </div>
 
                     <p className="flex-1 text-[#002444] leading-relaxed">
-                    {text.includes("Daftar Approval") ? (
+                    {text.includes("Daftar RFC") ? (
                         <>
                         Pergi ke halaman{" "}
-                        <span className="font-semibold">Daftar Approval</span>
+                        <span className="font-semibold">Daftar RFC</span>
                         </>
                     ) : text.includes("Cek Detail") ? (
                         <>

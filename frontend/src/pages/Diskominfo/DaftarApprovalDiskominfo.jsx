@@ -34,15 +34,15 @@ const DaftarApprovalDiskominfo = () => {
             </svg>
             <input
               type="text"
-              placeholder="Cari Daftar Approval..."
+              placeholder="Cari Daftar RFC..."
               className="bg-transparent outline-none w-full text-gray-700 placeholder-gray-400"
             />
           </div>
         </div>
 
-        {/* DAFTAR APPROVAL SECTION */}
+        {/* Daftar RFC SECTION */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Daftar Approval</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Daftar RFC</h2>
 
           {/* FILTER BUTTONS */}
           <div className="flex gap-3 mb-6">

@@ -5,7 +5,7 @@ import Sidebardiskominfo from "../../components/Diskominfo/Sidebardiskominfo";
 import Headerdiskominfo from "../../components/Diskominfo/Headerdiskominfo";
 
 const DashboardDiskominfo = () => {
-  // Data untuk Daftar Approval
+  // Data untuk Daftar RFC
   const approvalList = [
     { id: 1, priority: 'Low', name: 'Install Aplikasi Kerja', rfcNumber: '#RFC-001', date: '17 Agustus 2025', badgeColor: 'bg-[#1e3a5f]' },
     { id: 2, priority: 'Medium', name: 'Install Aplikasi Kerja', rfcNumber: '#RFC-001', date: '17 Agustus 2025', badgeColor: 'bg-[#1e3a5f]' },
@@ -69,10 +69,10 @@ const DashboardDiskominfo = () => {
             </div>
           </div>
 
-          {/* Daftar Approval */}
+          {/* Daftar RFC */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Daftar Approval</h2>
+              <h2 className="text-xl font-bold text-gray-900">Daftar RFC</h2>
 
               <Link
                 to="/Diskominfo/DaftarApprovalDiskominfo"
