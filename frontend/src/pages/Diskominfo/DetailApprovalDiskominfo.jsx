@@ -1,24 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Headerdetailaset from "../../components/Diskominfo/Headerdetapp";
+import { rfcAPI } from "../../services/api";
+import { ssoUserApi } from "../../services/ssoUser";
+
 
 export default function DetailPengajuan() {
   const navigate = useNavigate();
   const [selectedTeknisi, setSelectedTeknisi] = useState("");
+  const [rfc, setRfc] = useState([]);
+  const [ssoUser, setSsoUser] = useState(null);
+  const [modalButuhInfo, setModalButuhInfo] = useState(false);
 
-  const handleButuhInfo = () => {
-    // Logic untuk butuh info
-    console.log("Butuh Info clicked");
+  const id = window.location.pathname.split("/").pop();
+
+  const fetchSsoUser = async (id) => {
+    try {
+      const response = await ssoUserApi.getById(id);
+      setSsoUser(response.data.data)
+    } catch (error) {
+      console.error("Error fetching SSO user ID:", error);
+    }
   };
 
-  const handleSetujui = () => {
-    // Logic untuk setujui
-    console.log("Setujui clicked");
+  const fetchRfcs = async () => {
+    try {
+      const response = await rfcAPI.getById(id);
+      setRfc(response.data);
+      fetchSsoUser(response.data.sso_id);
+    } catch (error) {
+      console.error("Error fetching RFC details:", error);
+    }
   };
 
-  const handleTolak = () => {
-    // Logic untuk tolak
-    console.log("Tolak clicked");
+  useEffect(() => {
+    fetchRfcs();
+  }, []);
+
+  const submitButuhInfo = async () => {
+    const response  = await rfcAPI.update(rfc.id, { reason: rfc.butuh_info });
+    if (!response.success) {
+      alert("Gagal mengirim butuh info: ", response);
+    } else {
+      alert("Berhasil mengirim butuh info");
+      setModalButuhInfo(false);
+      fetchRfcs();
+    }
+  };
+
+  const handleApprove = async () => {
+    try {
+      const approvalId = rfc.approval_id || rfc.id;
+      const approvedAt = new Date().toISOString();
+      const response = await rfcAPI.update(approvalId, {
+        decision: "approved",
+        reason: null,
+        approved_at: approvedAt
+      });
+      if (!response.success) {
+        alert('Gagal menyetujui RFC');
+      } else {
+        alert('RFC berhasil disetujui!');
+        fetchRfcs();
+      }
+    } catch (error) {
+      alert('Terjadi kesalahan saat menyetujui RFC');
+    }
   };
 
   return (
@@ -98,25 +145,48 @@ export default function DetailPengajuan() {
           </div>
         </div>
 
+        {/* MODAL - Butuh Info */}
+        {modalButuhInfo && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-[#00213A] rounded-xl shadow-lg p-6 w-full max-w-md">
+              <h2 className="text-lg font-bold mb-3 text-white">Keterangan</h2>
+              <textarea
+                onChange={(e) => setRfc({ ...rfc, butuh_info: e.target.value })}
+                className="w-full bg-white border-none rounded-md p-3 mb-5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                rows="6"
+                placeholder="Tuliskan Keterangan"
+                style={{ resize: 'none' }}
+              ></textarea>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setModalButuhInfo(false)}
+                  className="bg-[#C82333] hover:bg-[#a71d2a] text-white font-semibold py-2 px-6 rounded-lg transition"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={submitButuhInfo}
+                  className="bg-[#28A745] hover:bg-[#218838] text-white font-semibold py-2 px-6 rounded-lg transition"
+                >
+                  Kirim
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Action Buttons */}
         <div className="flex justify-end gap-4 mt-8">
           <button
-            onClick={handleButuhInfo}
+            onClick={() => setModalButuhInfo(true)}
             className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
           >
             Butuh Info
           </button>
           <button
-            onClick={handleSetujui}
+            onClick={handleApprove}
             className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md"
           >
             Setujui
-          </button>
-          <button
-            onClick={handleTolak}
-            className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-md"
-          >
-            Tolak
           </button>
         </div>
       </main>
