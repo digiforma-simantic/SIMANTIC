@@ -8,6 +8,7 @@ use App\Models\RfcApproval;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class RfcController extends Controller
 {
@@ -213,9 +214,9 @@ class RfcController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"level", "approver_id"},
-     *             @OA\Property(property="level", type="string", example="kasi", description="Approval level (e.g., kasi, kabid, kadis)"),
+     *             @OA\Property(property="level", type="string", example="kepala_kasi", description="Approval level (e.g., kepala_kasi, kepala_bidang, kepala_dinas, admin_kota, admin_dinas)"),
      *             @OA\Property(property="approver_id", type="integer", example=2, description="User ID of the approver"),
-     *             @OA\Property(property="decision", type="string", nullable=true, example="approve", description="Approval decision (approve, reject, need_info, forward, or null for pending)"),
+     *             @OA\Property(property="decision", type="string", nullable=true, example="approved", description="Approval decision (approve, reject, need_info, forward, or null for pending)"),
      *             @OA\Property(property="reason", type="string", nullable=true, example="All requirements met", description="Reason for the decision"),
      *             @OA\Property(property="approved_at", type="string", format="date-time", nullable=true, example="2025-12-16T10:00:00Z", description="Approval timestamp (optional)")
      *         )
@@ -228,9 +229,9 @@ class RfcController extends Controller
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="rfc_id", type="integer", example=1),
-     *                 @OA\Property(property="level", type="string", example="kasi"),
+     *                 @OA\Property(property="level", type="string", example="kepala_kasi"),
      *                 @OA\Property(property="approver_id", type="integer", example=2),
-     *                 @OA\Property(property="decision", type="string", example="approve"),
+     *                 @OA\Property(property="decision", type="string", example="approved"),
      *                 @OA\Property(property="reason", type="string", example="All requirements met"),
      *                 @OA\Property(property="approved_at", type="string", format="date-time", example="2025-12-16T10:00:00Z"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
@@ -251,7 +252,7 @@ class RfcController extends Controller
      *     )
      * )
      */
-    public function c(Request $request, $id)
+    public function setRfcApproval(Request $request, $id)
     {
         $rfc = Rfc::find($id);
         if (!$rfc) {
@@ -284,6 +285,24 @@ class RfcController extends Controller
             ]
         );
 
+        $userSso = null;
+        if ($rfcApproval->approver_id) {
+            try {
+                $client = new Client();
+                $response = $client->get('https://api.bispro.digitaltech.my.id/api/v2/auth/user/' . $rfcApproval->approver_id, [
+                    'headers' => [
+                        'accept' => 'application/json',
+                    ],
+                    'timeout' => 5,
+                ]);
+                $body = json_decode($response->getBody(), true);
+                $userSso = $body['data'] ?? null;
+            } catch (\Exception $e) {
+                $userSso = null;
+            }
+        }
+        $rfcApproval->approver_id = $userSso;
+
         return response()->json([
             'message' => 'success',
             'data' => $rfcApproval,
@@ -292,7 +311,7 @@ class RfcController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v3/rfc-approval/{id}/approve",
+     *     path="/api/v3/rfc/{id}/approve",
      *     tags={"RFC Approval"},
      *     summary="Approve RFC Approval by ID",
      *     description="Approve an RFC approval entry by its ID. Sets decision to 'approve', updates reason and approved_at.",
@@ -320,7 +339,7 @@ class RfcController extends Controller
      *                 @OA\Property(property="rfc_id", type="integer", example=1),
      *                 @OA\Property(property="level", type="string", example="kasi"),
      *                 @OA\Property(property="approver_id", type="integer", example=2),
-     *                 @OA\Property(property="decision", type="string", example="approve"),
+     *                 @OA\Property(property="decision", type="string", example="approved"),
      *                 @OA\Property(property="reason", type="string", example="Approved by supervisor"),
      *                 @OA\Property(property="approved_at", type="string", format="date-time", example="2025-12-16T10:00:00Z"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
@@ -354,21 +373,55 @@ class RfcController extends Controller
             ], 404);
         }
 
+        // Update RFC Approval
         $rfcApproval->update([
-            'decision' => 'approve',
-            'reason' => $validated['reason'] ?? 'Approved',
+            'decision'    => 'approved',
+            'reason'      => $validated['reason'] ?? 'Approved',
             'approved_at' => now(),
         ]);
 
+        /**
+         * 🔔 CALLBACK API
+         */
+        try {
+            $callbackResponse = Http::post(
+                'https://sindra.online/api/request-changes/callback',
+                [
+                    'rfc_service_id' => $rfcApproval->rfc_id, // sesuaikan dengan struktur DB
+                    'status'         => 'approved',
+                    'config_comment' => 'yes',
+                    'ci_code'        => '2323',
+                ]
+            );
+
+            // Optional: logging jika gagal
+            if ($callbackResponse->failed()) {
+                Log::error('Callback failed', [
+                    'response' => $callbackResponse->body(),
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Callback exception', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        Log::info('RFC Approval approved', [
+            'rfc_approval_id' => $rfcApproval->id,
+            'rfc_id'          => $rfcApproval->rfc_id,
+            'approver_id'     => $rfcApproval->approver_id,
+            'callbackResponse' => $callbackResponse,
+        ]);
         return response()->json([
             'message' => 'success',
-            'data' => $rfcApproval,
+            'data'    => $rfcApproval,
         ]);
     }
 
     /**
      * @OA\Post(
-     *     path="/api/v3/rfc-approval/{id}/need-info",
+     *     path="/api/v3/rfc/rfc-approval/{id}/approval/need-info",
      *     tags={"RFC Approval"},
      *     summary="Request more info for RFC Approval by ID",
      *     description="Set decision to 'need_info' for an RFC approval entry by its ID. Updates reason and approved_at.",
@@ -396,7 +449,7 @@ class RfcController extends Controller
      *                 @OA\Property(property="rfc_id", type="integer", example=1),
      *                 @OA\Property(property="level", type="string", example="kasi"),
      *                 @OA\Property(property="approver_id", type="integer", example=2),
-     *                 @OA\Property(property="decision", type="string", example="need_info"),
+     *                 @OA\Property(property="decision", type="string", example="rejected"),
      *                 @OA\Property(property="reason", type="string", example="Need more information"),
      *                 @OA\Property(property="approved_at", type="string", format="date-time", example="2025-12-16T10:00:00Z"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
@@ -417,7 +470,7 @@ class RfcController extends Controller
      *     )
      * )
      */
-    public function needInfoRfcApp(Request $request, $id)
+    public function needInfoRfcApproval(Request $request, $id)
     {
         $validated = $request->validate([
             'reason' => 'nullable|string',
@@ -430,21 +483,48 @@ class RfcController extends Controller
             ], 404);
         }
 
+        // Update RFC Approval
         $rfcApproval->update([
-            'decision' => 'reject',
-            'reason' => $validated['reason'] ?? 'Rejected',
+            'decision'    => 'rejected', // atau 'need_info' jika ada
+            'reason'      => $validated['reason'] ?? 'Rejected',
             'approved_at' => now(),
         ]);
 
+        /**
+         * 🔔 CALLBACK API
+         */
+        try {
+            $callbackResponse = Http::post(
+                'https://sindra.online/api/request-changes/callback',
+                [
+                    'rfc_service_id' => $rfcApproval->rfc_id, // sesuaikan field
+                    'status'         => 'approved',           // SESUAI PERMINTAAN KAMU
+                    'config_comment' => 'yes',
+                    'ci_code'        => '2323',
+                ]
+            );
+
+            if ($callbackResponse->failed()) {
+                Log::error('Need Info Callback failed', [
+                    'response' => $callbackResponse->body(),
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Need Info Callback exception', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
         return response()->json([
             'message' => 'success',
-            'data' => $rfcApproval,
+            'data'    => $rfcApproval,
         ]);
     }
 
-        /**
+    /**
          * @OA\Get(
-         *     path="/api/v3/rfc-approval/{id}",
+         *     path="/api/v3/rfc/rfc-approval/{id}",
          *     tags={"RFC Approval"},
          *     summary="Get RFC Approval detail by ID",
          *     description="Retrieve a single RFC Approval record by its ID, including related RFC data.",
@@ -498,7 +578,7 @@ class RfcController extends Controller
          *     )
          * )
          */
-    public function detailRfcApproval(Request$request, $id)
+    public function detailRfcApproval($id)
     {
         $rfcApproval = RfcApproval::with('rfc')->find($id);
         if (!$rfcApproval) {

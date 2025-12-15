@@ -586,9 +586,9 @@
                                 ],
                                 "properties": {
                                     "level": {
-                                        "description": "Approval level (e.g., kasi, kabid, kadis)",
+                                        "description": "Approval level (e.g., kepala_kasi, kepala_bidang, kepala_dinas, admin_kota, admin_dinas)",
                                         "type": "string",
-                                        "example": "kasi"
+                                        "example": "kepala_kasi"
                                     },
                                     "approver_id": {
                                         "description": "User ID of the approver",
@@ -598,7 +598,7 @@
                                     "decision": {
                                         "description": "Approval decision (approve, reject, need_info, forward, or null for pending)",
                                         "type": "string",
-                                        "example": "approve",
+                                        "example": "approved",
                                         "nullable": true
                                     },
                                     "reason": {
@@ -643,7 +643,7 @@
                                                 },
                                                 "level": {
                                                     "type": "string",
-                                                    "example": "kasi"
+                                                    "example": "kepala_kasi"
                                                 },
                                                 "approver_id": {
                                                     "type": "integer",
@@ -651,7 +651,7 @@
                                                 },
                                                 "decision": {
                                                     "type": "string",
-                                                    "example": "approve"
+                                                    "example": "approved"
                                                 },
                                                 "reason": {
                                                     "type": "string",
@@ -706,14 +706,14 @@
                 ]
             }
         },
-        "/api/v3/rfc-approval/{id}/approve": {
+        "/api/v3/rfc/{id}/approve": {
             "post": {
                 "tags": [
                     "RFC Approval"
                 ],
                 "summary": "Approve RFC Approval by ID",
                 "description": "Approve an RFC approval entry by its ID. Sets decision to 'approve', updates reason and approved_at.",
-                "operationId": "6067b1ead65a570fdc6ce7feee56be4c",
+                "operationId": "528ede90c0f36dc0262d497574dffc83",
                 "parameters": [
                     {
                         "name": "id",
@@ -774,7 +774,7 @@
                                                 },
                                                 "decision": {
                                                     "type": "string",
-                                                    "example": "approve"
+                                                    "example": "approved"
                                                 },
                                                 "reason": {
                                                     "type": "string",
@@ -829,14 +829,14 @@
                 ]
             }
         },
-        "/api/v3/rfc-approval/{id}/need-info": {
+        "/api/v3/rfc/rfc-approval/{id}/approval/need-info": {
             "post": {
                 "tags": [
                     "RFC Approval"
                 ],
                 "summary": "Request more info for RFC Approval by ID",
                 "description": "Set decision to 'need_info' for an RFC approval entry by its ID. Updates reason and approved_at.",
-                "operationId": "979aee68a996e10301811abcbd4ff6fc",
+                "operationId": "f4b60fdd843fc725ea54c14c409e401a",
                 "parameters": [
                     {
                         "name": "id",
@@ -897,7 +897,7 @@
                                                 },
                                                 "decision": {
                                                     "type": "string",
-                                                    "example": "need_info"
+                                                    "example": "rejected"
                                                 },
                                                 "reason": {
                                                     "type": "string",
@@ -952,14 +952,14 @@
                 ]
             }
         },
-        "/api/v3/rfc-approval/{id}": {
+        "/api/v3/rfc/rfc-approval/{id}": {
             "get": {
                 "tags": [
                     "RFC Approval"
                 ],
                 "summary": "Get RFC Approval detail by ID",
                 "description": "Retrieve a single RFC Approval record by its ID, including related RFC data.",
-                "operationId": "8709785f6e9e9996c998d7c2b0b1bd6f",
+                "operationId": "904c4dedad86e0b7b3ff8b56b8cff3d7",
                 "parameters": [
                     {
                         "name": "id",
