@@ -301,6 +301,411 @@
                 }
             }
         },
+        "/api/v3/rfc": {
+            "get": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Get list of RFCs",
+                "description": "Retrieve a paginated list of Request for Change (RFC) records with optional status filtering",
+                "operationId": "1117fafac9d9c312fb8bc57b09ca564b",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by RFC status. Use 'null' to get RFCs with null status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "approved",
+                                "rejected",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page (default: 4)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 4
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "rfc_service_id": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    },
+                                                    "ci_code": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "example": "Update Production Server"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "priority": {
+                                                        "type": "string",
+                                                        "example": "high"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "pending"
+                                                    },
+                                                    "config_comment": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "attachments": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "nullable": true
+                                                    },
+                                                    "requested_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    },
+                                                    "asset_uuid": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "sso_id": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v3/rfc/{id}": {
+            "get": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Get RFC by ID",
+                "description": "Retrieve a single Request for Change (RFC) record by its ID",
+                "operationId": "979db489789c3777624f068409d8e56e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "RFC ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "rfc_service_id": {
+                                                    "type": "integer",
+                                                    "nullable": true
+                                                },
+                                                "ci_code": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "title": {
+                                                    "type": "string",
+                                                    "example": "Update Production Server"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "priority": {
+                                                    "type": "string",
+                                                    "example": "high"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                },
+                                                "config_comment": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "attachments": {
+                                                    "type": "array",
+                                                    "items": {},
+                                                    "nullable": true
+                                                },
+                                                "requested_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                },
+                                                "asset_uuid": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "sso_id": {
+                                                    "type": "integer",
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "RFC not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "RFC not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v3/rfc/{id}/approval": {
+            "post": {
+                "tags": [
+                    "RFC"
+                ],
+                "summary": "Set or update RFC Approval",
+                "description": "Create or update an RFC approval entry for a given RFC and level.",
+                "operationId": "64b679cb01d92e54b4cd35b1e3a62f58",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "RFC ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "level",
+                                    "approver_id"
+                                ],
+                                "properties": {
+                                    "level": {
+                                        "description": "Approval level (e.g., kasi, kabid, kadis)",
+                                        "type": "string",
+                                        "example": "kasi"
+                                    },
+                                    "approver_id": {
+                                        "description": "User ID of the approver",
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "decision": {
+                                        "description": "Approval decision (approve, reject, need_info, forward, or null for pending)",
+                                        "type": "string",
+                                        "example": "approve",
+                                        "nullable": true
+                                    },
+                                    "reason": {
+                                        "description": "Reason for the decision",
+                                        "type": "string",
+                                        "example": "All requirements met",
+                                        "nullable": true
+                                    },
+                                    "approved_at": {
+                                        "description": "Approval timestamp (optional)",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-12-16T10:00:00Z",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "rfc_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "level": {
+                                                    "type": "string",
+                                                    "example": "kasi"
+                                                },
+                                                "approver_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "decision": {
+                                                    "type": "string",
+                                                    "example": "approve"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "example": "All requirements met"
+                                                },
+                                                "approved_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-12-16T10:00:00Z"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "RFC not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "RFC not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/dev/login": {
             "post": {
                 "tags": [
@@ -443,6 +848,10 @@
         {
             "name": "Auth",
             "description": "Endpoints untuk autentikasi, SSO dan token"
+        },
+        {
+            "name": "RFC",
+            "description": "RFC"
         },
         {
             "name": "SSO Authentication",
