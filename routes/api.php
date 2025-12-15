@@ -227,6 +227,8 @@ Route::prefix('v1')
 Route::post('auth/login', [LoginController::class, 'login'])->name('auth.login');
 Route::post('auth/dev/login', [DevLoginController::class, 'login']);
 
+require __DIR__.'/api/api.php';
+
 /**
  * Fallback JSON (API-friendly)
  */
