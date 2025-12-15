@@ -8,6 +8,7 @@ use App\Models\RfcApproval;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class RfcController extends Controller
 {
@@ -372,15 +373,49 @@ class RfcController extends Controller
             ], 404);
         }
 
+        // Update RFC Approval
         $rfcApproval->update([
-            'decision' => 'approved',
-            'reason' => $validated['reason'] ?? 'Approved',
+            'decision'    => 'approved',
+            'reason'      => $validated['reason'] ?? 'Approved',
             'approved_at' => now(),
         ]);
 
+        /**
+         * 🔔 CALLBACK API
+         */
+        try {
+            $callbackResponse = Http::post(
+                'https://sindra.online/api/request-changes/callback',
+                [
+                    'rfc_service_id' => $rfcApproval->rfc_id, // sesuaikan dengan struktur DB
+                    'status'         => 'approved',
+                    'config_comment' => 'yes',
+                    'ci_code'        => '2323',
+                ]
+            );
+
+            // Optional: logging jika gagal
+            if ($callbackResponse->failed()) {
+                Log::error('Callback failed', [
+                    'response' => $callbackResponse->body(),
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Callback exception', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        Log::info('RFC Approval approved', [
+            'rfc_approval_id' => $rfcApproval->id,
+            'rfc_id'          => $rfcApproval->rfc_id,
+            'approver_id'     => $rfcApproval->approver_id,
+            'callbackResponse' => $callbackResponse,
+        ]);
         return response()->json([
             'message' => 'success',
-            'data' => $rfcApproval,
+            'data'    => $rfcApproval,
         ]);
     }
 
@@ -448,19 +483,46 @@ class RfcController extends Controller
             ], 404);
         }
 
+        // Update RFC Approval
         $rfcApproval->update([
-            'decision' => 'rejected',
-            'reason' => $validated['reason'] ?? 'Rejected',
+            'decision'    => 'rejected', // atau 'need_info' jika ada
+            'reason'      => $validated['reason'] ?? 'Rejected',
             'approved_at' => now(),
         ]);
 
+        /**
+         * 🔔 CALLBACK API
+         */
+        try {
+            $callbackResponse = Http::post(
+                'https://sindra.online/api/request-changes/callback',
+                [
+                    'rfc_service_id' => $rfcApproval->rfc_id, // sesuaikan field
+                    'status'         => 'approved',           // SESUAI PERMINTAAN KAMU
+                    'config_comment' => 'yes',
+                    'ci_code'        => '2323',
+                ]
+            );
+
+            if ($callbackResponse->failed()) {
+                Log::error('Need Info Callback failed', [
+                    'response' => $callbackResponse->body(),
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Need Info Callback exception', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
         return response()->json([
             'message' => 'success',
-            'data' => $rfcApproval,
+            'data'    => $rfcApproval,
         ]);
     }
 
-        /**
+    /**
          * @OA\Get(
          *     path="/api/v3/rfc/rfc-approval/{id}",
          *     tags={"RFC Approval"},
