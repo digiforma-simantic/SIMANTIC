@@ -198,9 +198,9 @@ class RfcController extends Controller
     /**
      * @OA\Post(
      *     path="/api/v3/rfc/{id}/approval",
-     *     tags={"RFC"},
+     *     tags={"RFC Approval"},
      *     summary="Set or update RFC Approval",
-     *     description="Create or update an RFC approval entry for a given RFC and level.",
+     *     description="Create or update an RFC approval entry for a given RFC and level. If an approval for the same rfc_id, level, and approver_id exists, it will be updated.",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
@@ -283,6 +283,158 @@ class RfcController extends Controller
                 'approved_at' => $data['approved_at'] ?? null,
             ]
         );
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $rfcApproval,
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v3/rfc-approval/{id}/approve",
+     *     tags={"RFC Approval"},
+     *     summary="Approve RFC Approval by ID",
+     *     description="Approve an RFC approval entry by its ID. Sets decision to 'approve', updates reason and approved_at.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="RFC Approval ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="reason", type="string", nullable=true, example="Approved by supervisor", description="Reason for approval (optional)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="rfc_id", type="integer", example=1),
+     *                 @OA\Property(property="level", type="string", example="kasi"),
+     *                 @OA\Property(property="approver_id", type="integer", example=2),
+     *                 @OA\Property(property="decision", type="string", example="approve"),
+     *                 @OA\Property(property="reason", type="string", example="Approved by supervisor"),
+     *                 @OA\Property(property="approved_at", type="string", format="date-time", example="2025-12-16T10:00:00Z"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="RFC Approval not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="RFC Approval not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function approvedRfcApproval(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'reason' => 'nullable|string',
+        ]);
+
+        $rfcApproval = RfcApproval::find($id);
+        if (!$rfcApproval) {
+            return response()->json([
+                'message' => 'RFC Approval not found',
+            ], 404);
+        }
+
+        $rfcApproval->update([
+            'decision' => 'approve',
+            'reason' => $validated['reason'] ?? 'Approved',
+            'approved_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $rfcApproval,
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v3/rfc-approval/{id}/need-info",
+     *     tags={"RFC Approval"},
+     *     summary="Request more info for RFC Approval by ID",
+     *     description="Set decision to 'need_info' for an RFC approval entry by its ID. Updates reason and approved_at.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="RFC Approval ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="reason", type="string", nullable=true, example="Need more information", description="Reason for requesting more info (optional)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="rfc_id", type="integer", example=1),
+     *                 @OA\Property(property="level", type="string", example="kasi"),
+     *                 @OA\Property(property="approver_id", type="integer", example=2),
+     *                 @OA\Property(property="decision", type="string", example="need_info"),
+     *                 @OA\Property(property="reason", type="string", example="Need more information"),
+     *                 @OA\Property(property="approved_at", type="string", format="date-time", example="2025-12-16T10:00:00Z"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="RFC Approval not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="RFC Approval not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function needInfoRfcApp(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'reason' => 'nullable|string',
+        ]);
+
+        $rfcApproval = RfcApproval::find($id);
+        if (!$rfcApproval) {
+            return response()->json([
+                'message' => 'RFC Approval not found',
+            ], 404);
+        }
+
+        $rfcApproval->update([
+            'decision' => 'reject',
+            'reason' => $validated['reason'] ?? 'Rejected',
+            'approved_at' => now(),
+        ]);
 
         return response()->json([
             'message' => 'success',
