@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import Headerdetapp from "../../components/Kadis/Headerdetapp";
 import { FileText } from "lucide-react";
 
 const DetailApprovalKadis = () => {
+  const [modalButuhInfo, setModalButuhInfo] = useState(false);
+  const [butuhInfo, setButuhInfo] = useState("");
+
+  const submitButuhInfo = () => {
+    // TODO: Integrasi API jika diperlukan
+    alert("Berhasil mengirim butuh info: " + butuhInfo);
+    setModalButuhInfo(false);
+    setButuhInfo("");
+  };
+
   return (
     <div className="min-h-screen bg-[#F7FCFF]">
 
@@ -13,9 +23,39 @@ const DetailApprovalKadis = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+          {/* MODAL - Butuh Info */}
+          {modalButuhInfo && (
+            <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+              <div className="bg-[#0B2847] rounded-xl shadow-lg p-6 w-full max-w-sm">
+                <h2 className="text-white text-lg font-semibold mb-2">Keterangan</h2>
+                <textarea
+                  className="w-full rounded-md p-3 mb-5 text-gray-900 placeholder-gray-400 bg-white"
+                  placeholder="Tuliskan Keterangan"
+                  rows={5}
+                  value={butuhInfo}
+                  onChange={e => setButuhInfo(e.target.value)}
+                  style={{ resize: "none" }}
+                />
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setModalButuhInfo(false)}
+                    className="bg-[#D32F2F] hover:bg-red-700 text-white font-semibold py-2 px-6 rounded"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={submitButuhInfo}
+                    className="bg-[#03B75F] hover:bg-green-700 text-white font-semibold py-2 px-6 rounded"
+                  >
+                    Kirim
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* LEFT CARD - INFO & ACTION BUTTONS */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            
             {/* User Info */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-1">
@@ -26,9 +66,8 @@ const DetailApprovalKadis = () => {
 
             {/* ACTION BUTTONS (2×2 GRID) */}
             <div className="grid grid-cols-2 gap-4">
-              
               {/* Butuh Info */}
-              <button className="w-full bg-[#1E63F8] hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
+              <button onClick={() => setModalButuhInfo(true)} className="w-full bg-[#1E63F8] hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
                 Butuh Info
               </button>
 
