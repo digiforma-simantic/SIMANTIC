@@ -15,93 +15,88 @@ class UserSeeder extends Seeder
         // jangan truncate, biar bisa aman dipanggil berkali-kali
         // User::truncate();
 
-        $diskominfo = Dinas::firstOrCreate(
-            ['name' => 'Dinas Komunikasi dan Informatika Surabaya'],
-            ['type' => 'diskominfo', 'address' => 'Jl. Protokol No. 1, Surabaya']
-        );
-
-        $dinasPendidikan = Dinas::firstOrCreate(
-            ['name' => 'Dinas Pendidikan Surabaya'],
-            ['type' => 'dinas', 'address' => 'Jl. Pendidikan No. 5, Surabaya']
-        );
+        // Tidak perlu insert dinas ke tabel dinas, hanya isi string di users
 
         $users = [
             [
                 'name'          => 'Auditor Internal',
-                'email'         => 'auditor@example.com',
+                'email'         => 'auditor1@example.com',
                 'password'      => Hash::make('password'),
-                'role_id'       => Role::where('slug', 'auditor')->first()?->id,
+                'role'          => 'auditor',
+                'dinas'         => 'Dinas Komunikasi dan Informatika Surabaya',
                 'sso_id'        => null,
-                'dinas_id'      => $dinasPendidikan?->id,
                 'nip'           => '198905052010032006',
                 'jenis_kelamin' => 'L',
             ],
             [
                 'name'          => 'Kepala Bidang Infrastruktur',
-                'email'         => 'kepala.bidang@example.com',
+                'email'         => 'kepala.bidang1@example.com',
                 'password'      => Hash::make('password'),
-                'role_id'       => Role::where('slug', 'kepala_bidang')->first()?->id,
+                'role'          => 'kepala_bidang',
+                'dinas'         => 'Dinas Komunikasi dan Informatika Surabaya',
                 'sso_id'        => null,
-                'dinas_id'      => $dinasPendidikan?->id,
                 'nip'           => '198402102005021003',
                 'jenis_kelamin' => 'L',
             ],
             [
                 'name'          => 'Kepala Dinas Pendidikan',
-                'email'         => 'kepala.dinas@example.com',
+                'email'         => 'kepala.dinas1@example.com',
                 'password'      => Hash::make('password'),
-                'role_id'       => Role::where('slug', 'kepala_dinas')->first()?->id,
+                'role'          => 'kepala_dinas',
+                'dinas'         => 'Dinas Komunikasi dan Informatika Surabaya',
                 'sso_id'        => null,
-                'dinas_id'      => $dinasPendidikan?->id,
                 'nip'           => '197503152000031001',
                 'jenis_kelamin' => 'L',
             ],
             [
                 'name'          => 'Kepala Seksi Infrastruktur',
-                'email'         => 'kepala.seksi@example.com',
+                'email'         => 'kepala.seksi1@example.com',
                 'password'      => Hash::make('password'),
-                'role_id'       => Role::where('slug', 'kepala_seksi')->first()?->id,
+                'role'          => 'kepala_seksi',
+                'dinas'         => 'Dinas Komunikasi dan Informatika Surabaya',
                 'sso_id'        => null,
-                'dinas_id'      => $dinasPendidikan?->id,
                 'nip'           => '198601182010031004',
                 'jenis_kelamin' => 'P',
             ],
             [
                 'name'          => 'Staff Dinas Pendidikan',
-                'email'         => 'staff@example.com',
+                'email'         => 'staff1@example.com',
                 'password'      => Hash::make('password'),
-                'role_id'       => Role::where('slug', 'staff')->first()?->id,
+                'role'          => 'staff',
+                'dinas'         => 'Dinas Komunikasi dan Informatika Surabaya',
                 'sso_id'        => null,
-                'dinas_id'      => $dinasPendidikan?->id,
                 'nip'           => '199401102014032005',
                 'jenis_kelamin' => 'P',
             ],
             [
                 'name'          => 'Admin Dinas Pendidikan',
-                'email'         => 'admin.dinas@example.com',
+                'email'         => 'admin.dinas1@example.com',
                 'password'      => Hash::make('password'),
-                'role_id'       => Role::where('slug', 'admin_dinas')->first()?->id,
+                'role'          => 'admin_dinas',
+                'dinas'         => 'Dinas Komunikasi dan Informatika Surabaya',
                 'sso_id'        => null,
-                'dinas_id'      => $dinasPendidikan?->id,
                 'nip'           => '198001021999021002',
                 'jenis_kelamin' => 'P',
             ],
             [
                 'name'          => 'Admin Kota Surabaya',
-                'email'         => 'admin.kota@example.com',
+                'email'         => 'admin.kota1@example.com',
                 'password'      => Hash::make('password'),
-                'role_id'       => Role::where('slug', 'admin_kota')->first()?->id,
+                'role'          => 'admin_kota',
+                'dinas'         => 'Dinas Komunikasi dan Informatika Surabaya',
                 'sso_id'        => null,
-                'dinas_id'      => $diskominfo?->id,
                 'nip'           => '197801011990011001',
                 'jenis_kelamin' => 'L',
             ],
         ];
 
         foreach ($users as $data) {
+            // Hanya isi kolom string dinas dan role, tidak pakai relasi id
+            $data['dinas_id'] = null;
+            $data['role_id'] = null;
             User::updateOrCreate(
-                ['email' => $data['email']], // kunci unik
-                $data                          // data yang di-update / diisi
+                ['email' => $data['email']],
+                $data
             );
         }
     }
