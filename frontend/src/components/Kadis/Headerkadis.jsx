@@ -6,6 +6,20 @@ import bellIcon from "../../assets/notification.png";
 import userIcon from "../../assets/user.png";
 
 const Header = () => {
+  // Ambil user dari localStorage hasil login SSO
+  const [user, setUser] = React.useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  React.useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
   return (
     <header className="w-full bg-[#F4FAFF] border-b border-[#E2EDF5] shadow-sm">
       <div
@@ -30,7 +44,6 @@ const Header = () => {
 
         {/* ICONS & USER */}
         <div className="flex items-center gap-4">
-
           <Link
             to="/Kadis/NotifikasiKadis"
             className="w-11 h-11 bg-white border border-[#DCE6EE] rounded-lg flex items-center justify-center shadow-sm"
@@ -46,7 +59,7 @@ const Header = () => {
           </Link>
 
           <span className="ml-1 text-sm font-semibold text-[#002444]">
-            Sri P.
+            {user ? user.name : "-"}
           </span>
         </div>
       </div>

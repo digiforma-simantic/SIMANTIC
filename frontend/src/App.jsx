@@ -1,5 +1,7 @@
-import LaporanImplementasi from "./pages/Admin/LaporanImplementasi";
-import DetailLaporanImplementasi from "./pages/Admin/DetailLaporanImplementasi";
+import LaporanImplementasiDiskominfo from "./pages/Diskominfo/LaporanImplementasi";
+import DetailLaporanImplementasiDiskominfo from "./pages/Diskominfo/DetailLaporanImplementasi";
+import LaporanImplementasiAdmin from "./pages/Admin/LaporanImplementasiadmin";
+import DetailLaporanImplementasiAdmin from "./pages/Admin/DetailLaporanImplementasiadmin";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import Landing from "./pages/Landing";
@@ -163,8 +165,8 @@ function App() {
       <Route path="/bantuan2" element={<Bantuan2 />} />
       <Route path="/bantuan3" element={<Bantuan3 />} />
       <Route path="/bantuan4" element={<Bantuan4 />} />
-      <Route path="/Admin/LaporanImplementasi" element={<LaporanImplementasi />} />
-      <Route path="/DetailLaporanImplementasi/:id" element={<DetailLaporanImplementasi />} />
+      <Route path="/Admin/LaporanImplementasiadmin" element={<LaporanImplementasiAdmin />} />
+      <Route path="/Admin/DetailLaporanImplementasiadmin/:id" element={<DetailLaporanImplementasiAdmin />} />
 
 
       {/* KASI */}
@@ -245,6 +247,8 @@ function App() {
       <Route path="/Diskominfo/DaftarRiwayatDiskominfo" element={<DaftarRiwayatDiskominfo />} />
       <Route path="/Diskominfo/DetailApprovalDiskominfo/:id" element={<DetailApprovalDiskominfo />} />
       <Route path="/Diskominfo/RiwayatApprovalDiskominfo/:id" element={<RiwayatApprovalDiskominfo />} />
+      <Route path="/Diskominfo/LaporanImplementasi" element={<LaporanImplementasiDiskominfo />} />
+      <Route path="/Diskominfo/DetailLaporanImplementasi/:id" element={<DetailLaporanImplementasiDiskominfo />} />
 
       {/* REDIRECTS */}
       <Route path="/home" element={<Navigate to="/staff/dashboardstaff" replace />} />

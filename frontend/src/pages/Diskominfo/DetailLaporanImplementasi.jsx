@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../../components/Diskominfo/SidebarDiskominfo";
-import Header from "../../components/Diskominfo/HeaderDiskominfo";
+import Sidebar from "../../components/Diskominfo/Sidebardiskominfo";
+import Header from "../../components/Diskominfo/Headerdiskominfo";
 import { useParams, Link } from "react-router-dom";
 
 export default function DetailLaporanImplementasiDiskominfo() {

@@ -4,7 +4,7 @@ import Sidebar from "../../components/Admin/Sidebaradmin";
 import Header from "../../components/Admin/Headeradmin";
 import { Link } from "react-router-dom";
 
-export default function LaporanImplementasi() {
+function LaporanImplementasiAdmin() {
   // Hardcode data laporan implementasi
   const [laporan, setLaporan] = useState([
     {
@@ -94,7 +94,7 @@ export default function LaporanImplementasi() {
                     </div>
                     {/* CTA */}
                     <Link
-                      to={`/DetailLaporanImplementasi/${item.id}`}
+                      to={`/Admin/DetailLaporanImplementasiadmin/${item.id}`}
                       className="text-sm font-semibold text-[#005BBB] hover:underline"
                     >
                       Cek Detail
@@ -109,3 +109,5 @@ export default function LaporanImplementasi() {
     </div>
   );
 }
+
+export default LaporanImplementasiAdmin;
