@@ -16,16 +16,6 @@ use Illuminate\Support\Facades\DB;
 class ChangeController extends Controller
 {
     /**
-     * @OA\Get(
-     *   path="/api/v1/changes",
-     *   tags={"Change Management"},
-     *   summary="List Change Requests (Service Desk RFCs)",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="priority",
-     *     in="query",
-     *     required=false,
-     *     description="Filter by priority (low, medium, high)",
      *     @OA\Schema(type="string", example="high")
      *   ),
      *   @OA\Response(

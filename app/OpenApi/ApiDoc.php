@@ -9,16 +9,12 @@ namespace App\OpenApi;
  *     description="API untuk CMDB, Change Management, Maintenance & Patch Management"
  * )
  *
- * @OA\Server(
- *     url=L5_SWAGGER_CONST_HOST,
- *     description="Local development server"
- * )
  *
  * @OA\SecurityScheme(
- *     securityScheme="bearerAuth",
- *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT"
- * )
+	 securityScheme="bearerAuth",
+	 type="http",
+	 scheme="bearer",
+	 bearerFormat="JWT"
+ )
  */
 class ApiDoc {}

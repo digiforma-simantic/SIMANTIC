@@ -10,118 +10,13 @@ use App\Models\RfcAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-/**
- * @OA\Tag(
- *     name="RFC",
- *     description="Manajemen Request for Change (normal, standard, emergency)"
- * )
- */
+// ...existing code...
 class RfcController extends Controller
 {
     /**
      * GET /api/v1/rfc
      * Menampilkan daftar RFC milik OPD user login (dengan pagination).
-     *
-     * @OA\Get(
-     *   path="/api/v1/rfc",
-     *   tags={"RFC"},
-     *   summary="Daftar RFC milik OPD user login",
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(
-     *     name="status",
-     *     in="query",
-     *     required=false,
-     *     description="Filter status RFC (optional)",
-     *     @OA\Schema(type="string", example="submitted")
-     *   ),
-     *   @OA\Parameter(
-     *     name="per_page",
-     *     in="query",
-     *     required=false,
-     *     description="Jumlah data per halaman, default 15",
-     *     @OA\Schema(type="integer", example=15)
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Berhasil mengambil daftar RFC",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(
-     *           @OA\Property(property="id", type="integer", example=1),
-     *           @OA\Property(property="title", type="string", example="Upgrade Database SIM Pegawai"),
-     *           @OA\Property(property="category", type="string", example="normal"),
-     *           @OA\Property(property="urgency", type="string", example="high"),
-     *           @OA\Property(property="priority", type="string", example="high"),
-     *           @OA\Property(property="status", type="string", example="submitted")
-     *         )
-     *       ),
-     *       @OA\Property(
-     *         property="meta",
-     *         type="object",
-     *         @OA\Property(property="current_page", type="integer", example=1),
-     *         @OA\Property(property="last_page", type="integer", example=5),
-     *         @OA\Property(property="per_page", type="integer", example=15),
-     *         @OA\Property(property="total", type="integer", example=73)
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function index(Request $request)
-    {
-        $user = $request->user();
-
-        $query = Rfc::query()->orderBy('created_at', 'desc');
-
-        if ($request->sso_id) {
-            $query->where('sso_id', $request->sso_id);
-        }
-
-        // Optional filter status
-        if ($status = $request->query('status')) {
-            $query->where('status', $status);
-        }
-
-        if ($priority = $request->query('priority')) {
-            $query->where('priority', $priority);
-        }
-
-        if ($request->has('status')) {
-            $status = $request->query('status');
-            if ($status === 'null') {
-                $query->whereNull('status');
-            } else {
-                $query->where('status', $status);
-            }
-        }
-
-        $perPage = (int) $request->query('per_page', 100);
-
-        $result = $query->paginate($perPage);
-
-        return response()->json([
-            'status' => true,
-            'data' => $result->items(),
-            'meta' => [
-                'current_page' => $result->currentPage(),
-                'last_page' => $result->lastPage(),
-                'per_page' => $result->perPage(),
-                'total' => $result->total(),
-            ]
-        ]);
-    }
-
-    /**
-     * GET /api/v1/rfc/{rfc}
-    * Detail RFC untuk layar approval (Kepala Seksi/Kepala Bidang/Kepala Dinas).
-     *
-     * @OA\Get(
-     *   path="/api/v1/rfc/{id}",
-     *   tags={"RFC"},
-     *   summary="Detail satu RFC (lengkap)",
+    // ...existing code...
      *   security={{"bearerAuth":{}}},
      *   @OA\Parameter(
      *     name="id",
@@ -247,48 +142,7 @@ class RfcController extends Controller
      *         description="UUID aset terdampak (nullable)"
      *       ),
      *       @OA\Property(
-     *         property="sso_id",
-     *         type="string",
-     *         example="sso-user-001",
-     *         description="SSO ID user pemohon (nullable)"
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=201,
-     *     description="RFC berhasil dibuat",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="status", type="boolean", example=true),
-     *       @OA\Property(property="message", type="string", example="RFC successfully created from Service Desk"),
-     *       @OA\Property(
-     *         property="data",
-     *         type="object",
-     *         @OA\Property(property="id", type="integer", example=1),
-     *         @OA\Property(property="rfc_service_id", type="string", example="SD-2025-001"),
-     *         @OA\Property(property="ci_code", type="string", example="CI-2025-001"),
-     *         @OA\Property(property="title", type="string", example="Upgrade Server Production"),
-     *         @OA\Property(property="description", type="string", example="Perlu upgrade RAM"),
-     *         @OA\Property(property="priority", type="string", example="high"),
-     *         @OA\Property(property="status", type="string", example="pending"),
-     *         @OA\Property(property="attachments", type="array", @OA\Items(type="string", example="file1.pdf")),
-     *         @OA\Property(property="requested_at", type="string", example="2025-12-02 10:00:00"),
-     *         @OA\Property(property="asset_uuid", type="string", example="uuid-123"),
-     *         @OA\Property(property="sso_id", type="string", example="sso-user-001"),
-     *         @OA\Property(property="created_at", type="string", example="2025-12-02 11:00:00"),
-     *         @OA\Property(property="updated_at", type="string", example="2025-12-02 11:00:00")
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=422,
-     *     description="Validasi gagal",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="message", type="string", example="The given data was invalid."),
-     *       @OA\Property(property="errors", type="object")
-     *     )
-     *   )
-     * )
-     */
+    // ...existing code...
 
     public function store(Request $request)
     {

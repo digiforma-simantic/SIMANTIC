@@ -87,68 +87,6 @@ class ChangeApprovalController extends Controller
             'note'     => 'nullable|string',
         ]);
 
-        $level = $data['stage'];
-
-        $approval = RfcApproval::firstOrNew([
-            'rfc_id' => $change->id,
-            'level'  => $level,
-        ]);
-
-        $approval->approver_id = $request->user()?->id;
-        // Map decision for database storage
-        $approval->decision = $data['decision'] === 'need_info' ? 'revise' : $data['decision'];
-        $approval->reason      = $data['note'] ?? null;
-        $approval->approved_at  = Carbon::now();
-        $approval->save();
-
-        // Map decision to RFC status
-        $rfcStatus = $this->mapDecisionToStatus($approval->decision);
-        
-        // Update RFC status
-        $change->status = $rfcStatus;
-        $change->save();
-
-        // 🔔 Send callback to Service Desk
-        $callbackService = app(ServiceDeskCallbackService::class);
-        $callbackSent = $callbackService->sendStatus($change, $rfcStatus, $data['note'] ?? null);
-
-        // 🔔 1) Notifikasi ke aplikasi Service Desk (teknisi) - Legacy
-        // $this->notifyServiceDeskTechnician($change, $approval);
-
-        // 🔔 2) Notifikasi ke pemohon RFC (user OPD)
-        $this->notifyRequester($change, $approval);
-
-        return response()->json([
-            'status'   => true,
-            'message'  => 'RFC status updated successfully',
-            'data'     => [
-                'rfc_id'         => $change->id,
-                'rfc_status'     => $change->status,
-                'approval'       => $approval,
-                'callback_sent'  => $callbackSent,
-            ],
-        ]);
-    }
-
-    /**
-     * Map approval decision to RFC status
-     *
-     * @param string $decision
-     * @return string
-     */
-    protected function mapDecisionToStatus(string $decision): string
-    {
-        return match($decision) {
-            'approved' => 'approved',
-            'rejected' => 'rejected',
-            'revise' => 'pending',
-            default => 'approved',
-        };
-    }
-
-    /**
-     * POST /api/v1/changes/{change}/approve
-     */
     public function approve(Request $request, Rfc $change)
     {
         $request->merge([
