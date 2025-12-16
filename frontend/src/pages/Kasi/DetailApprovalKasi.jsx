@@ -23,8 +23,8 @@ const DetailApprovalKasi = () => {
   const fetchRfcs = async () => {
     try {
       const response = await rfcAPI.getById(id);
-      setRfc(response.data);
-      fetchSsoUser(response.data.sso_id);
+      setRfc(response.data?.rfc);
+      fetchSsoUser(response.data?.rfc?.sso_id);
     } catch (error) {
       console.error("Error fetching RFC details:", error);
     }
@@ -33,6 +33,18 @@ const DetailApprovalKasi = () => {
   useEffect(() => {
     fetchRfcs();
   }, []);
+
+  const forwardRfc = async (id) => {
+    console.log("Forwarding RFC ID:", id);
+    const response  = await rfcAPI.set(id, { level: "kepala_bidang", user_id: ssoUser.id });
+    
+    if (response.message !== "success") {
+      alert("Gagal meneruskan RFC: ", response);
+    } else {
+      window.location.href = "/Kasi/dashboardkasi";
+      alert("Berhasil meneruskan RFC");
+    }
+  };
 
   const submitButuhInfo = async () => {
     console.log("Submitting butuh info:", rfc.butuh_info);
@@ -110,13 +122,8 @@ const DetailApprovalKasi = () => {
                 Setujui
               </button>
 
-              {/* Tolak */}
-              <button className="w-full bg-[#B30000] hover:bg-red-800 text-white font-semibold py-3 rounded-lg transition">
-                Tolak
-              </button>
-
               {/* Teruskan */}
-              <button className="w-full bg-[#FF7A00] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition">
+              <button onClick={() => forwardRfc(rfc.id)} className="w-full bg-[#FF7A00] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition">
                 Teruskan
               </button>
 

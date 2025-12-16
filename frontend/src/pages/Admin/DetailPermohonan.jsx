@@ -18,13 +18,13 @@ const DetailPermohonan = () => {
     async function fetchRFC() {
       try {
         const response = await rfcAPI.getById(id);
-        setRfc(response.data);
+        setRfc(response.data?.rfc);
 
         console.log("Fetched RFC:", response.data); // Debug log
         try {
           const sso_token = localStorage.getItem("sso_token");
           if (!sso_token) return null;
-          const response_sso = await fetch(`https://api.bispro.digitaltech.my.id/api/v2/auth/user/` + response.data.sso_id, {
+          const response_sso = await fetch(`https://api.bispro.digitaltech.my.id/api/v2/auth/user/` + response.data?.rfc.sso_id, {
             headers: {
               Authorization: `Bearer ${sso_token}`,
             },

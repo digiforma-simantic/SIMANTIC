@@ -270,20 +270,24 @@ class RfcController extends Controller
         ]);
         $data['rfc_id'] = $rfc->id;
 
+        $rfc->update([
+            'status' => 'pending',
+        ]);
 
         // Update if exists (by rfc_id, level, approver_id), otherwise create
         $rfcApproval = RfcApproval::updateOrCreate(
-            [
-                'rfc_id' => $data['rfc_id'],
-                'level' => $data['level'],
-                'approver_id' => $data['approver_id'],
-            ],
-            [
-                'decision' => $data['decision'] ?? null,
-                'reason' => $data['reason'] ?? null,
-                'approved_at' => $data['approved_at'] ?? null,
-            ]
-        );
+        [
+            'rfc_id' => $rfc->id,
+        ],
+        [
+            'level'  => $data['level'],
+            'approver_id' => $data['approver_id'],
+            'decision'    => $data['decision'] ?? null,
+            'reason'      => $data['reason'] ?? null,
+            'approved_at' => $data['approved_at'] ?? null,
+        ]
+    );
+
 
         $userSso = null;
         if ($rfcApproval->approver_id) {
@@ -580,19 +584,86 @@ class RfcController extends Controller
          */
     public function detailRfcApproval($id)
     {
-        $rfcApproval = RfcApproval::with('rfc')->find($id);
-        if (!$rfcApproval) {
+        $rfc = Rfc::with('approvals')->find($id);
+        if (!$rfc) {
             return response()->json([
-                'message' => 'RFC Approval not found',
+                'message' => 'RFC not found',
             ], 404);
         }
+
+        // $rfcApproval = RfcApproval::with('rfc')->find($id);
+        // if (!$rfcApproval) {
+        //     return response()->json([
+        //         'message' => 'RFC Approval not found',
+        //     ], 404);
+        // }
 
         return response()->json([
             'message' => 'success',
             'data' => [
-                'rfc_approval' => $rfcApproval,
-                'rfc' => $rfcApproval->rfc,
+                'rfc_approval' => $rfc->approvals,
+                'rfc' => $rfc,
             ],
         ]);
     }
+
+        /**
+         * @OA\Get(
+         *     path="/api/v3/rfc/rfc-approvals",
+         *     tags={"RFC Approval"},
+         *     summary="Get all RFC Approvals",
+         *     description="Retrieve a list of all RFC Approval records, including related RFC data.",
+         *     security={{"bearerAuth":{}}},
+         *     @OA\Response(
+         *         response=200,
+         *         description="Successful operation",
+         *         @OA\JsonContent(
+         *             @OA\Property(property="message", type="string", example="success"),
+         *             @OA\Property(
+         *                 property="data",
+         *                 type="array",
+         *                 @OA\Items(
+         *                     @OA\Property(property="id", type="integer", example=1),
+         *                     @OA\Property(property="rfc_id", type="integer", example=1),
+         *                     @OA\Property(property="level", type="string", example="kepala_kasi"),
+         *                     @OA\Property(property="approver_id", type="integer", example=2),
+         *                     @OA\Property(property="decision", type="string", example="approved"),
+         *                     @OA\Property(property="reason", type="string", example="All requirements met"),
+         *                     @OA\Property(property="approved_at", type="string", format="date-time", example="2025-12-16T10:00:00Z"),
+         *                     @OA\Property(property="created_at", type="string", format="date-time"),
+         *                     @OA\Property(property="updated_at", type="string", format="date-time"),
+         *                     @OA\Property(property="rfc", type="object",
+         *                         @OA\Property(property="id", type="integer", example=1),
+         *                         @OA\Property(property="title", type="string", example="Update Production Server"),
+         *                         @OA\Property(property="status", type="string", example="pending"),
+         *                         @OA\Property(property="priority", type="string", example="high"),
+         *                         @OA\Property(property="description", type="string", example="Change server configuration"),
+         *                         @OA\Property(property="created_at", type="string", format="date-time"),
+         *                         @OA\Property(property="updated_at", type="string", format="date-time")
+         *                     )
+         *                 )
+         *             )
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=401,
+         *         description="Unauthenticated"
+         *     )
+         * )
+         */
+    public function getAllRfcApprovals(Request $request)
+    {
+        $query = RfcApproval::with('rfc');
+
+        if ($request->filled('level')) {
+            $query->where('level', $request->level);
+        }
+
+        $rfcApprovals = $query->get();
+        
+        return response()->json([
+            'message' => 'success',
+            'data' => $rfcApprovals,
+        ]);
+    }   
 }

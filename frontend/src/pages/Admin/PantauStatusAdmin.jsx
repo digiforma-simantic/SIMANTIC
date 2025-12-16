@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { rfcAPI, rfcApprovalAPI } from "../../services/api";
+import { rfcAPI } from "../../services/api";
 import { ssoUserApi } from "../../services/ssoUser";
 
 // ICONS
@@ -13,37 +13,43 @@ const PantauStatusAdmin = () => {
   const navigate = useNavigate();
 
   const [rfcs, setRfcs] = useState([]);
-  const [ssoUsers, setSsoUsers] = useState({}); // { [ssoId]: userData }
+  const [ssoUsers, setSsoUsers] = useState({}); // { [ssoId]: userObject }
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Ambil semua RFC yang sudah dikirim admin ke approval
+  /* =======================
+     FETCH RFC + SSO USER
+  ======================== */
   useEffect(() => {
     let isMounted = true;
 
     async function fetchRfcs() {
       try {
-        // Ambil semua data dari tabel rfc approval
+        setLoading(true);
+
+        // 1️⃣ Ambil RFC pending
         const res = await rfcAPI.getPending();
-        const list = res.data;
+        const list = res?.data?.data || [];
+
         if (!isMounted) return;
         setRfcs(list);
 
-        // Ambil sso_id unik dari list
+        // 2️⃣ Ambil sso_id unik
         const ssoIds = [
           ...new Set(
             list
-              .map((x) => x?.rfc?.sso_id)
+              .map((x) => x?.sso_id)
               .filter((id) => id !== null && id !== undefined && id !== "")
           ),
         ];
 
-        // fetch nama dari SSO (paralel) + cache
+        // 3️⃣ Fetch user SSO (PARALLEL + CACHE)
         const results = await Promise.all(
           ssoIds.map(async (id) => {
             try {
-              const r = await ssoUserApi.getById(id); // axios response
-              return [String(id), r.data]; // r.data = payload dari SSO
+              const r = await ssoUserApi.getById(id);
+              // ✅ SIMPAN LANGSUNG USER OBJECT
+              return [String(id), r?.data?.data ?? null];
             } catch (e) {
               console.error("Gagal ambil user SSO id:", id, e);
               return [String(id), null];
@@ -52,7 +58,10 @@ const PantauStatusAdmin = () => {
         );
 
         if (!isMounted) return;
-        setSsoUsers((prev) => ({ ...prev, ...Object.fromEntries(results) }));
+        setSsoUsers((prev) => ({
+          ...prev,
+          ...Object.fromEntries(results),
+        }));
       } catch (error) {
         console.error("Error fetching RFCs:", error);
         if (isMounted) setRfcs([]);
@@ -68,23 +77,19 @@ const PantauStatusAdmin = () => {
     };
   }, []);
 
-  // helper: ambil nama user dari payload SSO (fleksibel)
-  const getSsoName = (ssoPayload) => {
-    if (!ssoPayload) return null;
-    if (ssoPayload.name) return ssoPayload.name;
-    if (ssoPayload.data?.name) return ssoPayload.data.name;
-    if (ssoPayload.data?.user?.name) return ssoPayload.data.user.name;
-    if (ssoPayload.user?.name) return ssoPayload.user.name;
-    return null;
-  };
-
+  /* =======================
+     SEARCH FILTER
+  ======================== */
   const filteredRfcs = useMemo(() => {
     const term = searchTerm.toLowerCase();
-    return (rfcs ?? []).filter((item) =>
-      (item?.rfc?.title ?? "").toLowerCase().includes(term)
+    return rfcs.filter((item) =>
+      (item?.title ?? "").toLowerCase().includes(term)
     );
   }, [rfcs, searchTerm]);
 
+  /* =======================
+     RENDER
+  ======================== */
   return (
     <div className="flex-1 flex flex-col ml-0 md:ml-0 transition-all">
       {/* HEADER */}
@@ -121,9 +126,9 @@ const PantauStatusAdmin = () => {
         ) : (
           <div className="space-y-4">
             {filteredRfcs.map((item) => {
-              const ssoId = item?.rfc?.sso_id;
-              const ssoPayload = ssoUsers[String(ssoId)];
-              const requesterName = getSsoName(ssoPayload);
+              const ssoId = item?.sso_id;
+              const user = ssoUsers[String(ssoId)];
+              const requesterName = user?.name || "-";
 
               return (
                 <div
@@ -132,24 +137,25 @@ const PantauStatusAdmin = () => {
                 >
                   <div className="flex items-center gap-4">
                     <img src={docIcon} alt="doc" className="w-6" />
+
                     <div>
                       <h3 className="font-semibold text-gray-800">
-                        {item?.rfc?.title ?? "-"}
+                        {item?.title ?? "-"}
                       </h3>
 
                       <p className="text-sm text-gray-500">
-                        {item?.rfc?.created_at ?? item?.created_at ?? "-"}
+                        {item?.created_at ?? "-"}
                       </p>
 
                       <p className="text-xs text-gray-400">
-                        {requesterName ? `${requesterName}` :  "-"}
+                        {requesterName}
                       </p>
                     </div>
                   </div>
 
                   <button
                     onClick={() =>
-                      navigate(`/Admin/StatusPengajuan/${item?.rfc_id}`)
+                      navigate(`/Admin/StatusPengajuan/${item?.id}`)
                     }
                     className="text-[#02294A] font-semibold hover:underline"
                   >

@@ -14,13 +14,18 @@ Route::prefix('v3')
     ->middleware(['auth:sanctum', 'throttle:60,1'])
     ->group(function () {
         Route::prefix('rfc')->group(function () {
+
+            // ✅ STATIC ROUTES DULU
+            Route::get('/rfc-approvals', [RfcController::class, 'getAllRfcApprovals']);
+            Route::get('/rfc-approval/{id}', [RfcController::class, 'detailRfcApproval']);
+            Route::post('/rfc-approval/{id}/approval/need-info', [RfcController::class, 'needInfoRfcApproval']);
+
+            // ✅ RFC BASE
             Route::get('/', [RfcController::class, 'index']);
-            Route::get('/{id}', [RfcController::class, 'show']);
-
-
             Route::post('/{id}/approval', [RfcController::class, 'setRfcApproval']);
             Route::post('/{id}/approve', [RfcController::class, 'approvedRfcApproval']);
-            Route::post('/rfc-approval/{id}/approval/need-info', [RfcController::class, 'needInfoRfcApproval']);
-            Route::get('/rfc-approval/{id}', [RfcController::class, 'detailRfcApproval']);
+
+            // ❗ DINAMIC TERAKHIR
+            Route::get('/{id}', [RfcController::class, 'show']);
         });
     });

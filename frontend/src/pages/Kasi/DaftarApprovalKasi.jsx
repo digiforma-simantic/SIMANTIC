@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ICONS
@@ -10,12 +10,23 @@ import Headerdafapp from "../../components/Kasi/Headerdafapp";
 const DaftarApprovalKasi = () => {
   const navigate = useNavigate();
 
-  const approvals = [
-    { id: 1, title: "Install Aplikasi Kerja", date: "17 Agustus 2025" },
-    { id: 2, title: "Install Aplikasi Kerja", date: "17 Agustus 2025" },
-    { id: 3, title: "Install Aplikasi Kerja", date: "17 Agustus 2025" },
-    { id: 4, title: "Install Aplikasi Kerja", date: "17 Agustus 2025" }
-  ];
+  /* =======================
+       RFC DATA
+    ======================== */
+    const [rfcApprovals, setRfcApprovals] = useState([]);
+  
+    const fetchDaftarApprovals = async () => {
+      try {
+        const res = await rfcApprovalAPI.getByLevel("kepala_seksi");
+        setRfcApprovals(res.data || []);
+      } catch (error) {
+        console.error("Gagal mengambil RFC approvals", error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchDaftarApprovals();
+    }, []);
 
   return (
     <div className="flex-1 flex flex-col ml-0 md:ml-0 transition-all">
@@ -43,7 +54,7 @@ const DaftarApprovalKasi = () => {
 
         {/* LIST */}
         <div className="space-y-4">
-          {approvals.map((item) => (
+          {rfcApprovals.map((item) => (
             <div
               key={item.id}
               className="flex justify-between items-center bg-[#F6FBFF] border border-gray-200 shadow-sm rounded-xl p-5"

@@ -1095,6 +1095,120 @@
                 ]
             }
         },
+        "/api/v3/rfc/rfc-approvals": {
+            "get": {
+                "tags": [
+                    "RFC Approval"
+                ],
+                "summary": "Get all RFC Approvals",
+                "description": "Retrieve a list of all RFC Approval records, including related RFC data.",
+                "operationId": "6d02f6daef5d31c2a71691b4fdaa2199",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "rfc_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "level": {
+                                                        "type": "string",
+                                                        "example": "kepala_kasi"
+                                                    },
+                                                    "approver_id": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "decision": {
+                                                        "type": "string",
+                                                        "example": "approved"
+                                                    },
+                                                    "reason": {
+                                                        "type": "string",
+                                                        "example": "All requirements met"
+                                                    },
+                                                    "approved_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-12-16T10:00:00Z"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "rfc": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "title": {
+                                                                "type": "string",
+                                                                "example": "Update Production Server"
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "example": "pending"
+                                                            },
+                                                            "priority": {
+                                                                "type": "string",
+                                                                "example": "high"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "Change server configuration"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/dev/login": {
             "post": {
                 "tags": [

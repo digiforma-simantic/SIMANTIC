@@ -148,22 +148,25 @@ export const rfcAPI = {
   },
 
   async getPending() {
-    const res = await api.get(`/api/v1/rfc?status=pending`);
+    const res = await api.get(`/api/v3/rfc?status=pending`);
     return res.data;
   },
 
   async getNull() {
-    const res = await api.get(`/api/v1/rfc?status=null`);
+    const res = await api.get(`/api/v3/rfc?status=null`);
     return res.data;
   },
 
   async getById(id) {
-    const res = await api.get(`/api/v1/rfc/${id}/detail`);
+    const res = await api.get(`/api/v3/rfc/rfc-approval/${id}`);
     return res.data;
   },
 
   async set(id, payload) {
-    const res = await api.post(`/api/v1/rfc/${id}/set`, payload);
+    const res = await api.post(`/api/v3/rfc/${id}/approval`, {
+      level : payload.level,
+      approver_id : payload.user_id,
+    });
     return res.data;
   },
 
@@ -188,7 +191,12 @@ export const rfcAPI = {
 
 export const rfcApprovalAPI = {
   async getAll() {
-    const res = await api.get("/api/v1/rfc/approvals");
+    const res = await api.get("/api/v3/rfc/rfc-approvals");
+    return res.data;
+  },
+
+  async getByLevel(level) {
+    const res = await api.get(`/api/v3/rfc/rfc-approvals?level=${level}`);
     return res.data;
   },
 

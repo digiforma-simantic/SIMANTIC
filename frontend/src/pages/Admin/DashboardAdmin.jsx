@@ -32,8 +32,8 @@ const DashboardAdmin = () => {
       try {
         const res = await rfcAPI.getPending();
         const resRfcs = await rfcAPI.getNull();  
-        const list = res.data;
-        const rfcsData = resRfcs.data;
+        const list = res.data?.data;
+        const rfcsData = resRfcs.data?.data;
         if (!isMounted) return;
         setPantauStatus(list);
         setRfcs(rfcsData);

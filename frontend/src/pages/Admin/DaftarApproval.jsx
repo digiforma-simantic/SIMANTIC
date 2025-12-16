@@ -23,10 +23,10 @@ const DaftarApprovalAdmin = () => {
 
     async function fetchApprovals() {
       try {
-        const res = await rfcAPI.getAll();
+        const res = await rfcAPI.getNull();
 
         // backend kamu: { success: true, data: [...] }
-        const list = res?.data;
+        const list = res?.data?.data;
         console.log("Fetched approvals:", list);
 
         if (!isMounted) return;

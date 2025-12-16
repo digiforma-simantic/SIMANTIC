@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 import { rfcAPI } from "../../services/api";
 
 // Urutan step sesuai proses
-const STEP_KEYS = ["submitted", "kepala_seksi", "kepala_bidang", "diskominfo", "done"];
+const STEP_KEYS = ["submitted", "kepala_seksi", "kepala_bidang", "kepala_dinas", "admin_dinas", "done"];
 
 const normalize = (v) => (v ? String(v).toLowerCase().trim() : "");
 
@@ -69,7 +69,7 @@ const StatusPengajuanAdmin = () => {
         const res = await rfcAPI.getById(id);
 
         // res.data -> { status: true, data: { ...rfc... } }
-        const rfcData = res?.data;
+        const rfcData = res?.data?.rfc;
 
         if (!rfcData) {
           throw new Error("Data RFC tidak ditemukan (res.data.data kosong).");
