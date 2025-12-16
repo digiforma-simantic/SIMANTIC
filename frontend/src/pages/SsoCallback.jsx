@@ -22,7 +22,7 @@ const SsoCallback = () => {
     localStorage.clear();
 
     // Panggil backend SIMANTIC untuk dapatkan token Sanctum
-    const backendUrl = 'http://127.0.0.1:8000/api/sso/callback?token=' + encodeURIComponent(ssoToken);
+    const backendUrl = 'https://api.simantic.online/api/sso/callback?token=' + encodeURIComponent(ssoToken);
     fetch(backendUrl, {
       method: 'GET',
       headers: {

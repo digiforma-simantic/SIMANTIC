@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE_URL = "https://api.siprima.digitaltech.my.id/";
 
 
 function getAuthHeaders() {
@@ -26,13 +26,13 @@ const api = axios.create({
 
 export const assetsAPI = {
   async getAll() {
-    const response = await api.get("/api/v1/assets", {
+    const response = await api.get("/api/assets", {
       headers: getAuthHeaders(),
     });
     return response.data;
   },
   async getById(id) {
-    const response = await api.get(`/api/v1/assets/${id}`, {
+    const response = await api.get(`/api/assets/${id}`, {
       headers: getAuthHeaders(),
     });
     return response.data;
