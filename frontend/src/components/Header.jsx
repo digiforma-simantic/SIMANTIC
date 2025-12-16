@@ -1,13 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-
 import searchIcon from "../assets/search-normal.png";
 import bellIcon from "../assets/notification.png";
 import userIcon from "../assets/user.png";
 
 const Header = () => {
-  const { user, loading, } = useAuth();
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
 
   // Format nama: nama depan lengkap + inisial nama belakang
   const getShortName = (fullName) => {
@@ -22,8 +33,6 @@ const Header = () => {
       .join(" ");
     return `${firstName} ${initials}`;
   };
-
-
 
   return (
     <header className="w-full bg-[#F4FAFF] border-b border-[#E2EDF5] shadow-sm">

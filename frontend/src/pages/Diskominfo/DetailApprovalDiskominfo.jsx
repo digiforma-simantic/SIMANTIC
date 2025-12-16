@@ -5,10 +5,18 @@ import Headerdetailaset from "../../components/Diskominfo/Headerdetapp";
 export default function DetailPengajuan() {
   const navigate = useNavigate();
   const [selectedTeknisi, setSelectedTeknisi] = useState("");
+  const [modalButuhInfo, setModalButuhInfo] = useState(false);
+  const [butuhInfo, setButuhInfo] = useState("");
+
+  const submitButuhInfo = () => {
+    // TODO: Integrasi API jika diperlukan
+    alert("Berhasil mengirim butuh info: " + butuhInfo);
+    setModalButuhInfo(false);
+    setButuhInfo("");
+  };
 
   const handleButuhInfo = () => {
-    // Logic untuk butuh info
-    console.log("Butuh Info clicked");
+    setModalButuhInfo(true);
   };
 
   const handleSetujui = () => {
@@ -23,6 +31,36 @@ export default function DetailPengajuan() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
+      {/* MODAL - Butuh Info */}
+      {modalButuhInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-[#0B2847] rounded-xl shadow-lg p-6 w-full max-w-sm">
+            <h2 className="text-white text-lg font-semibold mb-2">Keterangan</h2>
+            <textarea
+              className="w-full rounded-md p-3 mb-5 text-gray-900 placeholder-gray-400 bg-white"
+              placeholder="Tuliskan Keterangan"
+              rows={5}
+              value={butuhInfo}
+              onChange={e => setButuhInfo(e.target.value)}
+              style={{ resize: "none" }}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setModalButuhInfo(false)}
+                className="bg-[#D32F2F] hover:bg-red-700 text-white font-semibold py-2 px-6 rounded"
+              >
+                Batal
+              </button>
+              <button
+                onClick={submitButuhInfo}
+                className="bg-[#03B75F] hover:bg-green-700 text-white font-semibold py-2 px-6 rounded"
+              >
+                Kirim
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <Headerdetailaset />
 
