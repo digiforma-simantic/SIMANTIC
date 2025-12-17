@@ -90,8 +90,8 @@ class SsoCallbackController extends Controller
             /* =====================================================
              * 5. REDIRECT KE FRONTEND + TOKEN
              * ===================================================== */
-            // $frontendUrl = config('app.frontend_url');
-            $frontendUrl = "http://localhost:5173";
+            $frontendUrl = config('app.frontend_url');
+            // $frontendUrl = "http://localhost:5173";
 
             $userPayload = [
                 'id'            => $user->id,
