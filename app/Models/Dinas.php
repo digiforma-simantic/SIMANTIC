@@ -20,7 +20,6 @@ class Dinas extends Model
     protected $fillable = [
         'sso_dinas_id',
         'name',
-        'type',
         'address',
     ];
 

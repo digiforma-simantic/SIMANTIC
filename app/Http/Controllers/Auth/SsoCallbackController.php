@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dinas;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -57,6 +59,17 @@ class SsoCallbackController extends Controller
                     'nip'     => $userData['nip'] ?? null,
                     'role'    => $userData['role'] ?? 'staff',
                 ]
+            );
+
+            $role = Role::updateOrCreate(
+                ['slug' => $userData['role'] ?? 'staff'],
+                ['name' => ucfirst(str_replace('_', ' ', $userData['role'] ?? 'staff'))]
+            );
+
+
+            $dinas = Dinas::updateOrCreate(
+                ['name' => $userData['dinas'] ?? ''],
+                []
             );
 
             /* =====================================================
@@ -120,6 +133,7 @@ class SsoCallbackController extends Controller
                     'user'  => base64_encode(json_encode($userPayload)),
                     'role'  => $roleSlug,
                     'sso_token' => $ssoToken,
+                    'dinas' => $dinas
                 ])
             );
 

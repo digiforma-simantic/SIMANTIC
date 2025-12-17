@@ -12,13 +12,11 @@ class DinasSeeder extends Seeder
         $dinasList = [
             [
                 'name' => 'Dinas Pendidikan Surabaya',
-                'type' => 'dinas',
                 'address' => '',
                 'sso_dinas_id' => null,
             ],
             [
                 'name' => 'Dinas Komunikasi dan Informatika Surabaya',
-                'type' => 'diskominfo',
                 'address' => '',
                 'sso_dinas_id' => null,
             ],

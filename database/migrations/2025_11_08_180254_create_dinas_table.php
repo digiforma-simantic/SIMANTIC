@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('dinas', function (Blueprint $table) {
             $table->id(); // BIGINT, PK
             $table->string('name', 200);
-            $table->enum('type', ['dinas', 'diskominfo', 'badan']);
             $table->text('address')->nullable();
             $table->timestamps(); // created_at, updated_at
         });
