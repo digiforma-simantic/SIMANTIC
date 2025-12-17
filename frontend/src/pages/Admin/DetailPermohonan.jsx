@@ -15,16 +15,11 @@ const DetailPermohonan = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    async function fetchRFC() {
+    async function fetchUserSso(sso_id) {
       try {
-        const response = await rfcAPI.getById(id);
-        setRfc(response.data?.rfc);
-
-        console.log("Fetched RFC:", response.data); // Debug log
-        try {
           const sso_token = localStorage.getItem("sso_token");
           if (!sso_token) return null;
-          const response_sso = await fetch(`https://api.bispro.digitaltech.my.id/api/v2/auth/user/` + response.data?.rfc.sso_id, {
+          const response_sso = await fetch(`https://api.bispro.digitaltech.my.id/api/v2/auth/user/` + sso_id, {
             headers: {
               Authorization: `Bearer ${sso_token}`,
             },
@@ -36,6 +31,19 @@ const DetailPermohonan = () => {
           console.error("Error fetching SSO user ID:", error);
           alert("Gagal memuat data requester user");
         }
+    }
+    async function fetchRFC() {
+      try {
+        const response = await rfcAPI.getById(id);
+        setRfc(response.data?.rfc);
+
+        console.log("Fetched RFC:", response.data); // Debug log
+
+        if (response.data?.rfc?.sso_id) {
+          console.log("Fetching SSO user with ID:", response.data.rfc.sso_id); // Debug log
+          fetchUserSso(response.data?.rfc?.sso_id);
+        }
+
       } catch (error) {
         console.error("Error fetching RFC:", error);
         alert("Gagal memuat data RFC");

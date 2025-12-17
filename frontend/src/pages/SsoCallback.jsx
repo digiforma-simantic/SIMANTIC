@@ -9,6 +9,7 @@ const SsoCallback = () => {
     const token = searchParams.get('token');
     const path  = searchParams.get('path');
     const userEncoded = searchParams.get('user'); // base64
+    const ssoToken = searchParams.get('sso_token');
 
     if (!token) {
       navigate('/', { replace: true });
@@ -19,10 +20,12 @@ const SsoCallback = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
+    localStorage.removeItem('sso_token');
 
     // Simpan token
     localStorage.setItem('token', token);
     localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('sso_token', ssoToken);
 
     // Decode user
     if (userEncoded) {

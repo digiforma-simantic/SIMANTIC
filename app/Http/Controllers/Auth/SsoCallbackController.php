@@ -119,6 +119,7 @@ class SsoCallbackController extends Controller
                     'path'  => $dashboardPath,
                     'user'  => base64_encode(json_encode($userPayload)),
                     'role'  => $roleSlug,
+                    'sso_token' => $ssoToken,
                 ])
             );
 
