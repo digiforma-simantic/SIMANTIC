@@ -3,7 +3,7 @@
 return [
     'paths' => ['api/*', 'auth/*', 'login', 'logout', '*'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['http://localhost:5173'],
+    'allowed_origins' => ['http://localhost:5173', 'https://simantic.online'],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
