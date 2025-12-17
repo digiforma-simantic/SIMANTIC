@@ -73,6 +73,7 @@ class SsoCallbackController extends Controller
              * 4. TENTUKAN DASHBOARD BERDASARKAN ROLE
              * ===================================================== */
             $roleSlug = $user->role ?? 'staff';
+            Log::info('SSO CALLBACK USER ROLE', ['role' => $roleSlug]);
 
             $roleToDashboard = [
                 'admin_kota'     => '/diskominfo/dashboarddiskominfo',
