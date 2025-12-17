@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         // Panggil seeder lainnya
         $this->call([
             DinasSeeder::class,
-            UserSeeder::class,
+            // UserSeeder::class,
             RfcSeeder::class,
             RoleSeeder::class,
         ]);
