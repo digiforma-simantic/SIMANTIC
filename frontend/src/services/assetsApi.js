@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL = "https://api.siprima.digitaltech.my.id/";
+// const API_BASE_URL = "http://127.0.0.1:8001";
 
 
 function getAuthHeaders() {
@@ -35,6 +36,13 @@ export const assetsAPI = {
     const response = await api.get(`/api/assets/${id}`, {
       headers: getAuthHeaders(),
     });
-    return response.data;
+    return response.data.data;
   },
+
+  async getByKodeBmd(kodeBmd) {
+    const response = await api.get(`/api/assets/bykodebmd/${kodeBmd}`, {
+      headers: getAuthHeaders(),
+    });
+    return response.data.data;
+  }
 };

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id(); // BIGINT, PK
             $table->string('name', 255);
             $table->string('type', 100);
-            $table->foreignId('owner_dinas_id')->constrained('dinas');
+            $table->foreignId('owner_id')->nullable()->constrained('users')->onDelete('set null');
             $table->enum('environment', ['production', 'staging', 'development']);
             $table->enum('criticality', ['low', 'medium', 'high', 'critical']);
             $table->enum('status', ['active', 'under_change', 'retired', 'maintenance']);
@@ -21,7 +21,6 @@ return new class extends Migration
             $table->integer('risk_level')->default(0);
             $table->timestamps();
 
-            $table->index(['owner_dinas_id']);
             $table->index(['type']);
             $table->index(['status']);
         });

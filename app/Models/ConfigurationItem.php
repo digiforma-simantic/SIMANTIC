@@ -31,7 +31,7 @@ class ConfigurationItem extends Model
         'name',
         'ci_code',        // kode unik CI, misal: CI-000245
         'type',
-        'owner_dinas_id',
+        'owner_id',
         'environment',
         'criticality',
         'status',
