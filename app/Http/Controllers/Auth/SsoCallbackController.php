@@ -31,8 +31,23 @@ class SsoCallbackController extends Controller
                 ->withToken($ssoToken)
                 ->get('https://api.bispro.digitaltech.my.id/api/v2/auth/me');
 
+            if ($resp->status() === 401 || $resp->status() === 403) {
+                Log::warning('SSO TOKEN INVALID / EXPIRED', [
+                    'status' => $resp->status(),
+                    'body'   => $resp->body(),
+                ]);
+
+                // Redirect balik ke SSO pusat
+                return redirect()->away('https://bispro.digitaltech.my.id');
+            }
+
             if (!$resp->successful()) {
-                return abort(401, 'Token SSO tidak valid');
+                Log::error('SSO API ERROR', [
+                    'status' => $resp->status(),
+                    'body'   => $resp->body(),
+                ]);
+
+                return abort(500, 'SSO service error');
             }
 
             $ssoData  = $resp->json();
