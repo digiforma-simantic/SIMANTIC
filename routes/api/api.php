@@ -45,6 +45,7 @@ Route::prefix('v3')
         Route::prefix('configuration-items')->group(function () {
             Route::get('/kode-bmd/{kodeBmd}', [ConfigurationItemController::class, 'showByKodeBmd']);
             Route::get('/by-asset/{assetId}',[ConfigurationItemController::class, 'showByAssetId']);
+            Route::get('/by-user/{userId}', [ConfigurationItemController::class, 'getByUserId']);
 
 
             // ✅ CREATE CI

@@ -5,6 +5,7 @@ import Headerdetailaset from "../../components/Admin/Headerdetas";
 import { assetsAPI } from "../../services/assetsApi";
 import { configurationItemsAPI } from "../../services/configurationItemsApi";
 import { usersAPI } from "../../services/usersApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function DetailAsetSaya() {
   const { id } = useParams(); // id = kode_bmd

@@ -3,6 +3,7 @@ import Headeradmin from "../../components/Admin/Headeradmin";
 import Sidebaradmin from "../../components/Admin/Sidebaradmin";
 import { Link } from "react-router-dom";
 import { configurationItemsAPI } from "../../services/configurationItemsApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function AsetAdmin() {
   const [ciList, setCiList] = useState([]);
@@ -10,18 +11,19 @@ export default function AsetAdmin() {
 
   /* ================= GET USER ================= */
   const user = JSON.parse(localStorage.getItem("user"));
+  const auth = useAuth(); // Custom hook to get auth info
+
+  console.log("Auth User:", auth.user);
 
   /* ================= FETCH CI ================= */
   useEffect(() => {
     async function fetchCI() {
       try {
-        const res = await configurationItemsAPI.getAll();
+        const res = await configurationItemsAPI.getByUserId(auth.id);
         const allCi = res.data || res;
 
         // FILTER CI BERDASARKAN OWNER
-        const myCi = allCi.filter(
-          (ci) => ci.owner_id === user.id
-        );
+        const myCi = allCi;
 
         setCiList(myCi);
       } catch (err) {

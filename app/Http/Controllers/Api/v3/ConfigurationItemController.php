@@ -170,20 +170,32 @@ class ConfigurationItemController extends Controller
     }
 
     public function showByAssetId($assetId)
-{
-    $ci = ConfigurationItem::where('asset_id', $assetId)->first();
+    {
+        $ci = ConfigurationItem::where('asset_id', $assetId)->first();
 
-    if (!$ci) {
+        if (!$ci) {
+            return response()->json([
+                'success' => false,
+                'message' => 'CI tidak ditemukan'
+            ], 404);
+        }
+
         return response()->json([
-            'success' => false,
-            'message' => 'CI tidak ditemukan'
-        ], 404);
+            'success' => true,
+            'data' => $ci
+        ]);
     }
 
-    return response()->json([
-        'success' => true,
-        'data' => $ci
-    ]);
-}
+    public function getByUserId($userId)
+    {
+        $items = ConfigurationItem::where('owner_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $items,
+        ]);
+    }
 
 }

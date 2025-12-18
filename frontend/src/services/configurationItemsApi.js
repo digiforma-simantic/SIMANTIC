@@ -18,6 +18,13 @@ export const configurationItemsAPI = {
         return res.data;
     },
 
+    async getByUserId(userId) {
+        const res = await api.get(
+            `/api/v3/configuration-items/by-user/${userId}`
+        );
+        return res.data;
+    }
+
     getByAssetId(assetId) {
         return api.get(`/api/v3/configuration-items/by-asset/${assetId}`);
     },
